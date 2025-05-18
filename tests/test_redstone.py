@@ -6,7 +6,10 @@ import os
 import logging
 import sys
 import json
-from redmine_api import RedmineAPI
+
+# Add the parent directory to path so we can import src modules
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.redmine_api import RedmineAPI
 
 # Set up logging
 logging.basicConfig(
