@@ -13,24 +13,9 @@ A robust FastMCP server for Redmine API integration. This server uses standard i
 
 ### Prerequisites
 
-- Python 3.11 or higher
 - Redmine API key with appropriate permissions
 
-### Running the Server
-
-1. Set your Redmine API key as an environment variable:
-
-```bash
-export REDMINE_API_KEY=your-api-key-here
-```
-
-2. Run the server using the provided shell script:
-
-```bash
-./run_server.sh
-```
-
-### Using Docker
+### Using Docker (Recommended)
 
 1. Build the Docker image:
 
@@ -47,10 +32,10 @@ docker run -e REDMINE_API_KEY=your-api-key-here redmine-mcp-server
 ### Environment Variables
 
 - `REDMINE_URL`: URL of your Redmine instance (default: https://redstone.redminecloud.net)
-- `SERVER_MODE`: Server mode, either "live" or "test" (default: live)
-- `LOG_LEVEL`: Logging level (default: info)
-- `TEST_PROJECT`: Project identifier for tests (default: p1)
-- `REDMINE_API_KEY_FILE`: Path to a file containing your API key (for Docker Compose)
+- `REDMINE_API_KEY`: Your Redmine API key (required)
+- `SERVER_MODE`: Server mode, 'live' or 'test' (default: live)
+- `LOG_LEVEL`: Logging level, 'debug', 'info', 'warning', or 'error' (default: info)
+- `TEST_PROJECT`: Project identifier for test mode (default: p1)
 
 ## Usage
 
