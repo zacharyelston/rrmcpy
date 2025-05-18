@@ -123,8 +123,8 @@ class RoadmapClient(RedmineBaseClient):
                                params={'fixed_version_id': version_id})
     
     def create_roadmap_version(self, project_id: Union[int, str], name: str, 
-                             description: str = None, status: str = "open",
-                             due_date: str = None, sharing: str = "none") -> Dict:
+                             description: Optional[str] = None, status: str = "open",
+                             due_date: Optional[str] = None, sharing: str = "none") -> Dict:
         """
         Convenience method to create a roadmap version
         
