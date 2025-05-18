@@ -16,6 +16,8 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
+COPY redmine_mcp_server.py /app/
+COPY run_mcp_server.py /app/
 
 # Copy tests
 COPY tests/ /app/tests/
