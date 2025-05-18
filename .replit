@@ -25,3 +25,6 @@ start = "pylsp"
 
 [unitTest]
 language = "python3"
+
+[nix]
+channel = "stable-24_05"

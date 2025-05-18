@@ -36,11 +36,14 @@ def test_health_check():
     
     try:
         # Send the request
-        process.stdin.write(request_json + '\n')
-        process.stdin.flush()
+        if process.stdin:
+            process.stdin.write(request_json + '\n')
+            process.stdin.flush()
         
         # Read the response
-        response_line = process.stdout.readline().strip()
+        response_line = ""
+        if process.stdout:
+            response_line = process.stdout.readline().strip()
         
         try:
             response = json.loads(response_line)
