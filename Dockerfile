@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
-# Install dependencies
+# Copy requirements and install dependencies
 COPY docker-requirements.txt .
 RUN pip install --no-cache-dir -r docker-requirements.txt
 
@@ -16,14 +16,10 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
-COPY redmine_mcp_server.py /app/
-COPY run_mcp_server.py /app/
+COPY run_server.sh /app/
 
 # Copy tests
 COPY tests/ /app/tests/
-
-# Make script executable
-RUN chmod +x /app/run_mcp_server.py
 
 # This is a FastMCP server that communicates via STDIO
 # No port exposure needed
@@ -33,18 +29,8 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     REDMINE_API_KEY="" \
     SERVER_MODE="live" \
     LOG_LEVEL="debug" \
-    TEST_PROJECT="p1"
+    TEST_PROJECT="p1" \
+    PYTHONPATH="/app"
 
-# Create entrypoint script to handle both test and live modes
-RUN echo '#!/bin/bash \n\
-if [ "$SERVER_MODE" = "test" ]; then \n\
-  echo "Running in TEST mode with project $TEST_PROJECT" \n\
-  python tests/test_suite.py \n\
-else \n\
-  echo "Running in LIVE mode" \n\
-  python run_mcp_server.py \n\
-fi' > /app/docker-entrypoint.sh && \
-    chmod +x /app/docker-entrypoint.sh
-
-# Run the application
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# Simple entrypoint to run the MCPServer
+CMD ["python", "-m", "src.main"]

@@ -30,7 +30,7 @@ jobs:
     - name: Run static analysis
       run: |
         pip install pylint
-        pylint --disable=C0111,C0103,C0303,C0301,W0511 src/redmine_mcpserver/modules/ src/redmine_mcpserver/*.py || true
+        pylint --disable=C0111,C0103,C0303,C0301,W0511 src/ || true
         
     - name: Build Docker image
       run: |
@@ -134,7 +134,7 @@ jobs:
         SERVER_MODE: "test"
       run: |
         echo "Running validation tests against Redmine issues in v1 project"
-        python tests/validation_test.py
+        python -m tests.test_redstone
         
     - name: Run Docker container tests
       env:
@@ -144,26 +144,24 @@ jobs:
       run: |
         echo "Running Docker container tests in test mode"
         
+        # Create a Dockerfile.test for running tests
+        cat > Dockerfile.test << EOF
+        FROM redmine-mcp-server:${{ github.sha }}
+        ENV REDMINE_URL=$REDMINE_URL
+        ENV REDMINE_API_KEY=$REDMINE_API_KEY
+        ENV SERVER_MODE=test
+        ENV TEST_PROJECT=$TEST_PROJECT
+        CMD ["python", "-m", "tests.test_redstone"]
+        EOF
+        
+        # Build the test container
+        docker build -t redmine-mcp-server-test:${{ github.sha }} -f Dockerfile.test .
+        
         # Run the container in test mode with the p1 project
-        docker run --name redmine-test \
-                  -e REDMINE_URL="$REDMINE_URL" \
-                  -e REDMINE_API_KEY="$REDMINE_API_KEY" \
-                  -e SERVER_MODE="test" \
-                  -e TEST_PROJECT="$TEST_PROJECT" \
-                  -d redmine-mcp-server:${{ github.sha }}
-        
-        # Wait for tests to complete
-        sleep 20
-        
-        # Check container logs
-        docker logs redmine-test
+        docker run --name redmine-test redmine-mcp-server-test:${{ github.sha }}
         
         # Get exit code from container
-        EXIT_CODE=$(docker inspect redmine-test --format='{{.State.ExitCode}}')
-        
-        # Clean up
-        docker stop redmine-test || true
-        docker rm redmine-test || true
+        EXIT_CODE=$?
         
         # Report result
         if [ "$EXIT_CODE" -eq "0" ]; then
@@ -221,7 +219,9 @@ jobs:
         import sys
         import json
         import datetime
-        from src.redmine_api import RedmineAPI
+        # Make sure we can import from src
+        sys.path.insert(0, os.path.abspath('.'))
+        from src.redmine_client import RedmineClient
         
         # Get environment variables
         redmine_url = os.environ.get("REDMINE_URL")
@@ -232,7 +232,7 @@ jobs:
             sys.exit(1)
             
         # Initialize API client
-        client = RedmineAPI(redmine_url, redmine_api_key)
+        client = RedmineClient(redmine_url, redmine_api_key)
         
         # Try to load validation issues
         if os.path.exists('validation_issues.json'):
