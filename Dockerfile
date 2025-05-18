@@ -12,16 +12,16 @@ COPY docker-requirements.txt .
 RUN pip install --no-cache-dir -r docker-requirements.txt
 
 # Create directory structure
-RUN mkdir -p /app/src/redmine_mcpserver /app/tests
+RUN mkdir -p /app/src /app/tests
 
 # Copy application code
-COPY src/redmine_mcpserver/ /app/src/redmine_mcpserver/
+COPY src/ /app/src/
 
 # Copy tests
 COPY tests/ /app/tests/
 
-# Make main script executable
-RUN chmod +x /app/src/redmine_mcpserver/main.py
+# Make script executable
+RUN chmod +x /app/run_mcp_server.py
 
 # This is a FastMCP server that communicates via STDIO
 # No port exposure needed
@@ -40,7 +40,7 @@ if [ "$SERVER_MODE" = "test" ]; then \n\
   python tests/test_suite.py \n\
 else \n\
   echo "Running in LIVE mode" \n\
-  python src/redmine_mcpserver/main.py \n\
+  python run_mcp_server.py \n\
 fi' > /app/docker-entrypoint.sh && \
     chmod +x /app/docker-entrypoint.sh
 
