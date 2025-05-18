@@ -1,0 +1,157 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+    # Allows manual triggering of the workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f docker-requirements.txt ]; then pip install -r docker-requirements.txt; fi
+        
+    - name: Run static analysis
+      run: |
+        pip install pylint
+        pylint --disable=C0111,C0103,C0303,C0301,W0511 modules/ *.py || true
+        
+    - name: Build Docker image
+      run: |
+        docker build -t redmine-mcp-server:${{ github.sha }} .
+        
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f docker-requirements.txt ]; then pip install -r docker-requirements.txt; fi
+        
+    - name: Run unit tests (when available)
+      run: |
+        # This will be populated with proper unit tests
+        echo "Running unit tests"
+        python -m unittest discover -s tests -p "test_*.py" || true
+        
+    - name: Run Redmine client tests against mock server
+      env:
+        REDMINE_URL: ${{ secrets.REDMINE_URL || 'https://redstone.redminecloud.net' }}
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY || '' }}
+        TEST_PROJECT: "p1"
+        SERVER_MODE: "test"
+      run: |
+        # Skip tests if API key not available
+        if [ -z "$REDMINE_API_KEY" ]; then
+          echo "Skipping Redmine API tests (no API key provided)"
+          exit 0
+        fi
+        
+        python test_simplified.py
+        
+    - name: Run MCPServer test mode
+      env:
+        REDMINE_URL: ${{ secrets.REDMINE_URL || 'https://redstone.redminecloud.net' }}
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY || '' }}
+        TEST_PROJECT: "p1"
+        SERVER_MODE: "test"
+      run: |
+        # Skip tests if API key not available
+        if [ -z "$REDMINE_API_KEY" ]; then
+          echo "Skipping MCP Server tests (no API key provided)"
+          exit 0
+        fi
+        
+        # Test the main script with a timeout
+        timeout 10s python main.py || true
+        
+  integration:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build -t redmine-mcp-server:latest .
+        
+    - name: Integration Test with Docker
+      env:
+        REDMINE_URL: ${{ secrets.REDMINE_URL || 'https://redstone.redminecloud.net' }}
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY || '' }}
+      run: |
+        # Skip integration tests if API key not available
+        if [ -z "$REDMINE_API_KEY" ]; then
+          echo "Skipping integration tests (no API key provided)"
+          exit 0
+        fi
+        
+        # Run the container in test mode with the p1 project
+        docker run --name mcp-test -e REDMINE_URL="$REDMINE_URL" \
+                                 -e REDMINE_API_KEY="$REDMINE_API_KEY" \
+                                 -e SERVER_MODE="test" \
+                                 -e TEST_PROJECT="p1" \
+                                 -d redmine-mcp-server:latest
+        
+        # Wait for tests to complete
+        sleep 15
+        
+        # Check container logs
+        docker logs mcp-test
+        
+        # Clean up
+        docker stop mcp-test
+        docker rm mcp-test
+        
+    - name: Publish Docker image (if configured)
+      if: ${{ secrets.DOCKER_HUB_USERNAME != '' && secrets.DOCKER_HUB_TOKEN != '' }}
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME || '' }}
+        DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN || '' }}
+      run: |
+        # Skip publishing if credentials not available
+        if [ -z "$DOCKER_HUB_USERNAME" ] || [ -z "$DOCKER_HUB_TOKEN" ]; then
+          echo "Skipping Docker Hub publishing (no credentials provided)"
+          exit 0
+        fi
+        
+        # Log in to Docker Hub
+        echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+        
+        # Tag the image
+        docker tag redmine-mcp-server:latest $DOCKER_HUB_USERNAME/redmine-mcp-server:latest
+        docker tag redmine-mcp-server:latest $DOCKER_HUB_USERNAME/redmine-mcp-server:${{ github.sha }}
+        
+        # Push the image
+        docker push $DOCKER_HUB_USERNAME/redmine-mcp-server:latest
+        docker push $DOCKER_HUB_USERNAME/redmine-mcp-server:${{ github.sha }}

@@ -11,6 +11,7 @@ from modules.projects import ProjectClient
 from modules.versions import VersionClient
 from modules.users import UserClient
 from modules.groups import GroupClient
+from modules.roadmap import RoadmapClient
 
 
 class RedmineClient:
@@ -37,6 +38,7 @@ class RedmineClient:
         self.versions = VersionClient(base_url, api_key, logger)
         self.users = UserClient(base_url, api_key, logger)
         self.groups = GroupClient(base_url, api_key, logger)
+        self.roadmap = RoadmapClient(base_url, api_key, logger)
     
     # ===== Issues API =====
     
