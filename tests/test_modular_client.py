@@ -7,7 +7,11 @@ import sys
 import json
 import time
 import random
-from modules.redmine_client import RedmineClient
+# Add the parent directory to path so we can import src modules
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.redmine_client import RedmineClient
 import logging
 
 # Configure logging
