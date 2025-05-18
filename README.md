@@ -26,7 +26,8 @@ docker run -e REDMINE_URL="https://your-redmine-instance.com" \
            -e TEST_PROJECT="p1" \
            redmine-mcp-server
 ```
-
+Test mode results
+![p1](docs/images/p1.png)
 ## Project Structure
 
 - `src/`: Main source code
