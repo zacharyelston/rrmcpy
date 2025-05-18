@@ -182,8 +182,11 @@ def run_tests():
         summary = (
             f"Test run completed at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
             f"All tests were executed successfully.\n\n"
-            f"Created test issue #{test_issue_id} for inspection.\n"
         )
+        
+        # Only add the test issue ID if it was created successfully
+        if 'test_issue_id' in locals() and test_issue_id:
+            summary += f"Created test issue #{test_issue_id} for inspection.\n"
         
         if test_version_id:
             summary += f"Created test version #{test_version_id} for inspection.\n"
