@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
-# Install dependencies
+# Copy requirements and install dependencies
 COPY docker-requirements.txt .
 RUN pip install --no-cache-dir -r docker-requirements.txt
 
@@ -16,14 +16,12 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
-COPY redmine_mcp_server.py /app/
-COPY run_mcp_server.py /app/
+COPY main.py /app/
+COPY test_server.py /app/
+COPY test_essential.py /app/
 
 # Copy tests
 COPY tests/ /app/tests/
-
-# Make script executable
-RUN chmod +x /app/run_mcp_server.py
 
 # This is a FastMCP server that communicates via STDIO
 # No port exposure needed
@@ -39,10 +37,10 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
 RUN echo '#!/bin/bash \n\
 if [ "$SERVER_MODE" = "test" ]; then \n\
   echo "Running in TEST mode with project $TEST_PROJECT" \n\
-  python tests/test_suite.py \n\
+  python test_essential.py \n\
 else \n\
   echo "Running in LIVE mode" \n\
-  python run_mcp_server.py \n\
+  python main.py \n\
 fi' > /app/docker-entrypoint.sh && \
     chmod +x /app/docker-entrypoint.sh
 

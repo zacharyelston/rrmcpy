@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Mount the API key as a file for security
+      - ${REDMINE_API_KEY_FILE:-./redmine_api_key.txt}:/run/secrets/REDMINE_API_KEY:ro
+    environment:
+      - REDMINE_URL=${REDMINE_URL:-https://redstone.redminecloud.net}
+      - SERVER_MODE=${SERVER_MODE:-live}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - TEST_PROJECT=${TEST_PROJECT:-p1}
+    stdin_open: true  # Keep stdin open for the MCP server
+    tty: true         # Allocate a TTY for proper STDIO handling
+    restart: unless-stopped  # Automatically restart the container unless manually stopped

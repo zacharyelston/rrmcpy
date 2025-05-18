@@ -30,7 +30,7 @@ jobs:
     - name: Run static analysis
       run: |
         pip install pylint
-        pylint --disable=C0111,C0103,C0303,C0301,W0511 src/redmine_mcpserver/modules/ src/redmine_mcpserver/*.py || true
+        pylint --disable=C0111,C0103,C0303,C0301,W0511 src/ || true
         
     - name: Build Docker image
       run: |
@@ -134,7 +134,7 @@ jobs:
         SERVER_MODE: "test"
       run: |
         echo "Running validation tests against Redmine issues in v1 project"
-        python tests/validation_test.py
+        python test_essential.py
         
     - name: Run Docker container tests
       env:
@@ -221,7 +221,8 @@ jobs:
         import sys
         import json
         import datetime
-        from src.redmine_api import RedmineAPI
+        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+        from src.redmine_client import RedmineClient
         
         # Get environment variables
         redmine_url = os.environ.get("REDMINE_URL")
@@ -232,7 +233,7 @@ jobs:
             sys.exit(1)
             
         # Initialize API client
-        client = RedmineAPI(redmine_url, redmine_api_key)
+        client = RedmineClient(redmine_url, redmine_api_key)
         
         # Try to load validation issues
         if os.path.exists('validation_issues.json'):
