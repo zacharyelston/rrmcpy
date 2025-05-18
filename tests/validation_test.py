@@ -710,8 +710,14 @@ class ValidationReporter:
             )
             
             # Wait for server to start
-            response = server_process.stdout.readline().strip()
-            assert response == "READY", "Server process did not start correctly"
+            try:
+                if server_process and server_process.stdout:
+                    response = server_process.stdout.readline().strip()
+                    assert response == "READY", "Server process did not start correctly"
+                else:
+                    raise AssertionError("Server process stdout is not available")
+            except AttributeError:
+                raise AssertionError("Error accessing server process output stream")
             
             # Clean up
             server_process.terminate()
