@@ -82,7 +82,7 @@ jobs:
         
     - name: Publish Test Report
       if: success() || failure()
-      uses: ctrf/github-test-reporter@v1
+      uses: ctrf-io/github-test-reporter@v1
       with:
         junit-xml: test-results.xml
         job-name: 'Redmine MCP Server Tests'
