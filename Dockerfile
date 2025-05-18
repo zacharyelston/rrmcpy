@@ -32,16 +32,5 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     TEST_PROJECT="p1" \
     PYTHONPATH="/app"
 
-# Create entrypoint script to handle both test and live modes
-RUN echo '#!/bin/bash \n\
-if [ "$SERVER_MODE" = "test" ]; then \n\
-  echo "Running in TEST mode with project $TEST_PROJECT" \n\
-  python -m tests.test_redstone \n\
-else \n\
-  echo "Running in LIVE mode" \n\
-  python -m src.main \n\
-fi' > /app/docker-entrypoint.sh && \
-    chmod +x /app/docker-entrypoint.sh
-
-# Run the application
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# Simple entrypoint to run the MCPServer
+CMD ["python", "-m", "src.main"]
