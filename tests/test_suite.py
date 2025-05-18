@@ -11,7 +11,7 @@ import time
 import random
 import string
 from datetime import datetime
-from redmine_api import RedmineAPI
+from src.redmine_api import RedmineAPI
 
 # Configure logging
 logging.basicConfig(

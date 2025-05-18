@@ -3,7 +3,7 @@ Redmine API module for Project functionality
 Handles all operations related to Redmine projects
 """
 from typing import Dict, List, Optional, Any, Union
-from modules.base import RedmineBaseClient
+from src.base import RedmineBaseClient
 
 
 class ProjectClient(RedmineBaseClient):

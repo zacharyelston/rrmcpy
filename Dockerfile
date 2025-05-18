@@ -11,17 +11,22 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY docker-requirements.txt .
 RUN pip install --no-cache-dir -r docker-requirements.txt
 
-# Copy application code
-COPY main.py redmine_api.py mcp_server.py models.py ./
+# Create directory structure
+RUN mkdir -p /app/src /app/tests
 
-# Make main.py executable
-RUN chmod +x main.py
+# Copy application code
+COPY src/ /app/src/
+COPY redmine_mcp_server.py /app/
+COPY run_mcp_server.py /app/
+
+# Copy tests
+COPY tests/ /app/tests/
+
+# Make script executable
+RUN chmod +x /app/run_mcp_server.py
 
 # This is a FastMCP server that communicates via STDIO
 # No port exposure needed
-
-# Copy the test suite
-COPY test_suite.py ./
 
 # Set environment variables - these are the defaults but can be overridden
 ENV REDMINE_URL="https://redstone.redminecloud.net" \
@@ -34,10 +39,10 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
 RUN echo '#!/bin/bash \n\
 if [ "$SERVER_MODE" = "test" ]; then \n\
   echo "Running in TEST mode with project $TEST_PROJECT" \n\
-  python test_suite.py \n\
+  python tests/test_suite.py \n\
 else \n\
   echo "Running in LIVE mode" \n\
-  python main.py \n\
+  python run_mcp_server.py \n\
 fi' > /app/docker-entrypoint.sh && \
     chmod +x /app/docker-entrypoint.sh
 

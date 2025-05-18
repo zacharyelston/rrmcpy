@@ -10,7 +10,10 @@ import logging
 import time
 import datetime
 import traceback
-from modules.redmine_client import RedmineClient
+
+# Add the parent directory to path so we can import src modules
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.redmine_client import RedmineClient
 
 # Configure logging
 logging.basicConfig(
@@ -689,7 +692,7 @@ class ValidationReporter:
         logger.info(f"Testing {module_name} module...")
         
         try:
-            from modules.mcp_client import MCPClient
+            from src.mcp_client import MCPClient
             import subprocess
             
             # Check if MCP client module is available
@@ -707,8 +710,14 @@ class ValidationReporter:
             )
             
             # Wait for server to start
-            response = server_process.stdout.readline().strip()
-            assert response == "READY", "Server process did not start correctly"
+            try:
+                if server_process and server_process.stdout:
+                    response = server_process.stdout.readline().strip()
+                    assert response == "READY", "Server process did not start correctly"
+                else:
+                    raise AssertionError("Server process stdout is not available")
+            except AttributeError:
+                raise AssertionError("Error accessing server process output stream")
             
             # Clean up
             server_process.terminate()
