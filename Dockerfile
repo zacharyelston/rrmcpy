@@ -16,9 +16,7 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
-COPY main.py /app/
-COPY test_server.py /app/
-COPY test_essential.py /app/
+COPY run_server.sh /app/
 
 # Copy tests
 COPY tests/ /app/tests/
@@ -31,16 +29,17 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     REDMINE_API_KEY="" \
     SERVER_MODE="live" \
     LOG_LEVEL="debug" \
-    TEST_PROJECT="p1"
+    TEST_PROJECT="p1" \
+    PYTHONPATH="/app"
 
 # Create entrypoint script to handle both test and live modes
 RUN echo '#!/bin/bash \n\
 if [ "$SERVER_MODE" = "test" ]; then \n\
   echo "Running in TEST mode with project $TEST_PROJECT" \n\
-  python test_essential.py \n\
+  python -m tests.test_redstone \n\
 else \n\
   echo "Running in LIVE mode" \n\
-  python main.py \n\
+  python -m src.main \n\
 fi' > /app/docker-entrypoint.sh && \
     chmod +x /app/docker-entrypoint.sh
 

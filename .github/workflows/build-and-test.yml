@@ -134,7 +134,7 @@ jobs:
         SERVER_MODE: "test"
       run: |
         echo "Running validation tests against Redmine issues in v1 project"
-        python test_essential.py
+        python -m tests.test_redstone
         
     - name: Run Docker container tests
       env:
@@ -144,26 +144,24 @@ jobs:
       run: |
         echo "Running Docker container tests in test mode"
         
+        # Create a Dockerfile.test for running tests
+        cat > Dockerfile.test << EOF
+        FROM redmine-mcp-server:${{ github.sha }}
+        ENV REDMINE_URL=$REDMINE_URL
+        ENV REDMINE_API_KEY=$REDMINE_API_KEY
+        ENV SERVER_MODE=test
+        ENV TEST_PROJECT=$TEST_PROJECT
+        CMD ["python", "-m", "tests.test_redstone"]
+        EOF
+        
+        # Build the test container
+        docker build -t redmine-mcp-server-test:${{ github.sha }} -f Dockerfile.test .
+        
         # Run the container in test mode with the p1 project
-        docker run --name redmine-test \
-                  -e REDMINE_URL="$REDMINE_URL" \
-                  -e REDMINE_API_KEY="$REDMINE_API_KEY" \
-                  -e SERVER_MODE="test" \
-                  -e TEST_PROJECT="$TEST_PROJECT" \
-                  -d redmine-mcp-server:${{ github.sha }}
-        
-        # Wait for tests to complete
-        sleep 20
-        
-        # Check container logs
-        docker logs redmine-test
+        docker run --name redmine-test redmine-mcp-server-test:${{ github.sha }}
         
         # Get exit code from container
-        EXIT_CODE=$(docker inspect redmine-test --format='{{.State.ExitCode}}')
-        
-        # Clean up
-        docker stop redmine-test || true
-        docker rm redmine-test || true
+        EXIT_CODE=$?
         
         # Report result
         if [ "$EXIT_CODE" -eq "0" ]; then
@@ -221,7 +219,8 @@ jobs:
         import sys
         import json
         import datetime
-        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+        # Make sure we can import from src
+        sys.path.insert(0, os.path.abspath('.'))
         from src.redmine_client import RedmineClient
         
         # Get environment variables
