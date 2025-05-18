@@ -4,7 +4,7 @@ Handles all operations related to Redmine issues
 """
 import requests
 from typing import Dict, List, Optional, Any, Union
-from .base import RedmineBaseClient
+from src.base import RedmineBaseClient
 
 
 class IssueClient(RedmineBaseClient):

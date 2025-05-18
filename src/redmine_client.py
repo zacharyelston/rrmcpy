@@ -5,13 +5,13 @@ Combines all feature modules into a single client
 import logging
 from typing import Optional
 
-from .base import RedmineBaseClient
-from .issues import IssueClient
-from .projects import ProjectClient
-from .versions import VersionClient
-from .users import UserClient
-from .groups import GroupClient
-from .roadmap import RoadmapClient
+from src.base import RedmineBaseClient
+from src.issues import IssueClient
+from src.projects import ProjectClient
+from src.versions import VersionClient
+from src.users import UserClient
+from src.groups import GroupClient
+from src.roadmap import RoadmapClient
 
 
 class RedmineClient:

@@ -3,7 +3,7 @@ Redmine API module for Version functionality
 Handles all operations related to Redmine project versions
 """
 from typing import Dict, List, Optional, Any, Union
-from .base import RedmineBaseClient
+from src.base import RedmineBaseClient
 
 
 class VersionClient(RedmineBaseClient):

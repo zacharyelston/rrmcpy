@@ -1,3 +1,3 @@
 """
-Redmine MCPServer package
+Redmine API Client modules for Redmine MCPServer
 """

@@ -3,7 +3,7 @@ Redmine API module for Roadmap functionality
 Handles operations related to versions, roadmaps, and feature planning
 """
 from typing import Dict, List, Optional, Any, Union
-from .base import RedmineBaseClient
+from src.base import RedmineBaseClient
 
 
 class RoadmapClient(RedmineBaseClient):

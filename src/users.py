@@ -3,7 +3,7 @@ Redmine API module for User functionality
 Handles all operations related to Redmine users
 """
 from typing import Dict, List, Optional, Any, Union
-from .base import RedmineBaseClient
+from src.base import RedmineBaseClient
 
 
 class UserClient(RedmineBaseClient):

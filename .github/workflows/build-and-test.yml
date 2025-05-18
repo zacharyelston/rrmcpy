@@ -82,7 +82,7 @@ jobs:
         
     - name: Run validation tests
       env:
-        REDMINE_URL: ${{ secrets.REDMINE_URL }}
+        REDMINE_URL: "https://redstone.redminecloud.net"
         REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
         TEST_PROJECT: "p1"
         SERVER_MODE: "test"
@@ -92,7 +92,7 @@ jobs:
         
     - name: Run Docker container tests
       env:
-        REDMINE_URL: ${{ secrets.REDMINE_URL }}
+        REDMINE_URL: "https://redstone.redminecloud.net"
         REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
         TEST_PROJECT: "p1"
       run: |
@@ -166,7 +166,7 @@ jobs:
         
     - name: Update validation project with release info
       env:
-        REDMINE_URL: ${{ secrets.REDMINE_URL }}
+        REDMINE_URL: "https://redstone.redminecloud.net"
         REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
       run: |
         echo "Updating Redmine validation project with release information"
@@ -175,7 +175,7 @@ jobs:
         import sys
         import json
         import datetime
-        from src.redmine_mcpserver.redmine_api import RedmineAPI
+        from src.redmine_api import RedmineAPI
         
         # Get environment variables
         redmine_url = os.environ.get("REDMINE_URL")
