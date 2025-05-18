@@ -1,5 +1,6 @@
 run = "python main.py"
 hidden = [".upm", ".pythonlibs", "__pycache__", "*.pyc", "*.pyo", ".pytest_cache"]
+modules = ["python-3.11"]
 
 [env]
 PYTHONPATH = "."
@@ -24,3 +25,6 @@ start = "pylsp"
 
 [unitTest]
 language = "python3"
+
+[nix]
+channel = "stable-24_05"

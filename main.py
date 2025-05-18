@@ -4,7 +4,7 @@
 This file serves as the entry point for the Redmine MCP Server
 when executed directly.
 """
-from src.mcp.redmine_mcp_server import main
+from src.redmine_client import main
 
 if __name__ == '__main__':
     main()
