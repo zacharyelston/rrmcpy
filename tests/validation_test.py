@@ -10,7 +10,7 @@ import logging
 import time
 import datetime
 import traceback
-from modules.redmine_client import RedmineClient
+from src.redmine_client import RedmineClient
 
 # Configure logging
 logging.basicConfig(
