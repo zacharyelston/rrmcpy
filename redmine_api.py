@@ -132,7 +132,13 @@ class RedmineAPI:
     
     def create_version(self, version_data: Dict) -> Dict:
         """Create a new version"""
-        return self._make_request('POST', 'versions.json', data={'version': version_data})
+        # In Redmine API, versions are created through project endpoint
+        project_id = version_data.get('project_id')
+        if not project_id:
+            raise ValueError("project_id is required for creating a version")
+        
+        return self._make_request('POST', f'projects/{project_id}/versions.json', 
+                                data={'version': version_data})
     
     def update_version(self, version_id: int, version_data: Dict) -> Dict:
         """Update an existing version"""

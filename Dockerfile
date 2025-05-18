@@ -20,12 +20,26 @@ RUN chmod +x main.py
 # This is a FastMCP server that communicates via STDIO
 # No port exposure needed
 
-# Run the application
-CMD ["python", "main.py"]
+# Copy the test suite
+COPY test_suite.py ./
 
-# When building the Docker image, these environment variables can be overridden
-# Default values are set in main.py
-ENV REDMINE_URL="http://m1ni.local:3100" \
-    REDMINE_API_KEY="af159c9b93c7c41a6b629de19b84f2d14e5854a4" \
+# Set environment variables - these are the defaults but can be overridden
+ENV REDMINE_URL="https://redstone.redminecloud.net" \
+    REDMINE_API_KEY="" \
     SERVER_MODE="live" \
-    LOG_LEVEL="debug"
+    LOG_LEVEL="debug" \
+    TEST_PROJECT="p1"
+
+# Create entrypoint script to handle both test and live modes
+RUN echo '#!/bin/bash \n\
+if [ "$SERVER_MODE" = "test" ]; then \n\
+  echo "Running in TEST mode with project $TEST_PROJECT" \n\
+  python test_suite.py \n\
+else \n\
+  echo "Running in LIVE mode" \n\
+  python main.py \n\
+fi' > /app/docker-entrypoint.sh && \
+    chmod +x /app/docker-entrypoint.sh
+
+# Run the application
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
