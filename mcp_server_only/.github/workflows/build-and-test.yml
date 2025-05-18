@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test MCP Server
 
 on:
   push:
@@ -61,3 +61,15 @@ jobs:
         
         # Stop MCP server
         kill $SERVER_PID
+        
+    - name: Generate test coverage report
+      run: |
+        pytest --cov=src tests/ --cov-report=xml
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          output.json
+          coverage.xml
