@@ -78,7 +78,47 @@ jobs:
     - name: Run unit tests
       run: |
         echo "Running unit tests"
-        python -m unittest discover -s tests -p "test_*.py" || true
+        python -m pytest tests/ -v --junitxml=test-results.xml || true
+        
+    - name: Publish Test Report
+      if: success() || failure()
+      uses: ctrf/github-test-reporter@v1
+      with:
+        junit-xml: test-results.xml
+        job-name: 'Redmine MCP Server Tests'
+        custom-job-summary: true
+        include-passed: true
+        fail-on-empty: false
+        fail-on-error: false
+        
+    - name: Add test badge to README
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+      env:
+        REDMINE_URL: "https://redstone.redminecloud.net"
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
+      run: |
+        echo "Updating README.md with test badge"
+        
+        # Create badge URL using shields.io
+        BADGE_URL="https://img.shields.io/github/actions/workflow/status/${{ github.repository }}/build-and-test.yml?branch=main&label=tests&style=for-the-badge"
+        
+        # Update README with badge
+        if ! grep -q "<!-- test-status-badge -->" README.md; then
+          # Add badge section if it doesn't exist
+          sed -i '1 a\\n<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)\\n' README.md
+        else
+          # Update existing badge
+          sed -i 's|<!-- test-status-badge -->.*|<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)|' README.md
+        fi
+        
+        # If running in a branch where we can commit, update the repository
+        if [[ "${{ github.event_name }}" == "push" ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update test status badge in README [skip ci]" || echo "No changes to commit"
+          git push
+        fi
         
     - name: Run validation tests
       env:
