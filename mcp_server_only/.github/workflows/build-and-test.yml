@@ -1,0 +1,63 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REDMINE_URL: https://redstone.redminecloud.net
+  SERVER_MODE: test
+  TEST_PROJECT: p1
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    environment: dev-cloud
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f docker-requirements.txt ]; then pip install -r docker-requirements.txt; fi
+        pip install pytest pytest-cov
+        
+    - name: Run tests
+      env:
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
+      run: |
+        pytest -v tests/
+        
+    - name: Test MCP server
+      env:
+        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
+      run: |
+        # Start MCP server in background
+        python redmine_mcp_server.py &
+        SERVER_PID=$!
+        
+        # Wait for server to start
+        sleep 2
+        
+        # Run simple test
+        echo '{"method": "GET", "path": "/users/current.json", "data": {}}' | python mcp_client.py --path "/users/current.json" > output.json
+        
+        # Check if test passed
+        if grep -q "user" output.json; then
+          echo "MCP server test passed"
+        else
+          echo "MCP server test failed"
+          exit 1
+        fi
+        
+        # Stop MCP server
+        kill $SERVER_PID
