@@ -1,0 +1,121 @@
+{
+  "project_id": 3,
+  "master_issue_id": 45,
+  "modules": [
+    {
+      "module": "mcp",
+      "issue_id": 44,
+      "name": "MCP Protocol"
+    },
+    {
+      "module": "roadmap",
+      "issue_id": 43,
+      "name": "Roadmap Module"
+    },
+    {
+      "module": "groups",
+      "issue_id": 42,
+      "name": "Groups Module"
+    },
+    {
+      "module": "users",
+      "issue_id": 41,
+      "name": "Users Module"
+    },
+    {
+      "module": "versions",
+      "issue_id": 40,
+      "name": "Versions Module"
+    },
+    {
+      "module": "projects",
+      "issue_id": 39,
+      "name": "Projects Module"
+    },
+    {
+      "module": "issues",
+      "issue_id": 38,
+      "name": "Issues Module"
+    },
+    {
+      "module": "base",
+      "issue_id": 37,
+      "name": "Base Client"
+    },
+    {
+      "module": "mcp",
+      "issue_id": 36,
+      "name": "MCP Protocol"
+    },
+    {
+      "module": "roadmap",
+      "issue_id": 35,
+      "name": "Roadmap Module"
+    },
+    {
+      "module": "groups",
+      "issue_id": 34,
+      "name": "Groups Module"
+    },
+    {
+      "module": "users",
+      "issue_id": 33,
+      "name": "Users Module"
+    },
+    {
+      "module": "versions",
+      "issue_id": 32,
+      "name": "Versions Module"
+    },
+    {
+      "module": "projects",
+      "issue_id": 31,
+      "name": "Projects Module"
+    },
+    {
+      "module": "issues",
+      "issue_id": 30,
+      "name": "Issues Module"
+    },
+    {
+      "module": "base",
+      "issue_id": 29,
+      "name": "Base Client"
+    },
+    {
+      "module": "roadmap",
+      "issue_id": 28,
+      "name": "Roadmap Module"
+    },
+    {
+      "module": "groups",
+      "issue_id": 27,
+      "name": "Groups Module"
+    },
+    {
+      "module": "users",
+      "issue_id": 26,
+      "name": "Users Module"
+    },
+    {
+      "module": "versions",
+      "issue_id": 25,
+      "name": "Versions Module"
+    },
+    {
+      "module": "projects",
+      "issue_id": 24,
+      "name": "Projects Module"
+    },
+    {
+      "module": "issues",
+      "issue_id": 23,
+      "name": "Issues Module"
+    },
+    {
+      "module": "base",
+      "issue_id": 22,
+      "name": "Base Client"
+    }
+  ]
+}
