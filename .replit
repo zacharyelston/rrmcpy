@@ -1,46 +1,26 @@
-modules = ["python-3.11"]
+run = "python main.py"
+hidden = [".upm", ".pythonlibs", "__pycache__", "*.pyc", "*.pyo", ".pytest_cache"]
 
-[nix]
-channel = "stable-24_05"
-packages = ["openssl", "postgresql"]
+[env]
+PYTHONPATH = "."
+REDMINE_URL = "https://redstone.redminecloud.net"
+# The API key should be set as a secret in the actual Replit environment
 
-[deployment]
-deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+[packager]
+language = "python3"
 
-[workflows]
-runButton = "Project"
+[packager.features]
+enabledForHosting = false
+packageSearch = true
+guessImports = true
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
+[languages]
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
+[languages.python3]
+pattern = "**/*.py"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "redmine_mcp_server"
+[languages.python3.languageServer]
+start = "pylsp"
 
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "redmine_mcp_server"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[[ports]]
-localPort = 5000
-externalPort = 80
+[unitTest]
+language = "python3"
