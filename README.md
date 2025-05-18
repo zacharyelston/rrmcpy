@@ -1,5 +1,7 @@
 # Redmine MCP Server
 
+<!-- test-status-badge -->\n[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)\n
+
 A robust FastMCP server for Redmine API integration. This server uses standard input/output (STDIO) for communication rather than exposing network ports, making it ideal for secure integrations.
 
 ## Features
