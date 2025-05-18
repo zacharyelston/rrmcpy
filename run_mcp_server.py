@@ -11,7 +11,7 @@ import argparse
 # Add the src directory to Python path to find our modules
 sys.path.append('.')
 
-from src.redmine_mcpserver.fixed_mcp_server import RedmineMCPServer
+from src.fixed_mcp_server import RedmineMCPServer
 
 # Configure logging
 logging.basicConfig(

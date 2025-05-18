@@ -33,7 +33,7 @@ def health():
 @app.route('/api/redmine/status')
 def redmine_status():
     """Check Redmine connection status"""
-    from src.redmine_mcpserver.redmine_api import RedmineAPI
+    from src.redmine_api import RedmineAPI
     
     try:
         redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")

@@ -10,7 +10,7 @@ import sys
 import threading
 import socket
 from typing import Dict, List, Any, Optional, Callable, Union
-from redmine_api import RedmineAPI
+from src.redmine_api import RedmineAPI
 
 # Minimal implementation for MCPServer - we don't use a pre-existing FastMCP package
 class MCPRequest:
