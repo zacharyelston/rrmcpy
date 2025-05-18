@@ -9,9 +9,9 @@ from mcp_server import RedmineMCPServer
 
 if __name__ == "__main__":
     # Get configuration from environment variables
-    # Use demo.redmine.org for testing in this environment
-    redmine_url = os.environ.get("REDMINE_URL", "https://demo.redmine.org")
-    redmine_api_key = os.environ.get("REDMINE_API_KEY", "af159c9b93c7c41a6b629de19b84f2d14e5854a4")
+    # Use redstone.redminecloud.net for testing with your account
+    redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")
+    redmine_api_key = os.environ.get("REDMINE_API_KEY", "")  # Your API key will be set as an environment variable
     server_mode = os.environ.get("SERVER_MODE", "live")
     log_level_str = os.environ.get("LOG_LEVEL", "debug").upper()
     
