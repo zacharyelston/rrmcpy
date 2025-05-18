@@ -10,6 +10,9 @@ import logging
 import time
 import datetime
 import traceback
+
+# Add the parent directory to path so we can import src modules
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.redmine_client import RedmineClient
 
 # Configure logging
@@ -689,7 +692,7 @@ class ValidationReporter:
         logger.info(f"Testing {module_name} module...")
         
         try:
-            from modules.mcp_client import MCPClient
+            from src.mcp_client import MCPClient
             import subprocess
             
             # Check if MCP client module is available
