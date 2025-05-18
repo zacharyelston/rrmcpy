@@ -169,6 +169,7 @@ def main():
     import os
     import sys
     import logging
+    import argparse
     from src.fixed_mcp_server import RedmineMCPServer
     
     # Configure logging
@@ -178,10 +179,16 @@ def main():
     )
     logger = logging.getLogger(__name__)
     
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Run the Redmine MCP Server')
+    parser.add_argument('--test', action='store_true', help='Run in test mode')
+    parser.add_argument('--project', type=str, default='p1', help='Test project identifier')
+    args = parser.parse_args()
+    
     # Get environment variables or use defaults
     redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
     redmine_api_key = os.environ.get('REDMINE_API_KEY', '')
-    server_mode = os.environ.get('SERVER_MODE', 'live')
+    server_mode = 'test' if args.test else os.environ.get('SERVER_MODE', 'live')
     
     # Configure logging level
     log_level = os.environ.get('LOG_LEVEL', 'debug').upper()
@@ -196,15 +203,25 @@ def main():
     logger.info(f"Starting Redmine MCP Server in {server_mode} mode")
     logger.info(f"Connecting to Redmine at {redmine_url}")
     
-    # Run the server in live mode
-    logger.info("Starting Redmine MCP Server using STDIO")
-    server = RedmineMCPServer(redmine_url, redmine_api_key, server_mode, logger)
-    try:
-        server.start()
-    except KeyboardInterrupt:
-        logger.info("Server stopped by user")
-        server.stop()
-    except Exception as e:
-        logger.error(f"Server error: {e}")
-        server.stop()
-        sys.exit(1)
+    if server_mode == 'test':
+        test_project = os.environ.get('TEST_PROJECT', args.project)
+        logger.info(f"Test mode enabled - will run tests against project: {test_project}")
+        # Import the test suite only if needed
+        from tests.test_suite import RedmineTestSuite
+        test_suite = RedmineTestSuite()
+        test_suite.run_all_tests()
+        test_suite.print_results()
+        sys.exit(0)
+    else:
+        # Run the server in live mode
+        logger.info("Starting Redmine MCP Server using STDIO")
+        server = RedmineMCPServer(redmine_url, redmine_api_key, server_mode, logger)
+        try:
+            server.start()
+        except KeyboardInterrupt:
+            logger.info("Server stopped by user")
+            server.stop()
+        except Exception as e:
+            logger.error(f"Server error: {e}")
+            server.stop()
+            sys.exit(1)
