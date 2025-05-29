@@ -231,18 +231,19 @@ class ConnectionManager:
         
         # Define the request function
         def _make_request():
-            # Extract timeout from kwargs if present for the retry logic
-            timeout = kwargs.pop('timeout', self.timeout)
-            kwargs['timeout'] = timeout
+            # Use instance timeout, don't modify kwargs
+            request_kwargs = kwargs.copy()
+            if 'timeout' not in request_kwargs:
+                request_kwargs['timeout'] = self.timeout
             
             if method.upper() == 'GET':
-                return requests.get(url, **kwargs)
+                return requests.get(url, **request_kwargs)
             elif method.upper() == 'POST':
-                return requests.post(url, **kwargs)
+                return requests.post(url, **request_kwargs)
             elif method.upper() == 'PUT':
-                return requests.put(url, **kwargs)
+                return requests.put(url, **request_kwargs)
             elif method.upper() == 'DELETE':
-                return requests.delete(url, **kwargs)
+                return requests.delete(url, **request_kwargs)
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
         
