@@ -171,13 +171,15 @@ class ConnectionManager:
         """
         last_exception = None
         
+        # Create a copy of kwargs to avoid modifying the original
+        request_kwargs = kwargs.copy()
+        if 'timeout' not in request_kwargs:
+            request_kwargs['timeout'] = self.timeout
+        
         for attempt in range(self.max_retries + 1):
             try:
-                # Add timeout to kwargs if not present
-                if 'timeout' not in kwargs:
-                    kwargs['timeout'] = self.timeout
-                
-                result = request_func(*args, **kwargs)
+                # Call request_func without any arguments since our _make_request is self-contained
+                result = request_func()
                 
                 # If we get here, the request succeeded
                 if attempt > 0:
@@ -229,25 +231,24 @@ class ConnectionManager:
             merged_headers.update(kwargs['headers'])
             kwargs['headers'] = merged_headers
         
-        # Define the request function
+        # Set up timeout for this request
+        if 'timeout' not in kwargs:
+            kwargs['timeout'] = self.timeout
+        
+        # Define the request function that doesn't take any parameters
         def _make_request():
-            # Use instance timeout, don't modify kwargs
-            request_kwargs = kwargs.copy()
-            if 'timeout' not in request_kwargs:
-                request_kwargs['timeout'] = self.timeout
-            
             if method.upper() == 'GET':
-                return requests.get(url, **request_kwargs)
+                return requests.get(url, **kwargs)
             elif method.upper() == 'POST':
-                return requests.post(url, **request_kwargs)
+                return requests.post(url, **kwargs)
             elif method.upper() == 'PUT':
-                return requests.put(url, **request_kwargs)
+                return requests.put(url, **kwargs)
             elif method.upper() == 'DELETE':
-                return requests.delete(url, **request_kwargs)
+                return requests.delete(url, **kwargs)
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
         
-        # Execute with retry
+        # Execute with retry - no parameters needed since _make_request is self-contained
         return self.execute_with_retry(_make_request)
 
 
