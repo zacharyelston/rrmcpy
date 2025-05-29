@@ -10,7 +10,7 @@ import io
 from unittest.mock import patch
 
 # Add the parent directory to the path to access src
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.redmine_client import RedmineClient
 
