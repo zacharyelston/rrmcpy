@@ -86,34 +86,7 @@ run_health_check() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
         redmine-mcp-server:local \
-        python -c "
-import os
-import sys
-sys.path.append('.')
-from src.proper_mcp_server import RedmineMCPServer
-
-# Test server initialization and health
-try:
-    server = RedmineMCPServer(os.environ['REDMINE_URL'], os.environ['REDMINE_API_KEY'])
-    health = server.redmine_client.health_check()
-    print(f'Health check: {\"PASS\" if health else \"FAIL\"}')
-    
-    # Test basic operations
-    user_result = server.redmine_client.get_current_user()
-    if not user_result.get('error'):
-        user = user_result.get('user', {})
-        print(f'Current user: {user.get(\"firstname\", \"\")} {user.get(\"lastname\", \"\")}')
-    
-    projects_result = server.redmine_client.get_projects()
-    if not projects_result.get('error'):
-        projects = projects_result.get('projects', [])
-        print(f'Projects accessible: {len(projects)}')
-    
-    print('Docker container test: SUCCESS')
-except Exception as e:
-    print(f'Docker container test: FAILED - {e}')
-    sys.exit(1)
-"
+        python test-minimal.py
 }
 
 # Function to run interactive container

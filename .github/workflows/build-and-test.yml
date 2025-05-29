@@ -156,7 +156,7 @@ jobs:
         ENV REDMINE_API_KEY=$REDMINE_API_KEY
         ENV SERVER_MODE=test
         ENV TEST_PROJECT=$TEST_PROJECT
-        CMD ["python", "-c", "import sys; sys.path.append('.'); exec(open('tests/test_redstone.py').read())"]
+        CMD ["sh", "-c", "cd tests && python test_redstone.py"]
         EOF
         
         # Build the test container
