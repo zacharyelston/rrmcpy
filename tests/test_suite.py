@@ -37,7 +37,7 @@ class RedmineTestSuite:
             sys.exit(1)
         
         # Initialize API client
-        self.api = RedmineAPI(self.redmine_url, self.redmine_api_key, logger)
+        self.api = RedmineClient(self.redmine_url, self.redmine_api_key, logger)
         
         # Track test results
         self.results = {
