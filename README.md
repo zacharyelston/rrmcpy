@@ -4,6 +4,7 @@
 
 A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Built with FastMCP and designed for containerized deployment with STDIO communication.
 
+
 ## Features
 
 - **Comprehensive Redmine API Coverage**: Complete support for issues, projects, versions, users, and groups
