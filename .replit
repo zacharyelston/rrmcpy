@@ -28,3 +28,4 @@ language = "python3"
 
 [nix]
 channel = "stable-24_05"
+packages = ["libxcrypt"]

@@ -56,6 +56,31 @@ class IssueClient(RedmineBaseClient):
         Returns:
             Dictionary containing the created issue data
         """
+        # Validate required fields
+        validation_error = self.validate_input(
+            issue_data, 
+            required_fields=['project_id', 'subject'],
+            field_types={
+                'project_id': (int, str),
+                'subject': str,
+                'tracker_id': int,
+                'status_id': int,
+                'priority_id': int,
+                'description': str
+            }
+        )
+        
+        if validation_error:
+            return validation_error
+        
+        # Additional validation for issue-specific constraints
+        if 'subject' in issue_data and len(issue_data['subject'].strip()) == 0:
+            return self._create_error_response(
+                "VALIDATION_ERROR",
+                "Issue subject cannot be empty",
+                400
+            )
+        
         return self.make_request('POST', 'issues.json', data={'issue': issue_data})
     
     def update_issue(self, issue_id: int, issue_data: Dict) -> Dict:

@@ -25,8 +25,8 @@ COPY tests/ /app/tests/
 # No port exposure needed
 
 # Set environment variables - these are the defaults but can be overridden
+# Note: REDMINE_API_KEY should be provided at runtime for security
 ENV REDMINE_URL="https://redstone.redminecloud.net" \
-    REDMINE_API_KEY="" \
     SERVER_MODE="live" \
     LOG_LEVEL="debug" \
     TEST_PROJECT="p1" \

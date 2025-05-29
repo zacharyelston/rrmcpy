@@ -161,6 +161,16 @@ class RedmineClient:
     def remove_user_from_group(self, group_id, user_id):
         """Remove a user from a group"""
         return self.groups.remove_user_from_group(group_id, user_id)
+    
+    # ===== Connection Management =====
+    
+    def health_check(self):
+        """Check the health of the Redmine connection"""
+        return self.issues.health_check()
+    
+    def configure_connection_settings(self, **kwargs):
+        """Configure connection retry and timeout settings"""
+        self.issues.configure_connection_settings(**kwargs)
 
 
 # Main entry point for the MCP server
