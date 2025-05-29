@@ -25,10 +25,14 @@ class TestProperMCP(unittest.TestCase):
             self.skipTest("REDMINE_API_KEY environment variable not set")
         
         # Configure logging to stderr (proper MCP pattern)
+        # Clear existing handlers and force stderr configuration
+        root_logger = logging.getLogger()
+        root_logger.handlers.clear()
         logging.basicConfig(
             level=logging.DEBUG,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            stream=sys.stderr
+            stream=sys.stderr,
+            force=True
         )
         
         self.server = RedmineMCPServer(self.redmine_url, self.redmine_api_key)
@@ -43,11 +47,12 @@ class TestProperMCP(unittest.TestCase):
     
     def test_logging_to_stderr(self):
         """Test that logging is properly configured to stderr"""
-        # Verify that logging handlers write to stderr
-        logger = logging.getLogger()
+        # The server setup in setUp() should have configured stderr logging
+        # Check the root logger handlers since our server uses basicConfig
+        root_logger = logging.getLogger()
         has_stderr_handler = False
         
-        for handler in logger.handlers:
+        for handler in root_logger.handlers:
             if hasattr(handler, 'stream') and handler.stream == sys.stderr:
                 has_stderr_handler = True
                 break
