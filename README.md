@@ -1,15 +1,17 @@
 # Redmine MCP Server
 
-<!-- test-status-badge -->\n[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)\n
+[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
-A robust FastMCP server for Redmine API integration. This server uses standard input/output (STDIO) for communication rather than exposing network ports, making it ideal for secure integrations.
+A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Built with FastMCP and designed for containerized deployment with STDIO communication.
 
 ## Features
 
-- Comprehensive Redmine API support (issues, projects, versions, users, groups)
-- STDIO-based communication protocol (no network ports exposed)
-- Test mode for automated validation
-- Detailed logging and error reporting
+- **Comprehensive Redmine API Coverage**: Complete support for issues, projects, versions, users, and groups
+- **FastMCP Protocol Compliance**: Proper MCP tool registration with Pydantic type validation
+- **STDIO Communication**: Secure communication via standard input/output (no network ports)
+- **Robust Error Handling**: Standardized error responses with detailed logging
+- **Automatic Reconnection**: Exponential backoff retry logic with health monitoring
+- **Container-Ready**: Docker deployment with minimal configuration
 
 ## Quick Start
 
@@ -37,131 +39,99 @@ docker run -e REDMINE_API_KEY=your-api-key-here redmine-mcp-server
 - `REDMINE_API_KEY`: Your Redmine API key (required)
 - `SERVER_MODE`: Server mode, 'live' or 'test' (default: live)
 - `LOG_LEVEL`: Logging level, 'debug', 'info', 'warning', or 'error' (default: info)
-- `TEST_PROJECT`: Project identifier for test mode (default: p1)
 
 ## Usage
 
-The MCP server communicates using JSON messages over STDIO. Send requests to the server's standard input and read responses from its standard output.
+The MCP server communicates using the FastMCP protocol over STDIO. It provides MCP tools for Redmine API operations with proper Pydantic type validation.
 
-### Example Request
+### Available MCP Tools
 
-```json
-{
-  "method": "GET",
-  "path": "/issues",
-  "data": {
-    "params": {
-      "project_id": 1,
-      "status_id": "open"
-    }
-  }
-}
-```
+#### Issue Management
+- `list_issues`: List issues with optional filtering by project, status, or assignee
+- `get_issue`: Get detailed information about a specific issue
+- `create_issue`: Create a new issue with Pydantic validation
+- `update_issue`: Update an existing issue
 
-### Example Response
+#### Project Management
+- `list_projects`: List all accessible projects
+- `get_project`: Get detailed project information including trackers and categories
+- `create_project`: Create a new project
 
-```json
-{
-  "status": 200,
-  "data": {
-    "issues": [
-      {
-        "id": 123,
-        "subject": "Sample issue",
-        "description": "This is a sample issue",
-        "status": {
-          "id": 1,
-          "name": "New"
-        }
-      }
-    ],
-    "total_count": 1,
-    "offset": 0,
-    "limit": 25
-  }
-}
-```
+#### User Management
+- `get_current_user`: Get information about the authenticated user
+- `list_users`: List all users (requires admin privileges)
 
-## Supported Endpoints
+#### Version Management
+- `list_versions`: List versions for a specific project
 
-### Issues
+#### Health Check
+- `health_check`: Verify Redmine connection and server status
 
-- `GET /issues`: List issues with optional filtering
-- `GET /issues/{id}`: Get a specific issue
-- `POST /issues`: Create a new issue
-- `PUT /issues/{id}`: Update an existing issue
-- `DELETE /issues/{id}`: Delete an issue
+## Architecture
 
-### Projects
+### FastMCP Implementation
+- **Proper Tool Registration**: Uses `@app.tool()` decorators following FastMCP best practices
+- **Pydantic Models**: Type-safe request/response handling with automatic validation
+- **STDERR Logging**: Logs are properly directed to stderr to avoid interfering with MCP protocol
 
-- `GET /projects`: List projects with optional filtering
-- `GET /projects/{id}`: Get a specific project
-- `POST /projects`: Create a new project
-- `PUT /projects/{id}`: Update an existing project
-- `DELETE /projects/{id}`: Delete a project
-
-### Versions
-
-- `GET /projects/{id}/versions`: List versions for a project
-- `GET /versions/{id}`: Get a specific version
-- `POST /versions`: Create a new version
-- `PUT /versions/{id}`: Update an existing version
-- `DELETE /versions/{id}`: Delete a version
-
-### Users
-
-- `GET /users`: List users with optional filtering
-- `GET /users/{id}`: Get a specific user
-- `GET /users/current`: Get current user (based on API key)
-- `POST /users`: Create a new user
-- `PUT /users/{id}`: Update an existing user
-- `DELETE /users/{id}`: Delete a user
-
-### Groups
-
-- `GET /groups`: List groups with optional filtering
-- `GET /groups/{id}`: Get a specific group
-- `POST /groups`: Create a new group
-- `PUT /groups/{id}`: Update an existing group
-- `DELETE /groups/{id}`: Delete a group
-- `POST /groups/{id}/users`: Add a user to a group
-- `DELETE /groups/{id}/users/{user_id}`: Remove a user from a group
+### Error Handling & Reliability
+- **Standardized Error Responses**: Consistent error format with timestamps and error codes
+- **Connection Management**: Automatic reconnection with exponential backoff retry logic
+- **Health Monitoring**: Built-in health checks with connection status caching
 
 ## Testing
 
-Run the automated tests to verify the server functionality:
+Run the test suite to verify functionality:
 
 ```bash
-docker-compose run --rm -e SERVER_MODE=test mcp-server
+python -m pytest tests/ -v
+```
+
+Test specific components:
+```bash
+# Test FastMCP implementation
+python -m pytest tests/test_proper_mcp.py -v
+
+# Test error handling
+python -m pytest tests/test_error_handling.py -v
+
+# Test connection reliability
+python -m pytest tests/test_connection_manager.py -v
 ```
 
 ## Development
 
-To run the server locally without Docker:
+### Local Development Setup
 
-1. Install the required Python packages:
-
+1. Install dependencies:
 ```bash
-pip install -r docker-requirements.txt
+pip install -r requirements.txt
 ```
 
-2. Set the environment variables:
-
+2. Set environment variables:
 ```bash
 export REDMINE_API_KEY=your-api-key-here
-export REDMINE_URL=https://redstone.redminecloud.net
-export SERVER_MODE=live
+export REDMINE_URL=https://your-redmine-instance.com
 export LOG_LEVEL=debug
 ```
 
 3. Run the server:
-
 ```bash
-python main.py
+python -m src.main
 ```
 
-4. To run tests:
+### Project Structure
+```
+src/
+├── main.py                 # Entry point with proper FastMCP patterns
+├── proper_mcp_server.py    # FastMCP server implementation
+├── redmine_client.py       # Unified Redmine API client
+├── base.py                 # Base client with error handling
+├── connection_manager.py   # Automatic reconnection logic
+└── [feature modules]       # Individual API feature implementations
 
-```bash
-python test_essential.py
+tests/
+├── test_proper_mcp.py      # FastMCP implementation tests
+├── test_error_handling.py  # Error handling validation
+└── test_connection_manager.py # Connection reliability tests
 ```
