@@ -10,7 +10,7 @@ import unittest
 
 # Add the parent directory to path so we can import src modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.redmine_api import RedmineAPI
+from src.redmine_client import RedmineClient
 
 # Set up logging
 logging.basicConfig(
@@ -35,7 +35,7 @@ class TestRedstoneConnection(unittest.TestCase):
             raise unittest.SkipTest("REDMINE_API_KEY environment variable is not set")
         
         # Initialize Redmine API client
-        cls.api = RedmineAPI(cls.redmine_url, cls.redmine_api_key, logger)
+        cls.api = RedmineClient(cls.redmine_url, cls.redmine_api_key, logger)
 
     def test_current_user(self):
         """Test current user endpoint"""
