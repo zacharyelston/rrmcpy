@@ -23,15 +23,24 @@ A robust Python-based MCP (Model Context Protocol) server for Redmine API integr
 ### Using Docker (Recommended)
 
 1. Build the Docker image:
-
 ```bash
 docker build -t redmine-mcp-server .
 ```
 
-2. Run the server with Docker:
-
+2. Run the server:
 ```bash
-docker run -e REDMINE_API_KEY=your-api-key-here redmine-mcp-server
+docker run -e REDMINE_URL=https://your-redmine.com -e REDMINE_API_KEY=your-api-key redmine-mcp-server
+```
+
+### Local Testing
+
+Use the provided testing utilities:
+```bash
+# Interactive Docker testing menu
+./utils/test-docker.sh
+
+# Basic connectivity test
+python scripts/test-minimal.py
 ```
 
 ### Environment Variables
@@ -120,15 +129,27 @@ python -m src.main
 ### Project Structure
 ```
 src/
-├── main.py                 # Entry point with proper FastMCP patterns
-├── proper_mcp_server.py    # FastMCP server implementation
+├── main.py                 # Main entry point
+├── stdio_server.py         # MCP STDIO server implementation  
 ├── redmine_client.py       # Unified Redmine API client
 ├── base.py                 # Base client with error handling
 ├── connection_manager.py   # Automatic reconnection logic
-└── [feature modules]       # Individual API feature implementations
+├── issues.py              # Issue management
+├── projects.py            # Project management
+├── users.py               # User management
+└── versions.py            # Version management
 
 tests/
-├── test_proper_mcp.py      # FastMCP implementation tests
+├── test_proper_mcp.py      # MCP implementation tests
 ├── test_error_handling.py  # Error handling validation
-└── test_connection_manager.py # Connection reliability tests
+├── test_connection_manager.py # Connection reliability tests
+└── test_logging.py         # Logging functionality tests
+
+scripts/
+├── test-minimal.py         # Basic connectivity test
+├── redstone_demo.py        # Interactive Redmine demo
+└── [utility scripts]      # Development and testing utilities
+
+utils/
+└── test-docker.sh          # Docker testing utility
 ```
