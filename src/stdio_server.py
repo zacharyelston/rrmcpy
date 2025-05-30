@@ -8,7 +8,9 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict, List
+
+from typing import Any, Dict, List, Union
+
 
 from src.redmine_client import RedmineClient
 
@@ -136,12 +138,19 @@ class RedmineSTDIOServer:
             "timestamp": self.redmine_client.issues._get_timestamp()
         }
     
+
+    def _ensure_valid_id(self, request_id: Union[str, int, None]) -> Union[str, int]:
+        """Ensure the request ID is valid for MCP protocol"""
+        if request_id is None:
+            return "0"  # Use string "0" as default for null IDs
+        return request_id
+    
     async def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle an MCP request"""
         try:
             method = request.get("method")
             params = request.get("params", {})
-            request_id = request.get("id")
+            request_id = self._ensure_valid_id(request.get("id"))
             
             if method == "initialize":
                 return {
@@ -207,6 +216,16 @@ class RedmineSTDIOServer:
                                 }
                             },
                             {
+                                "name": "list_projects",
+                                "description": "List all accessible projects",
+                                "inputSchema": {"type": "object", "properties": {}}
+                            },
+                            {
+                                "name": "get_current_user",
+                                "description": "Get current user information",
+                                "inputSchema": {"type": "object", "properties": {}}
+                            },
+                            {
                                 "name": "health_check",
                                 "description": "Check Redmine connection health",
                                 "inputSchema": {"type": "object", "properties": {}}
@@ -267,7 +286,9 @@ class RedmineSTDIOServer:
             self.logger.error(f"Error handling request: {e}")
             return {
                 "jsonrpc": "2.0",
-                "id": request.get("id"),
+
+                "id": self._ensure_valid_id(request.get("id")),
+
                 "error": {
                     "code": -32603,
                     "message": f"Internal error: {str(e)}"
