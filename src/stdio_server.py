@@ -8,7 +8,9 @@ import json
 import logging
 import os
 import sys
+
 from typing import Any, Dict, List, Union
+
 
 from src.redmine_client import RedmineClient
 
@@ -136,6 +138,7 @@ class RedmineSTDIOServer:
             "timestamp": self.redmine_client.issues._get_timestamp()
         }
     
+
     def _ensure_valid_id(self, request_id: Union[str, int, None]) -> Union[str, int]:
         """Ensure the request ID is valid for MCP protocol"""
         if request_id is None:
@@ -283,7 +286,9 @@ class RedmineSTDIOServer:
             self.logger.error(f"Error handling request: {e}")
             return {
                 "jsonrpc": "2.0",
+
                 "id": self._ensure_valid_id(request.get("id")),
+
                 "error": {
                     "code": -32603,
                     "message": f"Internal error: {str(e)}"
