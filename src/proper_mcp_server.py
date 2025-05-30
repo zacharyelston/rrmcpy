@@ -79,7 +79,7 @@ class RedmineMCPServer:
         """Register all MCP tools following proper FastMCP pattern"""
         
         # Issue management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-issues")
         def list_issues(
             project_id: Optional[str] = None,
             status_id: Optional[int] = None,
@@ -115,7 +115,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error listing issues: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-issue")
         def get_issue(issue_id: int) -> Dict[str, Any]:
             """
             Get detailed information about a specific issue
@@ -135,7 +135,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting issue {issue_id}: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-create-issue")
         def create_issue(request: IssueCreateRequest) -> Dict[str, Any]:
             """
             Create a new issue
@@ -156,7 +156,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error creating issue: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-update-issue")
         def update_issue(request: IssueUpdateRequest) -> bool:
             """
             Update an existing issue
@@ -179,7 +179,7 @@ class RedmineMCPServer:
                 raise
         
         # Project management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-projects")
         def list_projects() -> List[Dict[str, Any]]:
             """
             List all accessible projects
@@ -196,7 +196,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error listing projects: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-project")
         def get_project(project_id: str) -> Dict[str, Any]:
             """
             Get detailed information about a specific project
