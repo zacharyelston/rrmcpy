@@ -80,7 +80,7 @@ class RedmineMCPServer:
         
         # Issue management tools
         @self.app.tool()
-        def list_issues(
+        def redmine_list_issues(
             project_id: Optional[str] = None,
             status_id: Optional[int] = None,
             assigned_to_id: Optional[int] = None,
@@ -116,7 +116,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def get_issue(issue_id: int) -> Dict[str, Any]:
+        def redmine_get_issue(issue_id: int) -> Dict[str, Any]:
             """
             Get detailed information about a specific issue
             
@@ -136,7 +136,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def create_issue(request: IssueCreateRequest) -> Dict[str, Any]:
+        def redmine_create_issue(request: IssueCreateRequest) -> Dict[str, Any]:
             """
             Create a new issue
             
@@ -157,7 +157,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def update_issue(request: IssueUpdateRequest) -> bool:
+        def redmine_update_issue(request: IssueUpdateRequest) -> bool:
             """
             Update an existing issue
             
@@ -180,7 +180,7 @@ class RedmineMCPServer:
         
         # Project management tools
         @self.app.tool()
-        def list_projects() -> List[Dict[str, Any]]:
+        def redmine_list_projects() -> List[Dict[str, Any]]:
             """
             List all accessible projects
             
@@ -197,7 +197,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def get_project(project_id: str) -> Dict[str, Any]:
+        def redmine_get_project(project_id: str) -> Dict[str, Any]:
             """
             Get detailed information about a specific project
             
@@ -217,7 +217,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def create_project(request: ProjectCreateRequest) -> Dict[str, Any]:
+        def redmine_create_project(request: ProjectCreateRequest) -> Dict[str, Any]:
             """
             Create a new project
             
@@ -239,7 +239,7 @@ class RedmineMCPServer:
         
         # User management tools
         @self.app.tool()
-        def get_current_user() -> Dict[str, Any]:
+        def redmine_get_current_user() -> Dict[str, Any]:
             """
             Get information about the current authenticated user
             
@@ -256,7 +256,7 @@ class RedmineMCPServer:
                 raise
         
         @self.app.tool()
-        def list_users() -> List[Dict[str, Any]]:
+        def redmine_list_users() -> List[Dict[str, Any]]:
             """
             List all users (requires admin privileges)
             
@@ -274,7 +274,7 @@ class RedmineMCPServer:
         
         # Version management tools
         @self.app.tool()
-        def list_versions(project_id: str) -> List[Dict[str, Any]]:
+        def redmine_list_versions(project_id: str) -> List[Dict[str, Any]]:
             """
             List versions for a project
             
@@ -295,7 +295,7 @@ class RedmineMCPServer:
         
         # Health check tool
         @self.app.tool()
-        def health_check() -> Dict[str, Any]:
+        def redmine_health_check() -> Dict[str, Any]:
             """
             Check the health of the Redmine connection
             
@@ -321,10 +321,10 @@ class RedmineMCPServer:
         """Run the MCP server with STDIO transport for MCP clients"""
         self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
         # Use FastMCP's built-in run method - it handles STDIO by default
-        self.app.run("stdio")
+        self.app.run(transport="stdio")
 
 
-async def main():
+def main():
     """Main entry point"""
     import os
     
@@ -338,8 +338,8 @@ async def main():
     
     # Create and run server
     server = RedmineMCPServer(redmine_url, redmine_api_key)
-    await server.run()
+    server.run_stdio()
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()

@@ -50,6 +50,13 @@
 
 ### High Priority
 
+#### Switch to FastMCP Implementation & Fix Naming Conflicts
+- ✅ **Replace stdio_server.py with proper_mcp_server.py**: Update main.py to use the FastMCP implementation instead of manual protocol handling
+- ✅ **Add redmine- prefix to all tools**: Rename all tools to prevent conflicts with GitHub MCP servers (e.g., redmine-list-issues, redmine-create-issue)
+- ✅ **Remove manual implementation**: Delete stdio_server.py since FastMCP handles all protocol details automatically
+- ✅ **Update tests**: Ensure all tests reference the new prefixed tool names
+- ✅ **Benefits**: This will reduce code from ~300 lines to ~50 lines and solve the naming conflict issue
+
 #### File Attachments Support (Issue #71)
 - [ ] **Upload Functionality**: Implement file upload through MCP interface
 - [ ] **Download Functionality**: Implement file download capabilities
