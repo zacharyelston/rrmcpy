@@ -102,16 +102,21 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: false
         
-    - name: Add test badge to README
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+    - name: Create PR for README badge update
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       env:
         REDMINE_URL: "https://redstone.redminecloud.net"
         REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "Updating README.md with test badge"
+        echo "Creating PR to update README.md with test badge"
         
         # Create badge URL using shields.io
         BADGE_URL="https://img.shields.io/github/actions/workflow/status/${{ github.repository }}/build-and-test.yml?branch=main&label=tests&style=for-the-badge"
+        
+        # Create a new branch for the update
+        BRANCH_NAME="update-test-badge-$(date +%s)"
+        git checkout -b "$BRANCH_NAME"
         
         # Update README with badge
         if ! grep -q "<!-- test-status-badge -->" README.md; then
@@ -122,13 +127,22 @@ jobs:
           sed -i 's|<!-- test-status-badge -->.*|<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)|' README.md
         fi
         
-        # If running in a branch where we can commit, update the repository
-        if [[ "${{ github.event_name }}" == "push" ]]; then
+        # Check if there are changes to commit
+        if git diff --quiet README.md; then
+          echo "No changes to README.md needed"
+        else
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
-          git commit -m "Update test status badge in README [skip ci]" || echo "No changes to commit"
-          git push
+          git commit -m "Update test status badge in README"
+          git push origin "$BRANCH_NAME"
+          
+          # Create pull request using GitHub CLI
+          gh pr create \
+            --title "Update test status badge" \
+            --body "Automated update of test status badge in README.md" \
+            --head "$BRANCH_NAME" \
+            --base main
         fi
         
     - name: Run validation tests
