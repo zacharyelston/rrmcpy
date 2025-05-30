@@ -1,5 +1,7 @@
 # Redmine MCP Server
 
+<!-- test-status-badge -->\n[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)\n
+
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
 A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Built with FastMCP and designed for containerized deployment with STDIO communication.
