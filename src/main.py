@@ -3,12 +3,11 @@
 Main entry point for Redmine MCP Server
 This file can be run as a module (python -m src.main)
 """
-import asyncio
 import os
 import sys
 import logging
 
-from src.stdio_server import RedmineSTDIOServer
+from src.proper_mcp_server import RedmineMCPServer
 
 
 def main():
@@ -48,12 +47,12 @@ def main():
         
         logger.info("Tests passed, starting server")
     
-    # Create and run the STDIO server
-    server = RedmineSTDIOServer(redmine_url, redmine_api_key)
+    # Create and run the FastMCP server
+    server = RedmineMCPServer(redmine_url, redmine_api_key)
     
     try:
-        # Run the STDIO server
-        asyncio.run(server.run())
+        # Run the server with STDIO transport
+        server.run_stdio()
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except Exception as e:
