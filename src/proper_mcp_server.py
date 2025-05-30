@@ -216,7 +216,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting project {project_id}: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-create-project")
         def create_project(request: ProjectCreateRequest) -> Dict[str, Any]:
             """
             Create a new project
@@ -238,7 +238,7 @@ class RedmineMCPServer:
                 raise
         
         # User management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-current-user")
         def get_current_user() -> Dict[str, Any]:
             """
             Get information about the current authenticated user
@@ -255,7 +255,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting current user: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-users")
         def list_users() -> List[Dict[str, Any]]:
             """
             List all users (requires admin privileges)
@@ -273,7 +273,7 @@ class RedmineMCPServer:
                 raise
         
         # Version management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-versions")
         def list_versions(project_id: str) -> List[Dict[str, Any]]:
             """
             List versions for a project
@@ -294,7 +294,7 @@ class RedmineMCPServer:
                 raise
         
         # Health check tool
-        @self.app.tool()
+        @self.app.tool(name="redmine-health-check")
         def health_check() -> Dict[str, Any]:
             """
             Check the health of the Redmine connection

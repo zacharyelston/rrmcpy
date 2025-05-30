@@ -57,21 +57,25 @@ The MCP server communicates using the MCP protocol over STDIO. It provides tools
 ### Available Tools
 
 #### Issue Management
-- `list_issues`: List issues with optional filtering by project, status, or assignee
-- `get_issue`: Get detailed information about a specific issue
-- `create_issue`: Create a new issue
-- `update_issue`: Update an existing issue
+- `redmine-list-issues`: List issues with optional filtering by project, status, or assignee
+- `redmine-get-issue`: Get detailed information about a specific issue
+- `redmine-create-issue`: Create a new issue
+- `redmine-update-issue`: Update an existing issue
 
 #### Project Management
-- `list_projects`: List all accessible projects
-- `get_project`: Get detailed project information
+- `redmine-list-projects`: List all accessible projects
+- `redmine-get-project`: Get detailed project information
+- `redmine-create-project`: Create a new project
 
 #### User Management
-- `get_current_user`: Get information about the authenticated user
-- `list_users`: List all users (requires admin privileges)
+- `redmine-get-current-user`: Get information about the authenticated user
+- `redmine-list-users`: List all users (requires admin privileges)
+
+#### Version Management
+- `redmine-list-versions`: List versions for a specific project
 
 #### System
-- `health_check`: Verify Redmine connection and server status
+- `redmine-health-check`: Verify Redmine connection and server status
 
 ## Architecture
 
