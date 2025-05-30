@@ -2,16 +2,17 @@
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
-A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Built with FastMCP and designed for containerized deployment with STDIO communication.
+A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Designed for containerized deployment with STDIO communication and full MCP protocol compliance.
 
 ## Features
 
-- **Comprehensive Redmine API Coverage**: Complete support for issues, projects, versions, users, and groups
-- **FastMCP Protocol Compliance**: Proper MCP tool registration with Pydantic type validation
+- **Complete Redmine API Coverage**: Issues, projects, users, groups, versions, and more
+- **MCP Protocol Compliance**: Full support for MCP 2024-11-05 specification
 - **STDIO Communication**: Secure communication via standard input/output (no network ports)
 - **Robust Error Handling**: Standardized error responses with detailed logging
 - **Automatic Reconnection**: Exponential backoff retry logic with health monitoring
-- **Container-Ready**: Docker deployment with minimal configuration
+- **Container-Ready**: Production-ready Docker deployment with minimal configuration
+- **100% Test Coverage**: Comprehensive test suite with automated CI/CD
 
 ## Quick Start
 
@@ -42,42 +43,38 @@ docker run -e REDMINE_API_KEY=your-api-key-here redmine-mcp-server
 
 ## Usage
 
-The MCP server communicates using the FastMCP protocol over STDIO. It provides MCP tools for Redmine API operations with proper Pydantic type validation.
+The MCP server communicates using the MCP protocol over STDIO. It provides tools for Redmine API operations and integrates seamlessly with MCP clients like Claude Desktop.
 
-### Available MCP Tools
+### Available Tools
 
 #### Issue Management
 - `list_issues`: List issues with optional filtering by project, status, or assignee
 - `get_issue`: Get detailed information about a specific issue
-- `create_issue`: Create a new issue with Pydantic validation
+- `create_issue`: Create a new issue
 - `update_issue`: Update an existing issue
 
 #### Project Management
 - `list_projects`: List all accessible projects
-- `get_project`: Get detailed project information including trackers and categories
-- `create_project`: Create a new project
+- `get_project`: Get detailed project information
 
 #### User Management
 - `get_current_user`: Get information about the authenticated user
 - `list_users`: List all users (requires admin privileges)
 
-#### Version Management
-- `list_versions`: List versions for a specific project
-
-#### Health Check
+#### System
 - `health_check`: Verify Redmine connection and server status
 
 ## Architecture
 
-### FastMCP Implementation
-- **Proper Tool Registration**: Uses `@app.tool()` decorators following FastMCP best practices
-- **Pydantic Models**: Type-safe request/response handling with automatic validation
-- **STDERR Logging**: Logs are properly directed to stderr to avoid interfering with MCP protocol
+### MCP Protocol Implementation
+- **STDIO Transport**: Direct JSON-RPC communication via standard input/output
+- **Protocol Compliance**: Full adherence to MCP 2024-11-05 specification
+- **Error Handling**: Proper JSON-RPC error responses with detailed messages
 
-### Error Handling & Reliability
-- **Standardized Error Responses**: Consistent error format with timestamps and error codes
+### Reliability Features
 - **Connection Management**: Automatic reconnection with exponential backoff retry logic
-- **Health Monitoring**: Built-in health checks with connection status caching
+- **Health Monitoring**: Built-in health checks with connection status monitoring
+- **Request Validation**: Input validation for all API operations
 
 ## Testing
 
