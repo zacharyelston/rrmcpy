@@ -333,7 +333,8 @@ class RedmineMCPServer:
     async def run(self):
         """Run the MCP server"""
         self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
-        await self.app.run()
+        # FastMCP handles the server loop internally
+        return self.app
 
 
 async def main():
@@ -348,9 +349,12 @@ async def main():
         logging.error("REDMINE_API_KEY environment variable is required")
         sys.exit(1)
     
-    # Create and run server
+    # Create server and return the FastMCP app
     server = RedmineMCPServer(redmine_url, redmine_api_key)
-    await server.run()
+    app = await server.run()
+    
+    # Run the FastMCP server
+    await app.run()
 
 
 if __name__ == '__main__':
