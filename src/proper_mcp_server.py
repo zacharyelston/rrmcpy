@@ -3,6 +3,8 @@ Proper FastMCP server implementation for Redmine integration
 Follows FastMCP best practices and MCP protocol specification
 """
 import asyncio
+import json
+import datetime
 import logging
 import sys
 from typing import Any, Dict, List, Optional
@@ -82,9 +84,9 @@ class RedmineMCPServer:
         @self.app.tool(name="redmine-list-issues")
         def list_issues(
             project_id: Optional[str] = None,
-            status_id: Optional[int] = None,
-            assigned_to_id: Optional[int] = None,
-            limit: Optional[int] = 25
+            status_id: Optional[str] = None,
+            assigned_to_id: Optional[str] = None,
+            limit: Optional[str] = "25"
         ) -> List[Dict[str, Any]]:
             """
             List issues with optional filtering
@@ -98,13 +100,24 @@ class RedmineMCPServer:
             Returns:
                 List of issues
             """
-            params = {"limit": limit}
+            params = {}
+            if limit is not None:
+                try:
+                    params["limit"] = int(limit)
+                except (ValueError, TypeError):
+                    params["limit"] = 25
             if project_id:
                 params["project_id"] = project_id
             if status_id:
-                params["status_id"] = status_id
+                try:
+                    params["status_id"] = int(status_id)
+                except (ValueError, TypeError):
+                    pass
             if assigned_to_id:
-                params["assigned_to_id"] = assigned_to_id
+                try:
+                    params["assigned_to_id"] = int(assigned_to_id)
+                except (ValueError, TypeError):
+                    pass
             
             try:
                 result = self.redmine_client.get_issues(params)
