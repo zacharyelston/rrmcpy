@@ -11,7 +11,7 @@ import logging
 # Add the parent directory to the path to access src
 sys.path.insert(0, os.path.abspath('..'))
 
-from src.proper_mcp_server import RedmineMCPServer
+from src.mcp_server import RedmineMCPServer
 
 class TestProperMCP(unittest.TestCase):
     """Test proper FastMCP implementation"""
@@ -71,7 +71,7 @@ class TestProperMCP(unittest.TestCase):
     
     def test_pydantic_models(self):
         """Test that Pydantic models work correctly"""
-        from src.proper_mcp_server import IssueCreateRequest, IssueUpdateRequest, ProjectCreateRequest
+        from src.mcp_server import IssueCreateRequest, IssueUpdateRequest, ProjectCreateRequest
         
         # Test IssueCreateRequest
         issue_request = IssueCreateRequest(

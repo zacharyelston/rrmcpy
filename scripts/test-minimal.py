@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append('.')
 
-from src.proper_mcp_server import RedmineMCPServer
+from src.mcp_server import RedmineMCPServer
 
 def main():
     # Get environment variables

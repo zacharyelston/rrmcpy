@@ -333,13 +333,8 @@ class RedmineMCPServer:
     def run_stdio(self):
         """Run the MCP server with STDIO transport for MCP clients"""
         self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
-<<<<<<< HEAD
-        # FastMCP handles the server loop internally
-        return self.app
-=======
         # Use FastMCP's built-in run method - it handles STDIO by default
         self.app.run("stdio")
->>>>>>> 992c7eb (Fix/build2 (#22))
 
 
 async def main():
