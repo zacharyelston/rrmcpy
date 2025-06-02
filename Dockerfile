@@ -16,7 +16,7 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
-COPY run_server.sh /app/
+COPY scripts/run_server.sh /app/
 
 # Copy tests
 COPY tests/ /app/tests/

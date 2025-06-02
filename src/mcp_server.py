@@ -349,12 +349,11 @@ async def main():
         logging.error("REDMINE_API_KEY environment variable is required")
         sys.exit(1)
     
-    # Create server and return the FastMCP app
+    # Create server and get the FastMCP app
     server = RedmineMCPServer(redmine_url, redmine_api_key)
-    app = await server.run()
     
     # Run the FastMCP server
-    await app.run()
+    await server.app.run()
 
 
 if __name__ == '__main__':
