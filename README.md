@@ -124,14 +124,14 @@ python -m src.main
 ```
 src/
 ├── main.py                 # Entry point with proper FastMCP patterns
-├── proper_mcp_server.py    # FastMCP server implementation
+├── mcp_server.py           # FastMCP server implementation using instance methods
 ├── redmine_client.py       # Unified Redmine API client
 ├── base.py                 # Base client with error handling
 ├── connection_manager.py   # Automatic reconnection logic
 └── [feature modules]       # Individual API feature implementations
 
 tests/
-├── test_proper_mcp.py      # FastMCP implementation tests
+├── test_mcp_server.py      # FastMCP implementation tests
 ├── test_error_handling.py  # Error handling validation
 └── test_connection_manager.py # Connection reliability tests
 ```

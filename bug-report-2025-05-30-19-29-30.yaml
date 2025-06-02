@@ -1,0 +1,161 @@
+---
+bug_report:
+  id: "fastmcp-response-serialization-2025-05-30"
+  title: "Empty responses from create_issue and malformed list responses in Claude MCP client"
+  severity: "high"
+  status: "confirmed"
+  reported_date: "2025-05-30T19:29:30Z"
+  reporter: "Claude Assistant"
+  affected_components:
+    - "FastMCP (jlowin version)"
+    - "Claude Desktop MCP Client"
+    - "Redmine MCP Server"
+  
+environment:
+  fastmcp_version: "Unknown (from jlowin/fastmcp)"
+  python_version: "3.13"
+  os: "macOS"
+  redmine_url: "https://redstone.redminecloud.net"
+  mcp_transport: "stdio"
+  
+issue_description:
+  summary: |
+    When using FastMCP to build a Redmine MCP server, tool responses are not properly displayed in Claude Desktop.
+    Specifically, the `redmine_create_issue` tool returns an empty dict `{}` instead of the created issue data,
+    and `redmine_list_issues` returns concatenated JSON objects instead of a proper array format.
+  
+  symptoms:
+    - description: "Empty response from create_issue"
+      example: |
+        Input: redmine_create_issue with valid parameters
+        Expected: Full issue object with id, subject, description, etc.
+        Actual: {}
+    
+    - description: "Concatenated objects in list_issues"
+      example: |
+        Input: redmine_list_issues with limit=3
+        Expected: [{issue1}, {issue2}, {issue3}]
+        Actual: {issue1}{issue2}{issue3} (objects concatenated without array brackets)
+  
+reproduction_steps:
+  - step: 1
+    action: "Create a FastMCP server with a tool that returns a dictionary"
+    code: |
+      from fastmcp import FastMCP
+      mcp = FastMCP("Test Server")
+      
+      @mcp.tool()
+      def create_item() -> dict:
+          return {"id": 123, "name": "Test Item", "status": "created"}
+  
+  - step: 2
+    action: "Run the server and call the tool through Claude Desktop"
+    expected: "Should see the full dictionary response"
+    actual: "Empty response {} displayed"
+  
+  - step: 3
+    action: "Create a tool that returns a list"
+    code: |
+      @mcp.tool()
+      def list_items() -> list:
+          return [{"id": 1}, {"id": 2}, {"id": 3}]
+  
+  - step: 4
+    action: "Call the list tool through Claude Desktop"
+    expected: "Should see array format: [{...}, {...}, {...}]"
+    actual: "Concatenated objects: {...}{...}{...}"
+
+investigation_findings:
+  - finding: "FastMCP correctly converts responses to MCP protocol format"
+    evidence: |
+      Testing shows FastMCP converts dict/list responses to JSON strings wrapped in TextContent objects:
+      - Dict {"id": 123} -> TextContent(type='text', text='{"id": 123}')
+      - List [{"id": 1}] -> TextContent(type='text', text='[{"id": 1}]')
+      - Empty dict {} -> TextContent(type='text', text='{}')
+  
+  - finding: "Redmine API is working correctly"
+    evidence: |
+      Direct API tests show:
+      - POST /issues.json returns 201 with full issue data
+      - GET /issues.json returns proper JSON array of issues
+      - RedmineClient correctly receives and processes responses
+  
+  - finding: "Issue is in MCP client interpretation layer"
+    evidence: |
+      - FastMCP server logs show correct data being returned
+      - Tool functions execute successfully and return expected data
+      - Problem occurs only when responses are displayed in Claude Desktop
+  
+  - finding: "FastMCP's _convert_to_content function behavior"
+    location: "fastmcp/tools/tool.py"
+    code: |
+      def _convert_to_content(result: Any, serializer: Callable[[Any], str] | None = None) -> list[TextContent | ImageContent | EmbeddedResource]:
+          # ... 
+          if not isinstance(result, str):
+              if serializer is None:
+                  result = default_serializer(result)  # Uses pydantic_core.to_json
+          return [TextContent(type="text", text=result)]
+
+root_cause_analysis:
+  hypothesis: |
+    There appears to be a compatibility issue between how FastMCP formats tool responses
+    and how Claude's MCP client expects to receive them. FastMCP correctly follows the
+    MCP protocol by converting non-string responses to JSON and wrapping them in TextContent
+    objects, but Claude's client may be expecting a different format or may have issues
+    parsing the TextContent when displaying to users.
+  
+  supporting_evidence:
+    - "Empty dict {} is converted to TextContent with text='{}', not an actually empty response"
+    - "List responses are properly JSON-serialized but displayed without array structure"
+    - "The MCP protocol expects TextContent/ImageContent/EmbeddedResource, not raw JSON"
+
+workarounds_attempted:
+  - attempt: "Return JSON strings directly from tools"
+    result: "Still wrapped in TextContent, same display issues"
+    code: |
+      @mcp.tool()
+      def create_issue() -> str:
+          return json.dumps({"id": 123})  # Still shows as empty
+  
+  - attempt: "Use different return type annotations"
+    result: "No change in behavior"
+  
+  - attempt: "Add custom serializer"
+    result: "FastMCP uses the serializer but display issue persists"
+
+impact:
+  severity_justification: |
+    High severity because this prevents the MCP server from being usable in production.
+    Users cannot see the results of their operations, making the tools effectively broken
+    even though they execute successfully on the backend.
+  
+  affected_users: "All users of FastMCP servers with Claude Desktop"
+  
+  business_impact: |
+    - Cannot use FastMCP to build functional MCP servers for Claude
+    - Must fall back to official MCP SDK or other implementations
+    - Blocks development of Redmine integration and similar tools
+
+recommendations:
+  - recommendation: "Report issue to jlowin/fastmcp repository"
+    rationale: "FastMCP maintainers may need to adjust response format for Claude compatibility"
+  
+  - recommendation: "Test with official MCP Python SDK"
+    rationale: "May have better compatibility with Claude's MCP client"
+  
+  - recommendation: "Contact Anthropic MCP team"
+    rationale: "May be a client-side parsing issue that needs fixing"
+  
+  - recommendation: "Document known compatibility issues"
+    rationale: "Help other developers avoid this issue"
+
+additional_notes:
+  - "FastMCP 1.0 was incorporated into official MCP SDK, but this uses FastMCP 2.0 from jlowin"
+  - "Issue may be specific to stdio transport - other transports not tested"
+  - "Similar issues may affect other LLM clients, not just Claude Desktop"
+
+attachments:
+  - "debug/test_response_handling.py - Test script showing response conversion"
+  - "debug/test_fastmcp_responses.py - FastMCP response testing"
+  - "docs/current_issues_to_fix.md - Detailed analysis"
+  - "docs/fix_response_issues_plan.md - Attempted fix documentation"

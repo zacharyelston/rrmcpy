@@ -74,7 +74,7 @@ run_tests() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
         redmine-mcp-server:local \
-        python -m pytest tests/test_proper_mcp.py tests/test_error_handling.py tests/test_logging.py -v
+        python -m pytest tests/test_mcp_server.py tests/test_error_handling.py tests/test_logging.py -v
 }
 
 # Function to run health check

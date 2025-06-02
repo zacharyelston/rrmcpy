@@ -134,16 +134,12 @@ docker run -e REDMINE_URL="https://your-redmine-instance.com" \
 ## Project Structure
 
 - `main.py`: Entry point for the server
-- `modules/`: Modular components for different features
-  - `base.py`: Base client functionality
-  - `issues.py`: Issue-related operations
-  - `projects.py`: Project-related operations
-  - `versions.py`: Version-related operations
-  - `users.py`: User-related operations
-  - `groups.py`: Group-related operations
-  - `roadmap.py`: Roadmap and version tagging functionality
-  - `redmine_client.py`: Unified client combining all modules
-  - `mcp_client.py`: MCP protocol client for connecting to the server
+- `src/`: Core server components
+  - `mcp_server.py`: FastMCP server implementation using instance methods
+  - `redmine_client.py`: Unified Redmine API client
+  - `base.py`: Base client with error handling and connection management
+- `tests/`: Test suite for validation
+  - `test-implementation.py`: Validation script for server implementation
 - `test_suite.py`: Automated test suite
 - `test_roadmap.py`: Roadmap functionality tests
 - `mcp_client_demo.py`: Demo of the MCP client

@@ -50,6 +50,13 @@
 
 ### High Priority
 
+#### Fix MCP Response Serialization Issues
+- [ ] **Empty create_issue responses**: The redmine_create_issue tool returns {} instead of the created issue data
+- [ ] **List response format**: The redmine_list_issues returns concatenated objects instead of a proper JSON array
+- [ ] **Debug FastMCP serialization**: Add comprehensive logging to understand how FastMCP handles responses
+- [ ] **Test with simple responses**: Create test tools that return hardcoded data to isolate the issue
+- [ ] **Review FastMCP documentation**: Check for specific requirements on response formats
+
 #### Switch to FastMCP Implementation & Fix Naming Conflicts
 - ✅ **Replace stdio_server.py with proper_mcp_server.py**: Update main.py to use the FastMCP implementation instead of manual protocol handling
 - ✅ **Add redmine- prefix to all tools**: Rename all tools to prevent conflicts with GitHub MCP servers (e.g., redmine-list-issues, redmine-create-issue)

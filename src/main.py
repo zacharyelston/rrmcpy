@@ -7,7 +7,7 @@ import os
 import sys
 import logging
 
-from src.proper_mcp_server import RedmineMCPServer
+from src.mcp_server import RedmineMCPServer
 
 
 def main():
