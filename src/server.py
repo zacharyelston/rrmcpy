@@ -3,8 +3,9 @@ Redmine MCP Server with modular architecture and tool registry
 """
 import sys
 import os
+import logging
 import json
-import asyncio
+import subprocess
 from typing import Optional
 
 # Add src to path for imports
@@ -61,7 +62,16 @@ class RedmineMCPServer:
             
             # Setup logging
             self.logger = setup_logging(self.config.logging)
-            self.logger.info("Starting Redmine MCP Server")
+            
+            # Get git version info for debugging
+            try:
+                git_sha = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], 
+                                                 stderr=subprocess.DEVNULL).decode('utf-8').strip()
+            except (subprocess.SubprocessError, FileNotFoundError):
+                # Handle case where git is not available (e.g., in Docker)
+                git_sha = os.environ.get('GIT_COMMIT', 'unknown')
+                
+            self.logger.info(f"Starting Redmine MCP Server (version: {git_sha})")
             self.logger.info(f"Server mode: {self.config.server.mode}")
             self.logger.info(f"Redmine URL: {self.config.redmine.url}")
             
