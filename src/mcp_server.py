@@ -317,13 +317,14 @@ class RedmineMCPServer:
                     "redmine_url": self.redmine_url
                 }
     
-    async def run(self):
-        """Run the MCP server"""
+    def run(self):
+        """Run the MCP server with STDIO transport"""
         self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
-        await self.app.run()
+        # FastMCP.run() defaults to STDIO transport
+        self.app.run()
 
 
-async def main():
+def main():
     """Main entry point"""
     import os
     
@@ -335,10 +336,10 @@ async def main():
         logging.error("REDMINE_API_KEY environment variable is required")
         sys.exit(1)
     
-    # Create and run server
+    # Create and run server (FastMCP handles transport automatically)
     server = RedmineMCPServer(redmine_url, redmine_api_key)
-    await server.run()
+    server.run()
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
