@@ -11,7 +11,10 @@ import random
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.redmine_client import RedmineClient
+from src.users import UserClient
+from src.projects import ProjectClient
+from src.issues import IssueClient
+from src.groups import GroupClient
 import logging
 
 # Configure logging

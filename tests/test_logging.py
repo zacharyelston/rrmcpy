@@ -12,7 +12,8 @@ from unittest.mock import patch
 # Add the parent directory to the path to access src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.redmine_client import RedmineClient
+from src.users import UserClient
+from src.issues import IssueClient
 
 class TestLogging(unittest.TestCase):
     """Test comprehensive logging functionality"""
@@ -44,7 +45,9 @@ class TestLogging(unittest.TestCase):
         redmine_logger.setLevel(logging.DEBUG)
         redmine_logger.addHandler(self.log_handler)
         
-        self.client = RedmineClient(self.redmine_url, self.redmine_api_key)
+        self.user_client = UserClient(self.redmine_url, self.redmine_api_key)
+        self.project_client = ProjectClient(self.redmine_url, self.redmine_api_key)
+        self.issue_client = IssueClient(self.redmine_url, self.redmine_api_key)
     
     def tearDown(self):
         """Clean up test environment"""
