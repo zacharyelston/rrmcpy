@@ -160,7 +160,7 @@ cython_debug/
 #  modules.xml
 #  .idea/contentModel.xml
 #  Uncomment these for PyCharm:
-#  .idea/
+.idea/
 #  *.iml
 #  modules.xml
 #  .idea/contentModel.xml
