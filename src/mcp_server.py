@@ -158,7 +158,7 @@ class RedmineMCPServer:
                              tracker_id: int = None, status_id: int = None, 
                              priority_id: int = None, assigned_to_id: int = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-create-issue")
+            tool = self.tool_registry.get_tool("CreateIssueTool")
             result = tool.safe_execute(**kwargs)
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
@@ -166,7 +166,7 @@ class RedmineMCPServer:
         @self.mcp.tool("redmine-get-issue")
         async def get_issue(issue_id: int, include: list = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-get-issue")
+            tool = self.tool_registry.get_tool("GetIssueTool")
             result = tool.safe_execute(**kwargs)
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
@@ -176,7 +176,7 @@ class RedmineMCPServer:
                             assigned_to_id: int = None, tracker_id: int = None,
                             limit: int = None, offset: int = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-list-issues")
+            tool = self.tool_registry.get_tool("ListIssuesTool")
             result = tool.safe_execute(**kwargs)
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
@@ -186,7 +186,7 @@ class RedmineMCPServer:
                              status_id: int = None, priority_id: int = None, 
                              assigned_to_id: int = None, notes: str = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-update-issue")
+            tool = self.tool_registry.get_tool("UpdateIssueTool")
             result = tool.safe_execute(**kwargs)
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
@@ -194,7 +194,7 @@ class RedmineMCPServer:
         @self.mcp.tool("redmine-delete-issue")
         async def delete_issue(issue_id: int):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-delete-issue")
+            tool = self.tool_registry.get_tool("DeleteIssueTool")
             result = tool.safe_execute(**kwargs)
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
@@ -204,14 +204,14 @@ class RedmineMCPServer:
         
         @self.mcp.tool("redmine-health-check")
         async def health_check():
-            tool = self.tool_registry.get_tool("redmine-health-check")
+            tool = self.tool_registry.get_tool("HealthCheckTool")
             result = tool.safe_execute()
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-get-current-user")
         async def get_current_user():
-            tool = self.tool_registry.get_tool("redmine-get-current-user")
+            tool = self.tool_registry.get_tool("GetCurrentUserTool")
             result = tool.safe_execute()
             import json
             return [{"type": "text", "text": json.dumps(result, indent=2)}]
