@@ -268,6 +268,7 @@ class RedmineMCPServer:
             if hasattr(self.config.server, 'transport') and self.config.server.transport:
                 transport = self.config.server.transport
             
+
             # Handle container environments with existing event loops
             try:
                 await self.mcp.run(transport)
