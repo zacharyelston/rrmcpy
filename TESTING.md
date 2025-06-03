@@ -42,7 +42,7 @@ export REDMINE_API_KEY=your-api-key-here
 export REDMINE_URL=https://your-redmine-instance.com
 
 # Run the server
-python run_mcp_server.py
+python main.py
 ```
 
 ### 2. Docker Testing

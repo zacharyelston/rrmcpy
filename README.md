@@ -41,7 +41,7 @@ export REDMINE_API_KEY=your-api-key-here
 export REDMINE_URL=https://your-redmine-instance.com
 
 # Run the server
-python run_mcp_server.py
+python main.py
 ```
 
 ### Environment Variables
@@ -108,7 +108,7 @@ export LOG_LEVEL=DEBUG
 
 3. Run the server:
 ```bash
-python run_mcp_server.py
+python main.py
 ```
 
 ### Project Structure

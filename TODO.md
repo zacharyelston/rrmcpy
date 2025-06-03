@@ -73,7 +73,7 @@ src/
 │   ├── issue_tools.py     # Issue management tools
 │   └── admin_tools.py     # Administrative tools
 ├── [existing api clients]  # Legacy API client modules
-└── run_mcp_server.py       # Production entry point
+└── main.py                 # Production entry point
 ```
 
 ### Completed Architecture Patterns

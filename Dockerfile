@@ -16,7 +16,7 @@ RUN mkdir -p /app/src /app/tests
 
 # Copy application code
 COPY src/ /app/src/
-COPY run_mcp_server.py /app/
+COPY main.py /app/
 
 # Copy tests
 COPY tests/ /app/tests/
@@ -33,4 +33,4 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     PYTHONPATH="/app"
 
 # Run the modular MCP server
-CMD ["python", "run_mcp_server.py"]
+CMD ["python", "main.py"]

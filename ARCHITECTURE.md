@@ -86,10 +86,10 @@ The Redmine MCP Server has been completely restructured using a modular architec
 ### Running the Server
 ```bash
 # Production mode with STDIO transport
-python run_mcp_server.py
+python main.py
 
 # Test mode
-SERVER_MODE=test python run_mcp_server.py
+SERVER_MODE=test python main.py
 ```
 
 ### Environment Configuration
