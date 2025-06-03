@@ -137,11 +137,11 @@ class RedmineSTDIOServer:
     
     def _health_check(self, **kwargs) -> Dict[str, Any]:
         """Check connection health"""
-        healthy = self.redmine_client.health_check()
+        healthy = self.issue_client.health_check()
         return {
             "healthy": healthy,
             "redmine_url": self.redmine_url,
-            "timestamp": self.redmine_client.issues._get_timestamp()
+            "timestamp": self.issue_client._get_timestamp()
         }
     
 
