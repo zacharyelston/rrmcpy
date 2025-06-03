@@ -108,7 +108,11 @@ class ToolRegistrations:
                 if tracker_id:
                     filters["tracker_id"] = tracker_id
                     
-                result = issue_client.get_issues(filters=filters, limit=limit)
+                # Use params parameter as expected by IssueClient.get_issues method
+                params = filters
+                if limit:
+                    params['limit'] = limit
+                result = issue_client.get_issues(params=params)
                 return json.dumps(result, indent=2)
             except Exception as e:
                 self.logger.error(f"Error listing issues: {e}")
