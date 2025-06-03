@@ -51,9 +51,6 @@ class RedmineMCPServer:
         self.mcp = None
         self.services = {}
         self.clients = {}
-        
-        # Initialize the server components
-        self.initialize()
     
     def initialize(self):
         """Initialize server configuration and components"""
@@ -371,4 +368,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
