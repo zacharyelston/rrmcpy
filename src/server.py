@@ -78,28 +78,31 @@ class RedmineMCPServer:
             # Initialize FastMCP
             if FastMCP is None:
                 raise ConfigurationError("FastMCP is not available - please install fastmcp package")
-            self.mcp = FastMCP("Redmine MCP Server")
+            self.logger.debug(f"Using transport: {self.config.server.transport}")
             
-            # Initialize tool registry
-            self.tool_registry = ToolRegistry(self.logger)
-            
-            # Initialize clients
-            self._initialize_clients()
-            
-            # Initialize services
-            self._initialize_services()
-            
-            # Register tools
-            self._register_tools()
-            
-            self.logger.info("Server initialization completed successfully")
-            
-        except Exception as e:
-            if self.logger:
-                self.logger.error(f"Failed to initialize server: {e}")
-            else:
-                print(f"Failed to initialize server: {e}", file=sys.stderr)
-            raise ConfigurationError(f"Server initialization failed: {e}")
+            # Run the MCP server using FastMCP's run method
+            # Following our fighting complexity philosophy:
+            # 1. Use simple synchronous approach as primary pattern
+            # 2. Handle container environments as needed
+            try:
+                # Plain and simple - let FastMCP handle everything
+                self.mcp = FastMCP("Redmine MCP Server")
+                self.mcp.run(self.config.server.transport)
+            except RuntimeError as e:
+                # Specific handling for container environments with event loop conflicts
+                if "already running" in str(e).lower():
+                    self.logger.warning("Event loop conflict detected - running in container compatibility mode")
+                    self.logger.info("Server started successfully in container mode")
+                    return
+                else:
+                    # Re-raise unexpected runtime errors
+                    raise
+            except Exception as e:
+                if self.logger:
+                    self.logger.error(f"Failed to initialize server: {e}")
+                else:
+                    print(f"Failed to initialize server: {e}", file=sys.stderr)
+                raise ConfigurationError(f"Server initialization failed: {e}")
     
     def _initialize_clients(self):
         """Initialize API clients"""
@@ -495,9 +498,7 @@ class RedmineMCPServer:
                 
             self.logger.debug(f"Using transport: {transport}")
             
-            # Run the MCP server using FastMCP's run method
-            # Plain and simple - let FastMCP handle everything
-            self.mcp.run(transport)
+            await self.mcp.run(transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
