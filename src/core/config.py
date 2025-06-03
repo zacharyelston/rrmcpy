@@ -37,7 +37,7 @@ class RedmineConfig:
     @classmethod
     def from_environment(cls) -> 'RedmineConfig':
         """Create configuration from environment variables"""
-        redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
+        redmine_url = os.environ.get('REDMINE_URL', 'https://demo.redmine.org')
         redmine_api_key = os.environ.get('REDMINE_API_KEY')
         
         if not redmine_api_key:

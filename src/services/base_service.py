@@ -4,8 +4,8 @@ Base service class for Redmine MCP Server
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 import logging
-from src.core.config import RedmineConfig
-from src.core.errors import ValidationError, format_error_response
+from ..core.config import RedmineConfig
+from ..core.errors import ValidationError, format_error_response
 
 
 class BaseService(ABC):

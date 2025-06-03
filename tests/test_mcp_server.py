@@ -18,7 +18,7 @@ class TestProperMCP(unittest.TestCase):
     
     def setUp(self):
         """Set up test environment"""
-        self.redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
+        self.redmine_url = os.environ.get('REDMINE_URL', 'https://demo.redmine.org')
         self.redmine_api_key = os.environ.get('REDMINE_API_KEY', '')
         
         if not self.redmine_api_key:
