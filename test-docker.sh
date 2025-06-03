@@ -106,7 +106,7 @@ run_health_check() {
         python -c "
 import sys, os
 sys.path.insert(0, '/app/src')
-from mcp_server import RedmineMCPServer
+from server import RedmineMCPServer
 
 try:
     server = RedmineMCPServer()
