@@ -22,26 +22,24 @@ A production-ready Python MCP Server for Redmine with modular architecture, feat
 ### Using Docker (Recommended)
 
 1. Build the Docker image:
-
 ```bash
 docker build -t redmine-mcp-server .
 ```
 
-2. Run the server with Docker:
-
+2. Run the server:
 ```bash
-docker run -e REDMINE_API_KEY=your-api-key-here redmine-mcp-server
+docker run -e REDMINE_URL=https://your-redmine.com -e REDMINE_API_KEY=your-api-key redmine-mcp-server
 ```
 
-### Native Python
+### Local Testing
 
+Use the provided testing utilities:
 ```bash
-# Set environment variables
-export REDMINE_API_KEY=your-api-key-here
-export REDMINE_URL=https://your-redmine-instance.com
+# Interactive Docker testing menu
+./utils/test-docker.sh
 
-# Run the server
-python main.py
+# Basic connectivity test
+python scripts/test-minimal.py
 ```
 
 ### Environment Variables
@@ -54,9 +52,9 @@ python main.py
 
 ## Usage
 
-The MCP server communicates using the FastMCP protocol over STDIO. It provides MCP tools for Redmine API operations with proper Pydantic type validation.
+The MCP server communicates using the MCP protocol over STDIO. It provides tools for Redmine API operations and integrates seamlessly with MCP clients like Claude Desktop.
 
-### Available MCP Tools
+### Available Tools
 
 #### Issue Management
 - `redmine-create-issue`: Create new issues with validation
