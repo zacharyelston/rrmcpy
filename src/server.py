@@ -112,8 +112,17 @@ class RedmineMCPServer:
             logger=get_logger('issue_client')
         )
         
-        # Add convenience property for FastMCP tools
+        # Initialize roadmap client for version management
+        from .roadmap import RoadmapClient
+        self.clients['roadmap'] = RoadmapClient(
+            base_url=self.config.redmine.url,
+            api_key=self.config.redmine.api_key,
+            logger=get_logger('roadmap_client')
+        )
+        
+        # Add convenience properties for FastMCP tools
         self.issue_client = self.clients['issues']
+        self.roadmap_client = self.clients['roadmap']
         
         self.logger.debug("API clients initialized")
     
@@ -154,22 +163,38 @@ class RedmineMCPServer:
                 self.logger.error(f"Failed to register tool {tool_class.__name__}: {e}")
                 raise
         
-        # Register tools with FastMCP manually for each tool
-        self._register_issue_tools()
-        self._register_admin_tools()
+        self._register_mcp_tools()
         
         tool_count = len(self.tool_registry.list_tool_names())
         self.logger.info(f"Registered {tool_count} tools: {', '.join(self.tool_registry.list_tool_names())}")
+    
+    def _register_mcp_tools(self):
+        """Register all MCP tools"""
+        self._register_issue_tools()
+        self._register_admin_tools()  # For health check and current user
+        self._register_version_tools()  # For version/roadmap management
     
     def _register_issue_tools(self):
         """Register issue management tools with FastMCP following standard patterns"""
         
         @self.mcp.tool("redmine-create-issue")
         async def create_issue(project_id: str, subject: str, description: str = None, 
-                             tracker_id: int = None, status_id: int = None, 
-                             priority_id: int = None, assigned_to_id: int = None):
+                               tracker_id: int = None, status_id: int = None, 
+                               priority_id: int = None, assigned_to_id: int = None):
             """Create a new issue in Redmine"""
             try:
+                # Input validation - ensure required fields are present
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-create-issue failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                    
+                if not subject:
+                    error = "subject is required"
+                    self.logger.error(f"MCP tool redmine-create-issue failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                # Build issue data
                 issue_data = {"project_id": project_id, "subject": subject}
                 if description: issue_data["description"] = description
                 if tracker_id: issue_data["tracker_id"] = tracker_id
@@ -177,10 +202,39 @@ class RedmineMCPServer:
                 if priority_id: issue_data["priority_id"] = priority_id
                 if assigned_to_id: issue_data["assigned_to_id"] = assigned_to_id
                 
+                # Log the incoming request
+                self.logger.info(f"MCP tool redmine-create-issue called with data: {issue_data}")
+                
+                # Call the client to create the issue
                 result = self.issue_client.create_issue(issue_data)
-                return json.dumps(result, indent=2)
+                
+                # Handle error responses
+                if isinstance(result, dict) and "error" in result:
+                    self.logger.error(f"Issue client returned error: {result['error']}")
+                    return json.dumps(result, indent=2)
+                
+                # Handle unexpected list response (should not happen with direct HTTPS URL)
+                if isinstance(result, dict) and 'issues' in result:
+                    self.logger.error(f"create_issue unexpectedly returned a list of issues instead of the created issue")
+                    return json.dumps({"error": "Received list of issues instead of created issue. Please check REDMINE_URL configuration."}, indent=2)
+                
+                # Verify we have an issue object in the response
+                if isinstance(result, dict) and 'issue' in result:
+                    issue_id = result['issue'].get('id')
+                    self.logger.info(f"Successfully created issue #{issue_id}: {result['issue'].get('subject')}")
+                    return json.dumps(result, indent=2)
+                
+                # If we reach here, we got an unexpected response format
+                self.logger.error(f"Unexpected response format from create_issue: {result}")
+                return json.dumps({"error": "Unexpected response format", "response": result}, indent=2)
             except Exception as e:
-                return f"Error creating issue: {str(e)}"
+                error_msg = f"Error creating issue: {str(e)}"
+                self.logger.error(error_msg)
+                if hasattr(e, '__traceback__'):
+                    import traceback
+                    tb = ''.join(traceback.format_tb(e.__traceback__))
+                    self.logger.error(f"Traceback: {tb}")
+                return json.dumps({"error": error_msg}, indent=2)
         
         @self.mcp.tool("redmine-get-issue")
         async def get_issue(issue_id: int, include: list = None):
@@ -238,8 +292,125 @@ class RedmineMCPServer:
             except Exception as e:
                 return f"Error deleting issue {issue_id}: {str(e)}"
     
+    def _register_version_tools(self):
+        """Register version management tools with FastMCP following standard patterns"""
+        
+        @self.mcp.tool("redmine-list-versions")
+        async def list_versions(project_id: str):
+            """List versions for a project"""
+            if not project_id:
+                return json.dumps({"error": "project_id is required"}, indent=2)
+                
+            try:
+                result = self.roadmap_client.get_versions(project_id)
+                self.logger.info(f"Listed versions for project {project_id}")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                error_msg = f"Error listing versions: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+        
+        @self.mcp.tool("redmine-get-version")
+        async def get_version(version_id: int):
+            """Get a specific version by ID"""
+            if not version_id:
+                return json.dumps({"error": "version_id is required"}, indent=2)
+                
+            try:
+                result = self.roadmap_client.get_version(version_id)
+                self.logger.info(f"Retrieved version {version_id}")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                error_msg = f"Error retrieving version: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+        
+        @self.mcp.tool("redmine-create-version")
+        async def create_version(project_id: str, name: str, description: str = "", due_date: str = "", status: str = "open"):
+            """Create a new version"""
+            if not project_id or not name:
+                return json.dumps({"error": "project_id and name are required"}, indent=2)
+                
+            try:
+                # Use the convenience method for simplifying version creation
+                result = self.roadmap_client.create_roadmap_version(
+                    project_id=project_id,
+                    name=name,
+                    description=description,
+                    due_date=due_date,
+                    status=status
+                )
+                self.logger.info(f"Created version '{name}' for project {project_id}")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                error_msg = f"Error creating version: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+                
+        @self.mcp.tool("redmine-update-version")
+        async def update_version(version_id: int, name: str = "", description: str = "", due_date: str = "", status: str = ""):
+            """Update an existing version"""
+            if not version_id:
+                return json.dumps({"error": "version_id is required"}, indent=2)
+                
+            # Build update data (only include non-empty fields)
+            version_data = {}
+            if name:
+                version_data["name"] = name
+            if description:
+                version_data["description"] = description
+            if due_date:
+                version_data["due_date"] = due_date
+            if status:
+                version_data["status"] = status
+                
+            if not version_data:
+                return json.dumps({"error": "At least one field to update must be provided"}, indent=2)
+                
+            try:
+                result = self.roadmap_client.update_version(version_id, version_data)
+                self.logger.info(f"Updated version {version_id}")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                error_msg = f"Error updating version: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+                
+        @self.mcp.tool("redmine-delete-version")
+        async def delete_version(version_id: int):
+            """Delete a version"""
+            if not version_id:
+                return json.dumps({"error": "version_id is required"}, indent=2)
+                
+            try:
+                result = self.roadmap_client.delete_version(version_id)
+                self.logger.info(f"Deleted version {version_id}")
+                return json.dumps({"success": True}, indent=2)
+            except Exception as e:
+                error_msg = f"Error deleting version: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+                
+        @self.mcp.tool("redmine-get-issues-by-version")
+        async def get_issues_by_version(version_id: int):
+            """Get all issues for a specific version"""
+            if not version_id:
+                return json.dumps({"error": "version_id is required"}, indent=2)
+                
+            try:
+                result = self.roadmap_client.get_issues_by_version(version_id)
+                self.logger.info(f"Retrieved issues for version {version_id}")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                error_msg = f"Error retrieving issues by version: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
+
     def _register_admin_tools(self):
         """Register administrative tools with FastMCP following standard patterns"""
+        import platform
+        import datetime
+        import os
         
         @self.mcp.tool("redmine-health-check")
         async def health_check():
@@ -259,6 +430,52 @@ class RedmineMCPServer:
                 return json.dumps(result, indent=2)
             except Exception as e:
                 return f"Error getting current user: {str(e)}"
+        
+        @self.mcp.tool("redmine-version-info")
+        async def version_info():
+            """Get version information about the Redmine MCP server"""
+            try:
+                # Get basic version info
+                info = {
+                    "server": {
+                        "name": "Redmine MCP Server",
+                        "version": "0.1.0",  # Replace with actual version when available
+                        "timestamp": datetime.datetime.now().isoformat(),
+                        "python_version": platform.python_version(),
+                        "platform": platform.platform()
+                    },
+                    "redmine": {
+                        "url": self.config.redmine.url,
+                        # Don't include API key for security
+                        "api_key_configured": bool(self.config.redmine.api_key)
+                    },
+                    "configuration": {
+                        "server_mode": self.config.server.mode
+                    }
+                }
+                
+                # Add git commit if available
+                git_commit = os.environ.get("GIT_COMMIT")
+                if git_commit:
+                    info["server"]["git_commit"] = git_commit
+                
+                # Add health information
+                try:
+                    redmine_healthy = self.connection_manager.health_check()
+                    info["redmine"]["connection_healthy"] = redmine_healthy
+                except Exception as e:
+                    info["redmine"]["connection_healthy"] = False
+                    info["redmine"]["connection_error"] = str(e)
+                
+                # Add registered tools
+                info["tools"] = self.mcp.list_tools() if hasattr(self, "mcp") else []
+                
+                self.logger.info(f"Provided version info")
+                return json.dumps(info, indent=2)
+            except Exception as e:
+                error_msg = f"Error getting version info: {str(e)}"
+                self.logger.error(error_msg)
+                return json.dumps({"error": error_msg}, indent=2)
     
     def run(self, transport: Optional[str] = None):
         """Run the server in live mode
