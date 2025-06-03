@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import sys
+
 from typing import Any, Dict, List, Union
 
 from src.redmine_client import RedmineClient
@@ -283,7 +284,9 @@ class RedmineSTDIOServer:
             self.logger.error(f"Error handling request: {e}")
             return {
                 "jsonrpc": "2.0",
+
                 "id": self._ensure_valid_id(request.get("id")),
+
                 "error": {
                     "code": -32603,
                     "message": f"Internal error: {str(e)}"

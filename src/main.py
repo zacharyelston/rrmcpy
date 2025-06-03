@@ -8,7 +8,7 @@ import os
 import sys
 import logging
 
-from src.proper_mcp_server import RedmineMCPServer
+from src.mcp_server import RedmineMCPServer
 
 
 def main():
@@ -48,11 +48,12 @@ def main():
         
         logger.info("Tests passed, starting server")
     
-    # Create and run the proper FastMCP server
+    # Create and run the MCP server
     server = RedmineMCPServer(redmine_url, redmine_api_key)
     
     try:
-        asyncio.run(server.run())
+        # Run the MCP server with STDIO
+        server.run_stdio()
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
     except Exception as e:

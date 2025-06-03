@@ -3,6 +3,8 @@ Proper FastMCP server implementation for Redmine integration
 Follows FastMCP best practices and MCP protocol specification
 """
 import asyncio
+import json
+import datetime
 import logging
 import sys
 from typing import Any, Dict, List, Optional
@@ -79,12 +81,12 @@ class RedmineMCPServer:
         """Register all MCP tools following proper FastMCP pattern"""
         
         # Issue management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-issues")
         def list_issues(
             project_id: Optional[str] = None,
-            status_id: Optional[int] = None,
-            assigned_to_id: Optional[int] = None,
-            limit: Optional[int] = 25
+            status_id: Optional[str] = None,
+            assigned_to_id: Optional[str] = None,
+            limit: Optional[str] = "25"
         ) -> List[Dict[str, Any]]:
             """
             List issues with optional filtering
@@ -98,13 +100,24 @@ class RedmineMCPServer:
             Returns:
                 List of issues
             """
-            params = {"limit": limit}
+            params = {}
+            if limit is not None:
+                try:
+                    params["limit"] = int(limit)
+                except (ValueError, TypeError):
+                    params["limit"] = 25
             if project_id:
                 params["project_id"] = project_id
             if status_id:
-                params["status_id"] = status_id
+                try:
+                    params["status_id"] = int(status_id)
+                except (ValueError, TypeError):
+                    pass
             if assigned_to_id:
-                params["assigned_to_id"] = assigned_to_id
+                try:
+                    params["assigned_to_id"] = int(assigned_to_id)
+                except (ValueError, TypeError):
+                    pass
             
             try:
                 result = self.redmine_client.get_issues(params)
@@ -115,7 +128,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error listing issues: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-issue")
         def get_issue(issue_id: int) -> Dict[str, Any]:
             """
             Get detailed information about a specific issue
@@ -135,7 +148,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting issue {issue_id}: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-create-issue")
         def create_issue(request: IssueCreateRequest) -> Dict[str, Any]:
             """
             Create a new issue
@@ -156,7 +169,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error creating issue: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-update-issue")
         def update_issue(request: IssueUpdateRequest) -> bool:
             """
             Update an existing issue
@@ -179,7 +192,7 @@ class RedmineMCPServer:
                 raise
         
         # Project management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-projects")
         def list_projects() -> List[Dict[str, Any]]:
             """
             List all accessible projects
@@ -196,7 +209,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error listing projects: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-project")
         def get_project(project_id: str) -> Dict[str, Any]:
             """
             Get detailed information about a specific project
@@ -216,7 +229,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting project {project_id}: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-create-project")
         def create_project(request: ProjectCreateRequest) -> Dict[str, Any]:
             """
             Create a new project
@@ -238,7 +251,7 @@ class RedmineMCPServer:
                 raise
         
         # User management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-get-current-user")
         def get_current_user() -> Dict[str, Any]:
             """
             Get information about the current authenticated user
@@ -255,7 +268,7 @@ class RedmineMCPServer:
                 self.logger.error(f"Error getting current user: {e}")
                 raise
         
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-users")
         def list_users() -> List[Dict[str, Any]]:
             """
             List all users (requires admin privileges)
@@ -273,7 +286,7 @@ class RedmineMCPServer:
                 raise
         
         # Version management tools
-        @self.app.tool()
+        @self.app.tool(name="redmine-list-versions")
         def list_versions(project_id: str) -> List[Dict[str, Any]]:
             """
             List versions for a project
@@ -294,7 +307,7 @@ class RedmineMCPServer:
                 raise
         
         # Health check tool
-        @self.app.tool()
+        @self.app.tool(name="redmine-health-check")
         def health_check() -> Dict[str, Any]:
             """
             Check the health of the Redmine connection
@@ -317,10 +330,11 @@ class RedmineMCPServer:
                     "redmine_url": self.redmine_url
                 }
     
-    async def run(self):
-        """Run the MCP server"""
+    def run_stdio(self):
+        """Run the MCP server with STDIO transport for MCP clients"""
         self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
-        await self.app.run()
+        # Use FastMCP's built-in run method - it handles STDIO by default
+        self.app.run("stdio")
 
 
 async def main():
@@ -335,9 +349,11 @@ async def main():
         logging.error("REDMINE_API_KEY environment variable is required")
         sys.exit(1)
     
-    # Create and run server
+    # Create server and get the FastMCP app
     server = RedmineMCPServer(redmine_url, redmine_api_key)
-    await server.run()
+    
+    # Run the FastMCP server
+    await server.app.run()
 
 
 if __name__ == '__main__':

@@ -14,8 +14,15 @@ NC='\033[0m' # No Color
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Get current git branch for container labeling
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+CURRENT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
 echo -e "${GREEN}Redmine MCP Server - Local Docker Testing${NC}"
 echo "=========================================="
+echo "Branch: $CURRENT_BRANCH"
+echo "Commit: $CURRENT_COMMIT"
+echo ""
 
 # Check if .env file exists
 if [ ! -f "$SCRIPT_DIR/.env" ]; then
@@ -55,9 +62,22 @@ echo "  Log Level: $LOG_LEVEL"
 echo "  Server Mode: $SERVER_MODE"
 echo ""
 
-# Build Docker image
-echo -e "${YELLOW}Building Docker image...${NC}"
-docker build -t redmine-mcp-server:local . || {
+# Create branch-specific image tag
+BRANCH_TAG=$(echo "$CURRENT_BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
+IMAGE_NAME="redmine-mcp-server:$BRANCH_TAG"
+IMAGE_NAME_WITH_COMMIT="redmine-mcp-server:$BRANCH_TAG-$CURRENT_COMMIT"
+
+# Build Docker image with branch-specific tags
+echo -e "${YELLOW}Building Docker image with branch labeling...${NC}"
+echo "Image tags: $IMAGE_NAME, $IMAGE_NAME_WITH_COMMIT"
+docker build \
+    -t "$IMAGE_NAME" \
+    -t "$IMAGE_NAME_WITH_COMMIT" \
+    -t "redmine-mcp-server:latest" \
+    --label "branch=$CURRENT_BRANCH" \
+    --label "commit=$CURRENT_COMMIT" \
+    --label "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    . || {
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -72,9 +92,10 @@ run_tests() {
         -e REDMINE_URL="$REDMINE_URL" \
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
+        --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
-        redmine-mcp-server:local \
-        python -m pytest tests/test_proper_mcp.py tests/test_error_handling.py tests/test_logging.py -v
+        "$IMAGE_NAME" \
+        python -m pytest tests/test_mcp_server.py tests/test_error_handling.py tests/test_logging.py -v
 }
 
 # Function to run health check
@@ -84,9 +105,10 @@ run_health_check() {
         -e REDMINE_URL="$REDMINE_URL" \
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
+        --name "rmcp-health-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
-        redmine-mcp-server:local \
-        python test-minimal.py
+        "$IMAGE_NAME" \
+        python scripts/test-minimal.py
 }
 
 # Function to run interactive container
@@ -101,8 +123,9 @@ run_interactive() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="$SERVER_MODE" \
+        --name "rmcp-interactive-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="/bin/bash" \
-        redmine-mcp-server:local
+        "$IMAGE_NAME"
 }
 
 # Function to run server in test mode
@@ -116,7 +139,25 @@ run_server_test_mode() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="test" \
-        redmine-mcp-server:local
+        --name "rmcp-server-$BRANCH_TAG-$(date +%s)" \
+        "$IMAGE_NAME"
+}
+
+# Function to list branch versions
+list_branch_versions() {
+    echo -e "${YELLOW}Available Redmine MCP Server images:${NC}"
+    echo ""
+    docker images redmine-mcp-server --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}\t{{.Size}}" | head -20
+    echo ""
+    echo "Image labels (showing branch and commit info):"
+    docker images redmine-mcp-server -q | head -10 | while read image_id; do
+        branch=$(docker inspect "$image_id" --format '{{index .Config.Labels "branch"}}' 2>/dev/null || echo "unknown")
+        commit=$(docker inspect "$image_id" --format '{{index .Config.Labels "commit"}}' 2>/dev/null || echo "unknown")
+        build_date=$(docker inspect "$image_id" --format '{{index .Config.Labels "build-date"}}' 2>/dev/null || echo "unknown")
+        tag=$(docker inspect "$image_id" --format '{{index .RepoTags 0}}' 2>/dev/null || echo "unknown")
+        echo "  $tag -> Branch: $branch, Commit: $commit, Built: $build_date"
+    done
+    echo ""
 }
 
 # Main menu
@@ -127,10 +168,11 @@ while true; do
     echo "2) Run health check"
     echo "3) Run server in test mode"
     echo "4) Interactive container shell"
-    echo "5) Exit"
+    echo "5) List branch versions"
+    echo "6) Exit"
     echo ""
     
-    read -p "Enter your choice (1-5): " choice
+    read -p "Enter your choice (1-6): " choice
     
     case $choice in
         1)
@@ -146,11 +188,14 @@ while true; do
             run_interactive
             ;;
         5)
+            list_branch_versions
+            ;;
+        6)
             echo -e "${GREEN}Exiting...${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid option. Please select 1-5.${NC}"
+            echo -e "${RED}Invalid option. Please select 1-6.${NC}"
             ;;
     esac
 done
