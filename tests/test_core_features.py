@@ -36,7 +36,7 @@ def setup_api_key():
 @pytest.mark.skipif(not setup_api_key(), reason="REDMINE_API_KEY not available")
 def test_current_user():
     """Test current user endpoint"""
-    redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")
+    redmine_url = os.environ.get("REDMINE_URL", "https://demo.redmine.org")
     redmine_api_key = setup_api_key()
     
     logger.info(f"Connecting to Redmine at {redmine_url}")
@@ -53,7 +53,7 @@ def test_current_user():
 @pytest.mark.skipif(not setup_api_key(), reason="REDMINE_API_KEY not available")
 def test_projects():
     """Test projects endpoint"""
-    redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")
+    redmine_url = os.environ.get("REDMINE_URL", "https://demo.redmine.org")
     redmine_api_key = setup_api_key()
     
     logger.info(f"Connecting to Redmine at {redmine_url}")
@@ -70,7 +70,7 @@ def test_projects():
 @pytest.mark.skipif(not setup_api_key(), reason="REDMINE_API_KEY not available")
 def test_issues():
     """Test issues endpoint"""
-    redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")
+    redmine_url = os.environ.get("REDMINE_URL", "https://demo.redmine.org")
     redmine_api_key = setup_api_key()
     test_project = os.environ.get("TEST_PROJECT", "p1")
     

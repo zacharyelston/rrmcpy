@@ -27,7 +27,7 @@ def main():
     print("Starting direct Redmine client test...")
     
     # Get configuration from environment
-    redmine_url = os.environ.get("REDMINE_URL", "https://redstone.redminecloud.net")
+    redmine_url = os.environ.get("REDMINE_URL", "https://demo.redmine.org")
     redmine_api_key = os.environ.get("REDMINE_API_KEY", "")
     
     if not redmine_api_key:

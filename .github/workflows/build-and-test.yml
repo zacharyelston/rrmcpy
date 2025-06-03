@@ -152,8 +152,8 @@ jobs:
         TEST_PROJECT: "p1"
         SERVER_MODE: "test"
       run: |
-        echo "Running validation tests against Redmine issues in v1 project"
-        cd tests && python test_redstone.py
+        echo "Running validation tests against Redmine with core features"
+        python -m pytest tests/test_core_features.py -v
         
     - name: Run Docker container tests
       env:
@@ -170,7 +170,7 @@ jobs:
         ENV REDMINE_API_KEY=$REDMINE_API_KEY
         ENV SERVER_MODE=test
         ENV TEST_PROJECT=$TEST_PROJECT
-        CMD ["sh", "-c", "cd tests && python test_redstone.py"]
+        CMD ["python", "src/mcp_server.py"]
         EOF
         
         # Build the test container
