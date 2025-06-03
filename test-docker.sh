@@ -49,15 +49,23 @@ fi
 LOG_LEVEL=${LOG_LEVEL:-info}
 SERVER_MODE=${SERVER_MODE:-live}
 
+# Get current git branch for dynamic image tagging
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "local")
+# Sanitize branch name for Docker tag (replace invalid characters)
+DOCKER_TAG=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g' | tr '[:upper:]' '[:lower:]')
+IMAGE_NAME="redmine-mcp-server:$DOCKER_TAG"
+
 echo "Configuration:"
 echo "  Redmine URL: $REDMINE_URL"
 echo "  Log Level: $LOG_LEVEL"
 echo "  Server Mode: $SERVER_MODE"
+echo "  Branch: $BRANCH_NAME"
+echo "  Docker Image: $IMAGE_NAME"
 echo ""
 
 # Build Docker image
 echo -e "${YELLOW}Building Docker image...${NC}"
-docker build -t redmine-mcp-server:local . || {
+docker build -t "$IMAGE_NAME" . || {
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -73,7 +81,7 @@ run_tests() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
-        redmine-mcp-server:local \
+        "$IMAGE_NAME" \
         python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
 }
 
@@ -85,7 +93,7 @@ run_health_check() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
-        redmine-mcp-server:local \
+        "$IMAGE_NAME" \
         python -c "
 import sys, os
 sys.path.insert(0, '/app/src')
@@ -117,7 +125,7 @@ run_interactive() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="$SERVER_MODE" \
         --entrypoint="/bin/bash" \
-        redmine-mcp-server:local
+        "$IMAGE_NAME"
 }
 
 # Function to run server in test mode
@@ -131,7 +139,7 @@ run_server_test_mode() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="test" \
-        redmine-mcp-server:local
+        "$IMAGE_NAME"
 }
 
 # Main menu
