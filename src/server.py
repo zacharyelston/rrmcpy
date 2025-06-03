@@ -263,9 +263,9 @@ class RedmineMCPServer:
             if hasattr(self.config.server, 'transport') and self.config.server.transport:
                 transport = self.config.server.transport
             
-            # Start the MCP server using FastMCP's non-async start method
+            # Run the MCP server using FastMCP's run method
             # which handles its own event loop internally
-            self.mcp.start(transport=transport)
+            self.mcp.run(transport=transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
