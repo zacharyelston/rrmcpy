@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 fastmcp>=2.5.2
 mcp>=1.9.0
 pydantic>=2.7.2
+nest_asyncio>=1.5.6
