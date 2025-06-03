@@ -32,4 +32,4 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     PYTHONPATH="/app"
 
 # Run the modular MCP server directly
-CMD ["python", "src/mcp_server.py"]
+CMD ["python", "src/server.py"]
