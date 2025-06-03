@@ -118,11 +118,30 @@ class RedmineBaseClient:
             # Log successful request
             self.logger.debug(f"Request {method} {url} completed successfully in {duration_ms:.2f}ms (status: {response.status_code})")
             
+            # Handle 201 Created status specially for resource creation
+            if response.status_code == 201:  # Created
+                if response.content:
+                    result = response.json()
+                    self.logger.debug(f"Created resource with data: {list(result.keys()) if isinstance(result, dict) else 'non-dict response'}")
+                    return result
+                
+                # For APIs that return empty 201 responses, try to extract ID from Location header
+                resource_id = self._extract_id_from_location(response)
+                if resource_id:
+                    self.logger.debug(f"Created resource with ID: {resource_id} (extracted from Location header)")
+                    return {"id": resource_id, "success": True}
+                
+                # Fallback for empty responses with no Location header
+                return {"success": True, "status_code": 201}
+            
+            # Handle normal responses with content
             if response.content:
                 result = response.json()
                 self.logger.debug(f"Response data keys: {list(result.keys()) if isinstance(result, dict) else 'non-dict response'}")
                 return result
-            return {}
+            
+            # For empty responses that aren't 201 Created
+            return {"success": True, "status_code": response.status_code}
             
         except requests.exceptions.RequestException as e:
             duration_ms = (time.time() - start_time) * 1000
@@ -206,6 +225,39 @@ class RedmineBaseClient:
         
         return self._create_error_response(error_code, error_message, status_code)
     
+    def _extract_id_from_location(self, response) -> Optional[int]:
+        """
+        Extract resource ID from Location header for POST requests
+        
+        Args:
+            response: The HTTP response object
+            
+        Returns:
+            Integer ID if found in Location header, None otherwise
+        """
+        location = response.headers.get('Location')
+        if not location:
+            return None
+            
+        # Redmine API typically uses URL patterns like '/issues/123.json'
+        try:
+            # Strip off any file extension (.json, .xml)
+            location = location.split('.')[0] if '.' in location else location
+            
+            # Split by '/' and get the last part which should be the ID
+            parts = location.rstrip('/').split('/')
+            if not parts:
+                return None
+                
+            # Try to convert the last part to an integer (the ID)
+            id_str = parts[-1]
+            if id_str.isdigit():
+                return int(id_str)
+        except Exception as e:
+            self.logger.warning(f"Failed to extract ID from Location header '{location}': {e}")
+            
+        return None
+        
     def _create_error_response(self, error_code: str, error_message: str, 
                               status_code: int = 500) -> Dict:
         """
