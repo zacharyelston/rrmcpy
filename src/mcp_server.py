@@ -186,11 +186,15 @@ class RedmineMCPServer:
     async def run(self):
         """Run the MCP server"""
         try:
-            self.logger.info("Starting Redmine MCP Server...")
+            self.logger.info(f"Starting Redmine MCP Server in {self.config.server.mode} mode...")
             
-            # Perform health check
-            if self.config.server.mode != "test":
-                await self._perform_startup_health_check()
+            # Handle different server modes
+            if self.config.server.mode == "test":
+                await self._run_test_mode()
+                return
+            
+            # Perform health check for live/debug modes
+            await self._perform_startup_health_check()
             
             # Run the server
             await self.mcp.run(transport=self.config.server.transport)
