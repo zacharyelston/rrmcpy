@@ -149,7 +149,6 @@ run_server_test_mode() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="test" \
-<<<<<<< HEAD
         --name "rmcp-server-$BRANCH_TAG-$(date +%s)" \
         "$IMAGE_NAME"
 }
