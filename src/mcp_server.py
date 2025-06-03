@@ -15,11 +15,11 @@ except ImportError:
     # Fallback if fastmcp not available
     FastMCP = None
 
-from core import AppConfig, ConfigurationError, setup_logging, get_logger
-from services import IssueService
-from issues import IssueClient
-from tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
-from tools import HealthCheckTool, GetCurrentUserTool
+from .core import AppConfig, ConfigurationError, setup_logging, get_logger
+from .services import IssueService
+from .issues import IssueClient
+from .tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+from .tools import HealthCheckTool, GetCurrentUserTool
 
 
 class RedmineMCPServer:

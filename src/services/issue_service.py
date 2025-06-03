@@ -3,7 +3,7 @@ Issue service for business logic and validation
 """
 from typing import Dict, Any, Optional, List
 from .base_service import BaseService
-from ..core.errors import ValidationError, RedmineAPIError
+from src.core.errors import ValidationError, RedmineAPIError
 
 
 class IssueService(BaseService):
