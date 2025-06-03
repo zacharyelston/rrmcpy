@@ -259,13 +259,20 @@ class RedmineBaseClient:
         if not location:
             return None
             
-        # Redmine API typically uses URL patterns like '/issues/123.json'
+        # Redmine API typically uses URL patterns like '/issues/123.json' or 'https://example.org/issues/123.json'
         try:
+            # Handle both absolute and relative URLs
+            # First, get just the path part if it's an absolute URL
+            if location.startswith('http'):
+                # For absolute URLs, extract just the path
+                from urllib.parse import urlparse
+                location = urlparse(location).path
+            
             # Strip off any file extension (.json, .xml)
             location = location.split('.')[0] if '.' in location else location
             
             # Split by '/' and get the last part which should be the ID
-            parts = location.rstrip('/').split('/')
+            parts = [p for p in location.rstrip('/').split('/') if p]
             if not parts:
                 return None
                 
@@ -273,6 +280,8 @@ class RedmineBaseClient:
             id_str = parts[-1]
             if id_str.isdigit():
                 return int(id_str)
+            else:
+                self.logger.warning(f"Last part of Location '{id_str}' is not a digit")
         except Exception as e:
             self.logger.warning(f"Failed to extract ID from Location header '{location}': {e}")
             
