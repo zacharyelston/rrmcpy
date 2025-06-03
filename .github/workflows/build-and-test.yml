@@ -170,7 +170,7 @@ jobs:
         ENV REDMINE_API_KEY=$REDMINE_API_KEY
         ENV SERVER_MODE=test
         ENV TEST_PROJECT=$TEST_PROJECT
-        CMD ["python", "src/mcp_server.py"]
+        CMD ["python", "src/server.py"]
         EOF
         
         # Build the test container
