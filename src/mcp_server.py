@@ -24,6 +24,9 @@ try:
     from .groups import GroupClient
     from .versions import VersionClient
     from .roadmap import RoadmapClient
+    from .tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+    from .tools import HealthCheckTool, GetCurrentUserTool
+    from .services import IssueService
 except ImportError:
     from src.core import AppConfig, ConfigurationError, setup_logging, get_logger
     from src.core.errors import RedmineAPIError, ToolExecutionError
@@ -33,6 +36,9 @@ except ImportError:
     from src.groups import GroupClient
     from src.versions import VersionClient
     from src.roadmap import RoadmapClient
+    from src.tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+    from src.tools import HealthCheckTool, GetCurrentUserTool
+    from src.services import IssueService
 
 
 class RedmineMCPServer:
