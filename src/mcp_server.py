@@ -277,9 +277,9 @@ class RedmineMCPServer:
         # Test 3: Health check
         try:
             self.logger.info("Test 3: Redmine connectivity health check")
-            health_tool = self.tool_registry.get_tool("redmine-health-check")
+            health_tool = self.tool_registry.get_tool("HealthCheckTool")
             if health_tool:
-                health_result = health_tool.safe_execute()
+                health_result = health_tool.execute({})
                 test_results.append({
                     "test": "redmine_health_check",
                     "result": health_result,
@@ -295,9 +295,9 @@ class RedmineMCPServer:
         # Test 4: User authentication
         try:
             self.logger.info("Test 4: User authentication validation")
-            user_tool = self.tool_registry.get_tool("redmine-get-current-user")
+            user_tool = self.tool_registry.get_tool("GetCurrentUserTool")
             if user_tool:
-                user_result = user_tool.safe_execute()
+                user_result = user_tool.execute({})
                 test_results.append({
                     "test": "user_authentication",
                     "result": user_result,
