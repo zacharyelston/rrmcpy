@@ -1,6 +1,6 @@
-# Local Docker Testing Guide
+# Testing Guide
 
-This guide explains how to test the Redmine MCP Server locally using Docker.
+This guide explains how to test the modular Redmine MCP Server locally.
 
 ## Setup
 
@@ -34,29 +34,29 @@ Execute the testing script:
 
 The script provides several testing modes:
 
-### 1. Unit Tests
-Runs the complete test suite inside the Docker container:
-- FastMCP implementation tests
-- Error handling validation
-- Logging system verification
+### 1. Native Python Testing
+Run the modular server directly:
+```bash
+# Set environment variables
+export REDMINE_API_KEY=your-api-key-here
+export REDMINE_URL=https://your-redmine-instance.com
 
-### 2. Health Check
-Performs a quick connectivity test:
-- Verifies Redmine connection
-- Tests authentication
-- Lists accessible projects
+# Run the server
+python main.py
+```
 
-### 3. Test Mode Server
-Runs the server in test mode:
-- Validates configuration
-- Tests core functionality
-- Runs with your authentic Redmine data
+### 2. Docker Testing
+Test with containerized environment:
+```bash
+./test-docker.sh
+```
 
-### 4. Interactive Shell
-Opens a shell inside the container for manual testing:
-- Direct access to the server environment
-- Run custom commands
-- Debug issues interactively
+### 3. Modular Component Testing
+Test individual components:
+- Core infrastructure (config, errors, logging)
+- Service layer with business logic
+- Tool registry system
+- Individual MCP tools
 
 ## Example Output
 

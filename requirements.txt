@@ -6,3 +6,10 @@ pytest
 pytest-cov
 mcp
 pydantic
+mcp
+pydantic
+pytest
+pytest-cov
+python-dotenv
+requests
+fastmcp

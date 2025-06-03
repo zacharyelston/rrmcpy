@@ -10,14 +10,16 @@ import logging
 # Add the parent directory to the path to access src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.redmine_client import RedmineClient
+from src.users import UserClient
+from src.projects import ProjectClient
+from src.issues import IssueClient
 
 class TestErrorHandling(unittest.TestCase):
     """Test comprehensive error handling functionality"""
     
     def setUp(self):
         """Set up test environment"""
-        self.redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
+        self.redmine_url = os.environ.get('REDMINE_URL', 'https://demo.redmine.org')
         self.redmine_api_key = os.environ.get('REDMINE_API_KEY', '')
         
         if not self.redmine_api_key:
@@ -26,7 +28,9 @@ class TestErrorHandling(unittest.TestCase):
         # Configure logging to capture error messages
         logging.basicConfig(level=logging.DEBUG)
         
-        self.client = RedmineClient(self.redmine_url, self.redmine_api_key)
+        self.issue_client = IssueClient(self.redmine_url, self.redmine_api_key)
+        self.user_client = UserClient(self.redmine_url, self.redmine_api_key)
+        self.project_client = ProjectClient(self.redmine_url, self.redmine_api_key)
     
     def test_invalid_issue_creation_missing_fields(self):
         """Test error handling for missing required fields in issue creation"""
@@ -35,7 +39,7 @@ class TestErrorHandling(unittest.TestCase):
             "description": "Test issue without required fields"
         }
         
-        result = self.client.create_issue(invalid_data)
+        result = self.issue_client.create_issue(invalid_data)
         
         # Should return an error response
         self.assertTrue(result.get('error', False))
@@ -51,7 +55,7 @@ class TestErrorHandling(unittest.TestCase):
             "subject": "   "  # Empty/whitespace only subject
         }
         
-        result = self.client.create_issue(invalid_data)
+        result = self.issue_client.create_issue(invalid_data)
         
         # Should return an error response
         self.assertTrue(result.get('error', False))
@@ -66,7 +70,7 @@ class TestErrorHandling(unittest.TestCase):
             "tracker_id": "not_an_integer"  # Should be int
         }
         
-        result = self.client.create_issue(invalid_data)
+        result = self.issue_client.create_issue(invalid_data)
         
         # Should return an error response
         self.assertTrue(result.get('error', False))
@@ -76,7 +80,7 @@ class TestErrorHandling(unittest.TestCase):
     def test_nonexistent_issue_access(self):
         """Test error handling when accessing a non-existent issue"""
         # Try to access an issue that doesn't exist
-        result = self.client.get_issue(999999)
+        result = self.issue_client.get_issue(999999)
         
         # Should return an error response for not found
         if result.get('error', False):
@@ -86,7 +90,7 @@ class TestErrorHandling(unittest.TestCase):
         """Test that error responses have correct structure"""
         # Create a validation error
         invalid_data = {"description": "Missing required fields"}
-        result = self.client.create_issue(invalid_data)
+        result = self.issue_client.create_issue(invalid_data)
         
         # Check error response structure
         self.assertTrue(result.get('error', False))
@@ -103,7 +107,7 @@ class TestErrorHandling(unittest.TestCase):
     def test_successful_operation_no_error(self):
         """Test that successful operations don't return error responses"""
         # Get current user (should succeed)
-        result = self.client.get_current_user()
+        result = self.user_client.get_current_user()
         
         # Should not be an error response
         self.assertFalse(result.get('error', False))
