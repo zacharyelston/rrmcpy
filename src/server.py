@@ -415,12 +415,13 @@ def run_server():
     
     try:
         # Handle event loop compatibility for container environments
+        # Apply nest_asyncio unconditionally to patch the event loop
+        import nest_asyncio
+        nest_asyncio.apply()
+        
         try:
-            # Check if there's already a running event loop
+            # Try to get existing loop
             loop = asyncio.get_running_loop()
-            # If we get here, there's already a loop running (like in Jupyter/Windsurf)
-            import nest_asyncio
-            nest_asyncio.apply()
             # Create a task in the existing loop
             task = loop.create_task(main())
             return task
