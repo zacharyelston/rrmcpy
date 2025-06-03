@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.users import UserClient
 from src.issues import IssueClient
+from src.projects import ProjectClient
 
 class TestLogging(unittest.TestCase):
     """Test comprehensive logging functionality"""

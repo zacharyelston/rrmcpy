@@ -15,6 +15,7 @@ from src.users import UserClient
 from src.projects import ProjectClient
 from src.issues import IssueClient
 from src.groups import GroupClient
+from src.versions import VersionClient
 import logging
 
 # Configure logging
@@ -43,6 +44,7 @@ def main():
     project_client = ProjectClient(redmine_url, redmine_api_key, logger)
     issue_client = IssueClient(redmine_url, redmine_api_key, logger)
     group_client = GroupClient(redmine_url, redmine_api_key, logger)
+    version_client = VersionClient(redmine_url, redmine_api_key, logger)
     
     try:
         # Test 1: Check connection and get current user
@@ -116,7 +118,7 @@ def main():
         # Test 7: Versions
         print("\n=== Test 7: Versions ===")
         try:
-            result = user_client.get_versions(test_project_id)
+            result = version_client.get_versions(test_project_id)
             versions = result.get('versions', [])
             print(f"Found {len(versions)} versions:")
             for version in versions:
@@ -129,13 +131,13 @@ def main():
                 "description": "Test version created by modular client",
                 "status": "open"
             }
-            result = user_client.create_version(version_data)
+            result = version_client.create_version(version_data)
             new_version = result['version']
             new_version_id = new_version['id']
             print(f"Created version #{new_version_id}: {new_version['name']}")
             
             # Clean up the test version
-            user_client.delete_version(new_version_id)
+            version_client.delete_version(new_version_id)
             print(f"Deleted test version #{new_version_id}")
         except Exception as e:
             print(f"Version tests failed: {e}")

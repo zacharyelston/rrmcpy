@@ -29,7 +29,7 @@ class TestConnectionManager(unittest.TestCase):
         # Set up logging
         logging.basicConfig(level=logging.DEBUG)
         
-        self.client = RedmineClient(self.redmine_url, self.redmine_api_key)
+        self.client = UserClient(self.redmine_url, self.redmine_api_key)
     
     def test_health_check_success(self):
         """Test that health check works with valid connection"""
