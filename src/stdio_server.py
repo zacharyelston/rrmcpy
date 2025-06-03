@@ -12,7 +12,9 @@ import sys
 from typing import Any, Dict, List, Union
 
 
-from src.redmine_client import RedmineClient
+from src.issues import IssueClient
+from src.projects import ProjectClient
+from src.users import UserClient
 
 
 class RedmineSTDIOServer:
@@ -25,7 +27,11 @@ class RedmineSTDIOServer:
         """Initialize the STDIO server"""
         self.redmine_url = redmine_url
         self.api_key = api_key
-        self.redmine_client = RedmineClient(redmine_url, api_key)
+        
+        # Initialize modular clients
+        self.issue_client = IssueClient(redmine_url, api_key)
+        self.project_client = ProjectClient(redmine_url, api_key)
+        self.user_client = UserClient(redmine_url, api_key)
         
         # Configure logging to stderr only
         logging.basicConfig(
@@ -60,12 +66,12 @@ class RedmineSTDIOServer:
         if kwargs.get("limit"):
             params["limit"] = kwargs["limit"]
         
-        result = self.redmine_client.get_issues(params)
+        result = self.issue_client.get_issues(params)
         return result.get('issues', [])
     
     def _get_issue(self, issue_id: int) -> Dict[str, Any]:
         """Get a specific issue"""
-        result = self.redmine_client.get_issue(issue_id)
+        result = self.issue_client.get_issue(issue_id)
         if result.get('error'):
             raise Exception(f"Error getting issue: {result.get('message', 'Unknown error')}")
         return result.get('issue', {})
@@ -88,7 +94,7 @@ class RedmineSTDIOServer:
         if kwargs.get("assigned_to_id"):
             issue_data["assigned_to_id"] = kwargs["assigned_to_id"]
         
-        result = self.redmine_client.create_issue(issue_data)
+        result = self.issue_client.create_issue(issue_data)
         if result.get('error'):
             raise Exception(f"Error creating issue: {result.get('message', 'Unknown error')}")
         return result.get('issue', {})
@@ -100,42 +106,42 @@ class RedmineSTDIOServer:
             if kwargs.get(field) is not None:
                 update_data[field] = kwargs[field]
         
-        result = self.redmine_client.update_issue(issue_id, update_data)
+        result = self.issue_client.update_issue(issue_id, update_data)
         if result.get('error'):
             raise Exception(f"Error updating issue: {result.get('message', 'Unknown error')}")
         return {"success": True, "issue_id": issue_id}
     
     def _list_projects(self, **kwargs) -> List[Dict[str, Any]]:
         """List projects"""
-        result = self.redmine_client.get_projects()
+        result = self.project_client.get_projects()
         return result.get('projects', [])
     
     def _get_project(self, project_id: str) -> Dict[str, Any]:
         """Get a specific project"""
-        result = self.redmine_client.get_project(project_id)
+        result = self.project_client.get_project(project_id)
         if result.get('error'):
             raise Exception(f"Error getting project: {result.get('message', 'Unknown error')}")
         return result.get('project', {})
     
     def _get_current_user(self, **kwargs) -> Dict[str, Any]:
         """Get current user information"""
-        result = self.redmine_client.get_current_user()
+        result = self.user_client.get_current_user()
         if result.get('error'):
             raise Exception(f"Error getting current user: {result.get('message', 'Unknown error')}")
         return result.get('user', {})
     
     def _list_users(self, **kwargs) -> List[Dict[str, Any]]:
         """List users"""
-        result = self.redmine_client.get_users()
+        result = self.user_client.get_users()
         return result.get('users', [])
     
     def _health_check(self, **kwargs) -> Dict[str, Any]:
         """Check connection health"""
-        healthy = self.redmine_client.health_check()
+        healthy = self.issue_client.health_check()
         return {
             "healthy": healthy,
             "redmine_url": self.redmine_url,
-            "timestamp": self.redmine_client.issues._get_timestamp()
+            "timestamp": self.issue_client._get_timestamp()
         }
     
 

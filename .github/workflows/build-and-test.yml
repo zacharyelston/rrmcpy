@@ -240,7 +240,7 @@ jobs:
         import datetime
         # Make sure we can import from src
         sys.path.insert(0, os.path.abspath('.'))
-        from src.redmine_client import RedmineClient
+        from src.issues import IssueClient
         
         # Get environment variables
         redmine_url = os.environ.get("REDMINE_URL")
@@ -251,7 +251,7 @@ jobs:
             sys.exit(1)
             
         # Initialize API client
-        client = RedmineClient(redmine_url, redmine_api_key)
+        client = IssueClient(redmine_url, redmine_api_key)
         
         # Try to load validation issues
         if os.path.exists('validation_issues.json'):
