@@ -155,56 +155,63 @@ class RedmineMCPServer:
                              tracker_id: int = None, status_id: int = None, 
                              priority_id: int = None, assigned_to_id: int = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-create-issue")
+            tool = self.tool_registry.get_tool("CreateIssueTool")
             result = tool.safe_execute(**kwargs)
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-get-issue")
         async def get_issue(issue_id: int, include: list = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-get-issue")
+            tool = self.tool_registry.get_tool("GetIssueTool")
             result = tool.safe_execute(**kwargs)
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-list-issues")
         async def list_issues(project_id: str = None, status_id: int = None, 
                             assigned_to_id: int = None, tracker_id: int = None,
                             limit: int = None, offset: int = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-list-issues")
+            tool = self.tool_registry.get_tool("ListIssuesTool")
             result = tool.safe_execute(**kwargs)
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-update-issue")
         async def update_issue(issue_id: int, subject: str = None, description: str = None,
                              status_id: int = None, priority_id: int = None, 
                              assigned_to_id: int = None, notes: str = None):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-update-issue")
+            tool = self.tool_registry.get_tool("UpdateIssueTool")
             result = tool.safe_execute(**kwargs)
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-delete-issue")
         async def delete_issue(issue_id: int):
             kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("redmine-delete-issue")
+            tool = self.tool_registry.get_tool("DeleteIssueTool")
             result = tool.safe_execute(**kwargs)
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
     
     def _register_admin_tools(self):
         """Register administrative tools with FastMCP"""
         
         @self.mcp.tool("redmine-health-check")
         async def health_check():
-            tool = self.tool_registry.get_tool("redmine-health-check")
+            tool = self.tool_registry.get_tool("HealthCheckTool")
             result = tool.safe_execute()
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
         
         @self.mcp.tool("redmine-get-current-user")
         async def get_current_user():
-            tool = self.tool_registry.get_tool("redmine-get-current-user")
+            tool = self.tool_registry.get_tool("GetCurrentUserTool")
             result = tool.safe_execute()
-            return [{"type": "text", "text": str(result)}]
+            import json
+            return [{"type": "text", "text": json.dumps(result, indent=2)}]
     
     async def run(self):
         """Run the MCP server"""
@@ -361,4 +368,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
