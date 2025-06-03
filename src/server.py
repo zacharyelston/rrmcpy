@@ -415,7 +415,7 @@ def run_server():
         
         # Let FastMCP handle its own event loop
         server.logger.info(f"Starting Redmine MCP Server in {server.config.server.mode} mode...")
-        server.mcp.start()
+        server.mcp.run()
         
     except ConfigurationError as e:
         if server and server.logger:

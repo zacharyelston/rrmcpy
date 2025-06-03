@@ -81,7 +81,33 @@ class IssueClient(RedmineBaseClient):
                 400
             )
         
-        return self.make_request('POST', 'issues.json', data={'issue': issue_data})
+        result = self.make_request('POST', 'issues.json', data={'issue': issue_data})
+        self.logger.debug(f"create_issue: result from make_request: {result}")
+
+        # If result contains the full issue, return as is
+        if isinstance(result, dict) and 'issue' in result:
+            self.logger.debug("create_issue: returning full issue object")
+            return result
+
+        # If result contains an ID, fetch the issue by ID
+        if isinstance(result, dict) and 'id' in result:
+            self.logger.debug(f"create_issue: fetching issue by ID {result['id']}")
+            try:
+                issue = self.get_issue(result['id'])
+                self.logger.debug(f"create_issue: fetched issue: {issue}")
+                return issue
+            except Exception as e:
+                self.logger.error(f"Failed to fetch created issue with ID {result['id']}: {e}")
+                return {"error": f"Created issue, but failed to fetch details for ID {result['id']}"}
+
+        # If result is generic success, return a meaningful message
+        if isinstance(result, dict) and result.get('success'):
+            self.logger.debug("create_issue: returning error, could not retrieve issue details")
+            return {"error": "Created issue, but could not retrieve issue details."}
+
+        # Otherwise, return whatever was returned
+        self.logger.debug("create_issue: returning fallback result")
+        return result
     
     def update_issue(self, issue_id: int, issue_data: Dict) -> Dict:
         """
