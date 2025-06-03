@@ -46,6 +46,8 @@ class RedmineMCPServer:
             self.logger.info(f"Redmine URL: {self.config.redmine.url}")
             
             # Initialize FastMCP
+            if FastMCP is None:
+                raise ConfigurationError("FastMCP is not available - please install fastmcp package")
             self.mcp = FastMCP("Redmine MCP Server")
             
             # Initialize tool registry
