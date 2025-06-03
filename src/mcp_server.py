@@ -263,8 +263,12 @@ class RedmineMCPServer:
             # Perform health check for live/debug modes
             await self._perform_startup_health_check()
             
-            # Run the server
-            await self.mcp.run(transport=self.config.server.transport)
+            # Run the server with proper transport handling
+            transport = "stdio"  # Default to stdio for MCP compatibility
+            if hasattr(self.config.server, 'transport') and self.config.server.transport:
+                transport = self.config.server.transport
+            
+            await self.mcp.run(transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
