@@ -107,11 +107,9 @@ run_health_check() {
 import sys, os
 sys.path.insert(0, '/app/src')
 from mcp_server import RedmineMCPServer
-from core.config import Config
 
-config = Config()
 try:
-    server = RedmineMCPServer(config)
+    server = RedmineMCPServer()
     print('✓ MCP Server initialized successfully')
     print('✓ Health check: PASS')
     exit(0)

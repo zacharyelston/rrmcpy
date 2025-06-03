@@ -51,6 +51,9 @@ class RedmineMCPServer:
         self.mcp = None
         self.services = {}
         self.clients = {}
+        
+        # Initialize the server components
+        self.initialize()
     
     def initialize(self):
         """Initialize server configuration and components"""
