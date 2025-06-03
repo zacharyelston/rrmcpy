@@ -16,3 +16,4 @@ pytest-cov
 python-dotenv
 requests
 >>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
+fastmcp

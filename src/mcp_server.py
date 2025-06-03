@@ -9,15 +9,17 @@ from typing import Optional
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
-from fastmcp import FastMCP
-from core.config import AppConfig
-from core.logging import setup_logging, get_logger
-from core.errors import ConfigurationError
-from services.issue_service import IssueService
+try:
+    from fastmcp import FastMCP
+except ImportError:
+    # Fallback if fastmcp not available
+    FastMCP = None
+
+from core import AppConfig, ConfigurationError, setup_logging, get_logger
+from services import IssueService
 from issues import IssueClient
-from tools.registry import ToolRegistry
-from tools.issue_tools import CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
-from tools.admin_tools import HealthCheckTool, GetCurrentUserTool
+from tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+from tools import HealthCheckTool, GetCurrentUserTool
 
 
 class RedmineMCPServer:

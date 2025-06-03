@@ -70,28 +70,9 @@ echo "  Branch: $BRANCH_NAME"
 echo "  Docker Image: $IMAGE_NAME"
 echo ""
 
-<<<<<<< HEAD
-# Create branch-specific image tag
-BRANCH_TAG=$(echo "$CURRENT_BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
-IMAGE_NAME="redmine-mcp-server:$BRANCH_TAG"
-IMAGE_NAME_WITH_COMMIT="redmine-mcp-server:$BRANCH_TAG-$CURRENT_COMMIT"
-
-# Build Docker image with branch-specific tags
-echo -e "${YELLOW}Building Docker image with branch labeling...${NC}"
-echo "Image tags: $IMAGE_NAME, $IMAGE_NAME_WITH_COMMIT"
-docker build \
-    -t "$IMAGE_NAME" \
-    -t "$IMAGE_NAME_WITH_COMMIT" \
-    -t "redmine-mcp-server:latest" \
-    --label "branch=$CURRENT_BRANCH" \
-    --label "commit=$CURRENT_COMMIT" \
-    --label "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    . || {
-=======
 # Build Docker image
 echo -e "${YELLOW}Building Docker image...${NC}"
 docker build -t "$IMAGE_NAME" . || {
->>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -109,11 +90,7 @@ run_tests() {
         --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
-<<<<<<< HEAD
-        python -m pytest tests/test_mcp_server.py tests/test_error_handling.py tests/test_logging.py -v
-=======
         python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
->>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
 }
 
 # Function to run health check
@@ -192,9 +169,6 @@ list_branch_versions() {
         echo "  $tag -> Branch: $branch, Commit: $commit, Built: $build_date"
     done
     echo ""
-=======
-        "$IMAGE_NAME"
->>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
 }
 
 # Main menu
