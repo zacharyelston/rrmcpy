@@ -60,7 +60,7 @@ class TestLogging(unittest.TestCase):
         self.log_capture.truncate(0)
         
         # Make a request that should be logged
-        result = self.client.get_current_user()
+        result = self.user_client.get_current_user()
         
         # Get the logged output
         log_output = self.log_capture.getvalue()
@@ -82,7 +82,7 @@ class TestLogging(unittest.TestCase):
         self.log_capture.truncate(0)
         
         # Make a request that should include debug details
-        result = self.client.get_projects()
+        result = self.project_client.get_projects()
         
         # Get the logged output
         log_output = self.log_capture.getvalue()
@@ -100,7 +100,7 @@ class TestLogging(unittest.TestCase):
         
         # Create an invalid request that should cause an error
         invalid_data = {"description": "Missing required fields"}
-        result = self.client.create_issue(invalid_data)
+        result = self.issue_client.create_issue(invalid_data)
         
         # Get the logged output
         log_output = self.log_capture.getvalue()
@@ -117,7 +117,7 @@ class TestLogging(unittest.TestCase):
         self.log_capture.truncate(0)
         
         # Make a request
-        result = self.client.get_current_user()
+        result = self.user_client.get_current_user()
         
         # Get the logged output
         log_output = self.log_capture.getvalue()
@@ -152,7 +152,7 @@ class TestLogging(unittest.TestCase):
             "description": "This is a test issue for logging verification"
         }
         
-        result = self.client.create_issue(issue_data)
+        result = self.issue_client.create_issue(issue_data)
         
         # Get the logged output
         log_output = self.log_capture.getvalue()
@@ -167,7 +167,7 @@ class TestLogging(unittest.TestCase):
             if 'issue' in result and 'id' in result['issue']:
                 issue_id = result['issue']['id']
                 try:
-                    self.client.delete_issue(issue_id)
+                    self.issue_client.delete_issue(issue_id)
                 except:
                     pass  # Ignore cleanup errors
 
