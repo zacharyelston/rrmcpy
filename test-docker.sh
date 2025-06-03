@@ -74,7 +74,7 @@ run_tests() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
         redmine-mcp-server:local \
-        python -m pytest tests/test_proper_mcp.py tests/test_error_handling.py tests/test_logging.py -v
+        python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
 }
 
 # Function to run health check
@@ -86,7 +86,22 @@ run_health_check() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         --entrypoint="" \
         redmine-mcp-server:local \
-        python test-minimal.py
+        python -c "
+import sys, os
+sys.path.insert(0, '/app/src')
+from mcp_server import RedmineMCPServer
+from core.config import Config
+
+config = Config()
+try:
+    server = RedmineMCPServer(config)
+    print('✓ MCP Server initialized successfully')
+    print('✓ Health check: PASS')
+    exit(0)
+except Exception as e:
+    print(f'✗ Health check: FAIL - {e}')
+    exit(1)
+"
 }
 
 # Function to run interactive container
