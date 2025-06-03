@@ -2,6 +2,7 @@
 Base module for Redmine API functionality
 Contains common code shared across feature modules
 """
+import json
 import logging
 import requests
 import time
@@ -108,12 +109,31 @@ class RedmineBaseClient:
                 kwargs['params'] = params
             if data:
                 kwargs['json'] = data
+                self.logger.debug(f"REQUEST BODY: {json.dumps(data, indent=2)}")
+            
+            # Enhanced debug logging for request
+            self.logger.debug(f"REQUEST: {method} {url} with kwargs: {kwargs}")
+            self.logger.debug(f"REQUEST HEADERS: {self.connection_manager.session.headers if hasattr(self.connection_manager, 'session') else 'No session headers'}")
             
             response = self.connection_manager.make_request(method, url, **kwargs)
             
             duration_ms = (time.time() - start_time) * 1000
             
-            response.raise_for_status()
+            # Enhanced debug logging for response
+            self.logger.debug(f"RESPONSE STATUS: {response.status_code}")
+            self.logger.debug(f"RESPONSE HEADERS: {dict(response.headers)}")
+            if response.content:
+                try:
+                    content_preview = json.dumps(response.json(), indent=2)[:1000] + "..." if len(response.content) > 1000 else json.dumps(response.json(), indent=2)
+                    self.logger.debug(f"RESPONSE CONTENT: {content_preview}")
+                except Exception as e:
+                    self.logger.debug(f"RESPONSE CONTENT (non-JSON): {response.content[:500]}...")
+            
+            try:
+                response.raise_for_status()
+            except Exception as e:
+                self.logger.error(f"HTTP ERROR: {str(e)}")
+                raise
             
             # Log successful request
             self.logger.debug(f"Request {method} {url} completed successfully in {duration_ms:.2f}ms (status: {response.status_code})")

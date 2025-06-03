@@ -46,6 +46,14 @@ class ConnectionManager:
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
+        
+        # Create a session for connection reuse and consistent headers
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+        
+        # Log initialization
+        self.logger.debug(f"ConnectionManager initialized for {base_url}")
+        self.logger.debug(f"Using API key: {'*'*(len(self.api_key)-4)}{self.api_key[-4:] if len(self.api_key) > 4 else '****'}")
     
     def configure_retry_settings(self, max_retries: int = None, base_delay: float = None,
                                 max_delay: float = None, backoff_factor: float = None,
@@ -140,17 +148,36 @@ class ConnectionManager:
         try:
             # Use a lightweight endpoint for health checking
             url = f"{self.base_url}/users/current.json"
-            response = requests.get(url, headers=self.headers, timeout=10)
+            self.logger.debug(f"Health check URL: {url}")
+            
+            # Use the session for consistent headers and authentication
+            response = self.session.get(url, timeout=10)
+            
+            # Log response details
+            self.logger.debug(f"Health check status code: {response.status_code}")
+            
             response.raise_for_status()
+            
+            # Try to get user info to verify authentication
+            user_data = response.json()
+            if user_data and 'user' in user_data:
+                username = user_data['user'].get('login', 'unknown')
+                self.logger.debug(f"Authenticated as: {username}")
             
             self._connection_healthy = True
             self._last_health_check = current_time
-            self.logger.debug("Health check passed")
+            self.logger.info("Health check passed - Redmine connection is healthy")
             
         except Exception as e:
             self._connection_healthy = False
             self._last_health_check = current_time
-            self.logger.warning(f"Health check failed: {e}")
+            self.logger.warning(f"Health check failed: {str(e)}")
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    error_details = e.response.json()
+                    self.logger.warning(f"Error details: {error_details}")
+                except:
+                    self.logger.warning(f"Error status code: {e.response.status_code}")
         
         return self._connection_healthy
     
@@ -237,14 +264,17 @@ class ConnectionManager:
         
         # Define the request function that doesn't take any parameters
         def _make_request():
+            self.logger.debug(f"Executing {method} request to {url} with session ID {id(self.session)}")
+            
             if method.upper() == 'GET':
-                return requests.get(url, **kwargs)
+                return self.session.get(url, **kwargs)
             elif method.upper() == 'POST':
-                return requests.post(url, **kwargs)
+                self.logger.debug(f"Making POST with data: {kwargs.get('json')}")
+                return self.session.post(url, **kwargs)
             elif method.upper() == 'PUT':
-                return requests.put(url, **kwargs)
+                return self.session.put(url, **kwargs)
             elif method.upper() == 'DELETE':
-                return requests.delete(url, **kwargs)
+                return self.session.delete(url, **kwargs)
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
         

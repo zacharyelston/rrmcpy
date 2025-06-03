@@ -1,0 +1,102 @@
+# TODO: v0.9.0 - Critical Bug Fixes
+# Goal: Address critical bugs to make existing functionality work correctly
+# Timeline: Sprint 1 (Week 1)
+# Status: IN PROGRESS
+
+version: "0.9.0"
+name: "Critical Bug Fixes"
+description: "Fix critical bugs identified in code review to enable basic functionality"
+timeline: "Sprint 1 (Week 1)"
+status: "IN_PROGRESS"
+
+completed:
+  - task: "Fix JSON import error"
+    description: "Added missing json import to base.py"
+    completed_date: "2025-06-03"
+    
+  - task: "Fix HTTP to HTTPS redirect issue"
+    description: "Updated REDMINE_URL to use HTTPS to prevent POST redirect issues"
+    completed_date: "2025-06-03"
+    
+  - task: "Remove mock responses"
+    description: "Removed hardcoded test responses from server implementation"
+    completed_date: "2025-06-03"
+
+tasks:
+  create_operations_bug:
+    name: "Fix Create Operations Bug"
+    priority: "CRITICAL"
+    status: "PARTIAL"
+    description: "Update base.py to properly handle 201 Created responses"
+    subtasks:
+      - name: "Handle 201 Created responses"
+        status: "TODO"
+        description: "Update make_request to detect 201 status and extract created resource"
+        
+      - name: "Extract ID from Location header"
+        status: "TODO"
+        description: "Implement _extract_id_from_location helper for empty 201 responses"
+        
+      - name: "Add test cases"
+        status: "TODO"
+        description: "Create tests to verify fix works across different Redmine entities"
+
+  project_management_tools:
+    name: "Complete Project Management Tools"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    description: "Implement missing CRUD operations for projects"
+    subtasks:
+      - name: "Implement create_project tool"
+        status: "TODO"
+        description: "Add MCP tool for creating new projects"
+        
+      - name: "Implement update_project tool"
+        status: "TODO"
+        description: "Add MCP tool for updating existing projects"
+        
+      - name: "Implement delete_project tool"
+        status: "TODO"
+        description: "Add MCP tool for deleting projects"
+        
+      - name: "Add parameter validation"
+        status: "TODO"
+        description: "Ensure proper validation for all project tool parameters"
+
+  error_handling:
+    name: "Standardize Error Handling"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    description: "Create consistent error response format across all tools"
+    subtasks:
+      - name: "Define error response format"
+        status: "TODO"
+        description: "Create standard error response structure"
+        
+      - name: "Update API client error propagation"
+        status: "TODO"
+        description: "Ensure Redmine API errors are properly formatted and returned"
+        
+      - name: "Create error helper functions"
+        status: "TODO"
+        description: "Build utilities for consistent error formatting"
+        
+      - name: "Apply to all tools"
+        status: "TODO"
+        description: "Ensure all MCP tools use standardized error handling"
+
+success_metrics:
+  - metric: "Create operations return created resource data"
+    status: "PARTIAL"
+    
+  - metric: "All CRUD operations for projects available as MCP tools"
+    status: "NOT_MET"
+    
+  - metric: "Error responses follow consistent format"
+    status: "NOT_MET"
+
+notes:
+  - "JSON import and HTTPS issues have been resolved"
+  - "Create operations still need proper 201 handling"
+  - "Project management tools are completely missing"
+  - "Error handling needs standardization across the codebase"

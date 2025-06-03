@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Get current git branch for container labeling
+# Get current git branch and commit SHA for container labeling
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 CURRENT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -72,7 +72,7 @@ echo ""
 
 # Build Docker image
 echo -e "${YELLOW}Building Docker image...${NC}"
-docker build -t "$IMAGE_NAME" . || {
+docker build --no-cache -t "$IMAGE_NAME" . || {
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -87,6 +87,7 @@ run_tests() {
         -e REDMINE_URL="$REDMINE_URL" \
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
+        -e GIT_COMMIT="$CURRENT_COMMIT" \
         --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
@@ -100,13 +101,14 @@ run_health_check() {
         -e REDMINE_URL="$REDMINE_URL" \
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
+        -e GIT_COMMIT="$CURRENT_COMMIT" \
         --name "rmcp-health-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
         python -c "
 import sys, os
 sys.path.insert(0, '/app/src')
-from mcp_server import RedmineMCPServer
+from server import RedmineMCPServer
 
 try:
     server = RedmineMCPServer()
@@ -131,6 +133,7 @@ run_interactive() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="$SERVER_MODE" \
+        -e GIT_COMMIT="$CURRENT_COMMIT" \
         --name "rmcp-interactive-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="/bin/bash" \
         "$IMAGE_NAME"
@@ -147,6 +150,7 @@ run_server_test_mode() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="test" \
+        -e GIT_COMMIT="$CURRENT_COMMIT" \
         --name "rmcp-server-$BRANCH_TAG-$(date +%s)" \
         "$IMAGE_NAME"
 }
