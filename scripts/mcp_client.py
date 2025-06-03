@@ -35,7 +35,7 @@ def send_mcp_request(tool_name, arguments=None):
     
     # Use subprocess to pipe the request to the MCPServer
     process = subprocess.Popen(
-        ['python', 'main.py'],
+        ['python', 'src/stdio_server.py'],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
