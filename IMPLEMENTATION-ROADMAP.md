@@ -2,6 +2,7 @@
 
 This roadmap incorporates findings from both our code review and the c4-review.md document, focusing on our design philosophy of fighting complexity while ensuring a complete and robust Redmine integration.
 
+
 ## Version Roadmap Overview
 
 | Version | Focus | Timeline | Key Deliverables |
