@@ -1,51 +1,58 @@
 """
 Base service class for Redmine MCP Server
+Provides common validation and error handling patterns
 """
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import logging
-from src.core.config import RedmineConfig
-from src.core.errors import ValidationError, format_error_response
 
 
 class BaseService(ABC):
-    """Abstract base class for all services"""
+    """Abstract base class with common validation and error handling"""
     
-    def __init__(self, config: RedmineConfig, logger: Optional[logging.Logger] = None):
+    def __init__(self, config: Any, client: Any, logger: logging.Logger):
         self.config = config
-        self.logger = logger or logging.getLogger(self.__class__.__name__)
-    
-    def validate_required_fields(self, data: Dict[str, Any], required_fields: list) -> None:
+        self.client = client
+        self.logger = logger
+        
+    def _create_error_response(self, error_message: str, error_code: str = "OPERATION_FAILED") -> Dict[str, Any]:
+        """Create a standardized error response"""
+        return {
+            "success": False,
+            "error": error_message,
+            "error_code": error_code
+        }
+        
+    def _create_success_response(self, data: Any) -> Dict[str, Any]:
+        """Create a standardized success response"""
+        return {
+            "success": True,
+            "data": data
+        }
+        
+    def _validate_required_fields(self, data: Dict[str, Any], required_fields: List[str]) -> Optional[Dict[str, Any]]:
         """Validate that required fields are present in data"""
-        missing_fields = []
-        for field in required_fields:
-            if field not in data or data[field] is None or data[field] == "":
-                missing_fields.append(field)
+        missing_fields = [field for field in required_fields if field not in data or data[field] is None]
         
         if missing_fields:
-            raise ValidationError(
+            return self._create_error_response(
                 f"Missing required fields: {', '.join(missing_fields)}",
-                field=missing_fields[0] if len(missing_fields) == 1 else None
+                "VALIDATION_ERROR"
             )
-    
-    def validate_field_type(self, data: Dict[str, Any], field: str, expected_type: type) -> None:
-        """Validate that a field has the expected type"""
-        if field in data and data[field] is not None:
-            if not isinstance(data[field], expected_type):
-                raise ValidationError(
-                    f"Field '{field}' must be of type {expected_type.__name__}",
-                    field=field,
-                    value=data[field]
-                )
-    
-    def handle_service_error(self, error: Exception, operation: str) -> Dict[str, Any]:
-        """Handle and format service errors"""
-        self.logger.error(f"Error in {operation}: {error}")
-        return format_error_response(error)
-    
-    def format_success_response(self, data: Any, message: Optional[str] = None) -> Dict[str, Any]:
-        """Format successful service response"""
-        response = {"success": True, "data": data}
-        if message:
-            response["message"] = message
-        return response
+        return None
+        
+    def _safe_execute(self, operation_name: str, operation_func, *args, **kwargs) -> Dict[str, Any]:
+        """Safely execute an operation with standardized error handling"""
+        try:
+            self.logger.debug(f"Executing {operation_name}")
+            result = operation_func(*args, **kwargs)
+            self.logger.debug(f"Successfully completed {operation_name}")
+            return self._create_success_response(result)
+        except Exception as e:
+            self.logger.error(f"Failed to execute {operation_name}: {e}")
+            return self._create_error_response(str(e))
+            
+    @abstractmethod
+    def health_check(self) -> bool:
+        """Check health of the service"""
+        pass

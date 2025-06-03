@@ -4,15 +4,15 @@ Provides business logic for issue operations
 """
 from typing import Dict, Any, Optional, List
 import logging
+from .base_service import BaseService
 
 
-class IssueService:
+class IssueService(BaseService):
     """Service layer for issue operations"""
     
     def __init__(self, config: Any, issue_client: Any, logger: logging.Logger):
-        self.config = config
-        self.issue_client = issue_client
-        self.logger = logger
+        super().__init__(config, issue_client, logger)
+        self.issue_client = issue_client  # Keep for backward compatibility
         
     def create_issue(self, issue_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new issue"""
