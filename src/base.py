@@ -6,7 +6,7 @@ import logging
 import requests
 import time
 from typing import Dict, List, Optional, Any, Union
-from connection_manager import ConnectionManager
+from .connection_manager import ConnectionManager
 
 
 class RedmineBaseClient:

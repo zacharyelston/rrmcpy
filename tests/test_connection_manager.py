@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test automatic reconnection capabilities of the Redmine MCP Server
+Test connection and retry capabilities of modular Redmine clients
 """
 import os
 import sys
@@ -12,11 +12,11 @@ import requests
 # Add the parent directory to the path to access src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.redmine_client import RedmineClient
+from src.users import UserClient
 from src.connection_manager import ConnectionManager
 
 class TestConnectionManager(unittest.TestCase):
-    """Test automatic reconnection and retry functionality"""
+    """Test connection functionality and resilience"""
     
     def setUp(self):
         """Set up test environment"""

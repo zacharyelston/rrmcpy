@@ -42,11 +42,11 @@ def test_current_user():
     redmine_api_key = setup_api_key()
     
     logger.info(f"Connecting to Redmine at {redmine_url}")
-    client = RedmineClient(redmine_url, redmine_api_key, logger)
+    user_client = UserClient(redmine_url, redmine_api_key, logger)
     
     # Test current user
     logger.info("Testing current user...")
-    user = client.get_current_user()
+    user = user_client.get_current_user()
     logger.info(f"Logged in as: {user['user']['firstname']} {user['user']['lastname']} ({user['user']['login']})")
     
     assert 'user' in user, "User information not found in response"
@@ -59,11 +59,11 @@ def test_projects():
     redmine_api_key = setup_api_key()
     
     logger.info(f"Connecting to Redmine at {redmine_url}")
-    client = RedmineClient(redmine_url, redmine_api_key, logger)
+    project_client = ProjectClient(redmine_url, redmine_api_key, logger)
     
     # Test projects
     logger.info("Testing projects...")
-    projects = client.get_projects()
+    projects = project_client.get_projects()
     logger.info(f"Found {len(projects['projects'])} projects")
     
     assert 'projects' in projects, "Projects information not found in response"
@@ -77,10 +77,11 @@ def test_issues():
     test_project = os.environ.get("TEST_PROJECT", "p1")
     
     logger.info(f"Connecting to Redmine at {redmine_url}")
-    client = RedmineClient(redmine_url, redmine_api_key, logger)
+    project_client = ProjectClient(redmine_url, redmine_api_key, logger)
+    issue_client = IssueClient(redmine_url, redmine_api_key, logger)
     
     # Find test project
-    projects = client.get_projects()
+    projects = project_client.get_projects()
     test_project_id = None
     for project in projects['projects']:
         if project['identifier'] == test_project:
@@ -96,7 +97,7 @@ def test_issues():
     
     # Test issues
     logger.info("Testing issues...")
-    issues = client.get_issues({'project_id': test_project_id})
+    issues = issue_client.get_issues({'project_id': test_project_id})
     logger.info(f"Found {len(issues.get('issues', []))} issues in project")
     
     assert 'issues' in issues, "Issues information not found in response"
