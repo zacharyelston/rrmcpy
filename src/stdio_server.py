@@ -329,7 +329,7 @@ class RedmineSTDIOServer:
 def main():
     """Main entry point for STDIO server"""
     # Get configuration from environment
-    redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
+    redmine_url = os.environ.get('REDMINE_URL', 'https://demo.redmine.org')
     redmine_api_key = os.environ.get('REDMINE_API_KEY')
     
     if not redmine_api_key:

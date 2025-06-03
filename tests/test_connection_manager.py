@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test automatic reconnection capabilities of the Redmine MCP Server
+Test connection and retry capabilities of modular Redmine clients
 """
 import os
 import sys
@@ -12,15 +12,15 @@ import requests
 # Add the parent directory to the path to access src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.redmine_client import RedmineClient
+from src.users import UserClient
 from src.connection_manager import ConnectionManager
 
 class TestConnectionManager(unittest.TestCase):
-    """Test automatic reconnection and retry functionality"""
+    """Test connection functionality and resilience"""
     
     def setUp(self):
         """Set up test environment"""
-        self.redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
+        self.redmine_url = os.environ.get('REDMINE_URL', 'https://demo.redmine.org')
         self.redmine_api_key = os.environ.get('REDMINE_API_KEY', '')
         
         if not self.redmine_api_key:
@@ -29,7 +29,7 @@ class TestConnectionManager(unittest.TestCase):
         # Set up logging
         logging.basicConfig(level=logging.DEBUG)
         
-        self.client = RedmineClient(self.redmine_url, self.redmine_api_key)
+        self.client = UserClient(self.redmine_url, self.redmine_api_key)
     
     def test_health_check_success(self):
         """Test that health check works with valid connection"""

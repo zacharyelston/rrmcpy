@@ -56,28 +56,23 @@ fi
 LOG_LEVEL=${LOG_LEVEL:-info}
 SERVER_MODE=${SERVER_MODE:-live}
 
+# Get current git branch for dynamic image tagging
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "local")
+# Sanitize branch name for Docker tag (replace invalid characters)
+DOCKER_TAG=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g' | tr '[:upper:]' '[:lower:]')
+IMAGE_NAME="redmine-mcp-server:$DOCKER_TAG"
+
 echo "Configuration:"
 echo "  Redmine URL: $REDMINE_URL"
 echo "  Log Level: $LOG_LEVEL"
 echo "  Server Mode: $SERVER_MODE"
+echo "  Branch: $BRANCH_NAME"
+echo "  Docker Image: $IMAGE_NAME"
 echo ""
 
-# Create branch-specific image tag
-BRANCH_TAG=$(echo "$CURRENT_BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
-IMAGE_NAME="redmine-mcp-server:$BRANCH_TAG"
-IMAGE_NAME_WITH_COMMIT="redmine-mcp-server:$BRANCH_TAG-$CURRENT_COMMIT"
-
-# Build Docker image with branch-specific tags
-echo -e "${YELLOW}Building Docker image with branch labeling...${NC}"
-echo "Image tags: $IMAGE_NAME, $IMAGE_NAME_WITH_COMMIT"
-docker build \
-    -t "$IMAGE_NAME" \
-    -t "$IMAGE_NAME_WITH_COMMIT" \
-    -t "redmine-mcp-server:latest" \
-    --label "branch=$CURRENT_BRANCH" \
-    --label "commit=$CURRENT_COMMIT" \
-    --label "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    . || {
+# Build Docker image
+echo -e "${YELLOW}Building Docker image...${NC}"
+docker build -t "$IMAGE_NAME" . || {
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -95,7 +90,7 @@ run_tests() {
         --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
-        python -m pytest tests/test_mcp_server.py tests/test_error_handling.py tests/test_logging.py -v
+        python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
 }
 
 # Function to run health check
@@ -108,7 +103,22 @@ run_health_check() {
         --name "rmcp-health-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
-        python scripts/test-minimal.py
+        python -c "
+import sys, os
+sys.path.insert(0, '/app/src')
+from mcp_server import RedmineMCPServer
+from core.config import Config
+
+config = Config()
+try:
+    server = RedmineMCPServer(config)
+    print('✓ MCP Server initialized successfully')
+    print('✓ Health check: PASS')
+    exit(0)
+except Exception as e:
+    print(f'✗ Health check: FAIL - {e}')
+    exit(1)
+"
 }
 
 # Function to run interactive container

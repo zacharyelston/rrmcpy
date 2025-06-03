@@ -2,17 +2,16 @@
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
-A robust Python-based MCP (Model Context Protocol) server for Redmine API integration. Designed for containerized deployment with STDIO communication and full MCP protocol compliance.
+A production-ready Python MCP Server for Redmine with modular architecture, featuring comprehensive API management, robust error handling, and extensible tool registry system.
 
 ## Features
 
-- **Complete Redmine API Coverage**: Issues, projects, users, groups, versions, and more
-- **MCP Protocol Compliance**: Full support for MCP 2024-11-05 specification
-- **STDIO Communication**: Secure communication via standard input/output (no network ports)
-- **Robust Error Handling**: Standardized error responses with detailed logging
-- **Automatic Reconnection**: Exponential backoff retry logic with health monitoring
-- **Container-Ready**: Production-ready Docker deployment with minimal configuration
-- **100% Test Coverage**: Comprehensive test suite with automated CI/CD
+- **Modular Architecture**: Separated core infrastructure, service layer, and tool registry for maintainability
+- **Comprehensive Issue Management**: Full CRUD operations with validation and error handling
+- **Centralized Configuration**: Type-safe environment variable handling with validation
+- **Tool Registry System**: Plugin-like architecture for extensible functionality
+- **Robust Error Handling**: Standardized exceptions and consistent error responses
+- **Production-Ready**: Health checking, logging, and connection management
 
 ## Quick Start
 
@@ -47,8 +46,9 @@ python scripts/test-minimal.py
 
 - `REDMINE_URL`: URL of your Redmine instance (default: https://redstone.redminecloud.net)
 - `REDMINE_API_KEY`: Your Redmine API key (required)
-- `SERVER_MODE`: Server mode, 'live' or 'test' (default: live)
-- `LOG_LEVEL`: Logging level, 'debug', 'info', 'warning', or 'error' (default: info)
+- `SERVER_MODE`: Server mode - 'live', 'test', or 'debug' (default: live)
+- `LOG_LEVEL`: Logging level - 'DEBUG', 'INFO', 'WARNING', or 'ERROR' (default: INFO)
+- `MCP_TRANSPORT`: Transport protocol - 'stdio', 'sse', or 'streamable-http' (default: stdio)
 
 ## Usage
 
@@ -57,57 +57,36 @@ The MCP server communicates using the MCP protocol over STDIO. It provides tools
 ### Available Tools
 
 #### Issue Management
-- `redmine-list-issues`: List issues with optional filtering by project, status, or assignee
-- `redmine-get-issue`: Get detailed information about a specific issue
-- `redmine-create-issue`: Create a new issue
-- `redmine-update-issue`: Update an existing issue
+- `redmine-create-issue`: Create new issues with validation
+- `redmine-get-issue`: Retrieve issue details by ID with optional includes
+- `redmine-list-issues`: List issues with filtering and pagination
+- `redmine-update-issue`: Update existing issues with notes
+- `redmine-delete-issue`: Delete issues
 
-#### Project Management
-- `redmine-list-projects`: List all accessible projects
-- `redmine-get-project`: Get detailed project information
-- `redmine-create-project`: Create a new project
-
-#### User Management
-- `redmine-get-current-user`: Get information about the authenticated user
-- `redmine-list-users`: List all users (requires admin privileges)
-
-#### Version Management
-- `redmine-list-versions`: List versions for a specific project
-
-#### System
-- `redmine-health-check`: Verify Redmine connection and server status
+#### Administrative
+- `redmine-health-check`: Check Redmine connection health
+- `redmine-get-current-user`: Get current authenticated user information
 
 ## Architecture
 
-### MCP Protocol Implementation
-- **STDIO Transport**: Direct JSON-RPC communication via standard input/output
-- **Protocol Compliance**: Full adherence to MCP 2024-11-05 specification
-- **Error Handling**: Proper JSON-RPC error responses with detailed messages
+The server features a modern modular architecture with clear separation of concerns:
 
-### Reliability Features
-- **Connection Management**: Automatic reconnection with exponential backoff retry logic
-- **Health Monitoring**: Built-in health checks with connection status monitoring
-- **Request Validation**: Input validation for all API operations
+### Core Infrastructure (`src/core/`)
+- **Configuration Management**: Type-safe environment variable handling with validation
+- **Error Handling**: Standardized exceptions and consistent error responses
+- **Logging**: Centralized logging configuration with stderr output for MCP compatibility
 
-## Testing
+### Service Layer (`src/services/`)
+- **Business Logic**: Separated from API clients with proper validation
+- **Input Validation**: Data cleaning and type checking
+- **Response Formatting**: Consistent success/error response structure
 
-Run the test suite to verify functionality:
+### Tool Registry (`src/tools/`)
+- **Plugin Architecture**: Extensible tool system with registry pattern
+- **Tool Isolation**: Each tool can be tested and developed independently
+- **Dynamic Registration**: Tools are automatically registered with FastMCP
 
-```bash
-python -m pytest tests/ -v
-```
-
-Test specific components:
-```bash
-# Test FastMCP implementation
-python -m pytest tests/test_proper_mcp.py -v
-
-# Test error handling
-python -m pytest tests/test_error_handling.py -v
-
-# Test connection reliability
-python -m pytest tests/test_connection_manager.py -v
-```
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
 
 ## Development
 
@@ -122,38 +101,29 @@ pip install -r requirements.txt
 ```bash
 export REDMINE_API_KEY=your-api-key-here
 export REDMINE_URL=https://your-redmine-instance.com
-export LOG_LEVEL=debug
+export LOG_LEVEL=DEBUG
 ```
 
 3. Run the server:
 ```bash
-python -m src.main
+python main.py
 ```
 
 ### Project Structure
 ```
 src/
-├── main.py                 # Main entry point
-├── stdio_server.py         # MCP STDIO server implementation  
-├── redmine_client.py       # Unified Redmine API client
-├── base.py                 # Base client with error handling
-├── connection_manager.py   # Automatic reconnection logic
-├── issues.py              # Issue management
-├── projects.py            # Project management
-├── users.py               # User management
-└── versions.py            # Version management
-
-tests/
-├── test_proper_mcp.py      # MCP implementation tests
-├── test_error_handling.py  # Error handling validation
-├── test_connection_manager.py # Connection reliability tests
-└── test_logging.py         # Logging functionality tests
-
-scripts/
-├── test-minimal.py         # Basic connectivity test
-├── redstone_demo.py        # Interactive Redmine demo
-└── [utility scripts]      # Development and testing utilities
-
-utils/
-└── test-docker.sh          # Docker testing utility
+├── mcp_server.py           # Main MCP server with modular architecture
+├── core/                   # Core infrastructure
+│   ├── config.py          # Configuration management
+│   ├── errors.py          # Error handling
+│   └── logging.py         # Logging setup
+├── services/               # Business logic layer
+│   ├── base_service.py    # Base service class
+│   └── issue_service.py   # Issue management service
+├── tools/                  # Tool registry system
+│   ├── registry.py        # Tool registry
+│   ├── base_tool.py       # Base tool interface
+│   ├── issue_tools.py     # Issue management tools
+│   └── admin_tools.py     # Administrative tools
+└── [api clients]          # Existing API client modules
 ```

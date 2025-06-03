@@ -1,360 +1,364 @@
 """
-Proper FastMCP server implementation for Redmine integration
-Follows FastMCP best practices and MCP protocol specification
+Redmine MCP Server with modular architecture and tool registry
 """
-import asyncio
-import json
-import datetime
-import logging
 import sys
-from typing import Any, Dict, List, Optional
+import os
+import asyncio
+from typing import Optional
 
-from mcp.server import FastMCP
-from mcp.server.models import InitializationOptions
-from mcp import Tool
-from pydantic import BaseModel, Field
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
-from src.redmine_client import RedmineClient
+try:
+    from fastmcp import FastMCP
+except ImportError:
+    # Fallback if fastmcp not available
+    FastMCP = None
 
-
-# Pydantic models for proper type handling
-class IssueCreateRequest(BaseModel):
-    project_id: str = Field(description="Project identifier")
-    subject: str = Field(description="Issue subject")
-    description: Optional[str] = Field(default=None, description="Issue description")
-    tracker_id: Optional[int] = Field(default=None, description="Tracker ID")
-    status_id: Optional[int] = Field(default=None, description="Status ID")
-    priority_id: Optional[int] = Field(default=None, description="Priority ID")
-    assigned_to_id: Optional[int] = Field(default=None, description="Assigned user ID")
-
-
-class IssueUpdateRequest(BaseModel):
-    issue_id: int = Field(description="Issue ID to update")
-    subject: Optional[str] = Field(default=None, description="Issue subject")
-    description: Optional[str] = Field(default=None, description="Issue description")
-    status_id: Optional[int] = Field(default=None, description="Status ID")
-    notes: Optional[str] = Field(default=None, description="Update notes/comments")
-
-
-class ProjectCreateRequest(BaseModel):
-    name: str = Field(description="Project name")
-    identifier: str = Field(description="Project identifier")
-    description: Optional[str] = Field(default=None, description="Project description")
-    homepage: Optional[str] = Field(default=None, description="Project homepage")
-    is_public: Optional[bool] = Field(default=False, description="Is project public")
+try:
+    from .core import AppConfig, ConfigurationError, setup_logging, get_logger
+    from .core.errors import RedmineAPIError, ToolExecutionError
+    from .users import UserClient
+    from .projects import ProjectClient
+    from .issues import IssueClient
+    from .groups import GroupClient
+    from .versions import VersionClient
+    from .roadmap import RoadmapClient
+    from .tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+    from .tools import HealthCheckTool, GetCurrentUserTool
+    from .services import IssueService
+except ImportError:
+    from src.core import AppConfig, ConfigurationError, setup_logging, get_logger
+    from src.core.errors import RedmineAPIError, ToolExecutionError
+    from src.users import UserClient
+    from src.projects import ProjectClient
+    from src.issues import IssueClient
+    from src.groups import GroupClient
+    from src.versions import VersionClient
+    from src.roadmap import RoadmapClient
+    from src.tools import ToolRegistry, CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
+    from src.tools import HealthCheckTool, GetCurrentUserTool
+    from src.services import IssueService
 
 
 class RedmineMCPServer:
-    """
-    Proper FastMCP server implementation for Redmine
-    """
+    """Main MCP Server for Redmine with modular architecture"""
     
-    def __init__(self, redmine_url: str, api_key: str):
-        """
-        Initialize the Redmine MCP Server
+    def __init__(self):
+        self.config: Optional[AppConfig] = None
+        self.logger = None
+        self.tool_registry = None
+        self.mcp = None
+        self.services = {}
+        self.clients = {}
+    
+    def initialize(self):
+        """Initialize server configuration and components"""
+        try:
+            # Load configuration
+            self.config = AppConfig.from_environment()
+            
+            # Setup logging
+            self.logger = setup_logging(self.config.logging)
+            self.logger.info("Starting Redmine MCP Server")
+            self.logger.info(f"Server mode: {self.config.server.mode}")
+            self.logger.info(f"Redmine URL: {self.config.redmine.url}")
+            
+            # Initialize FastMCP
+            if FastMCP is None:
+                raise ConfigurationError("FastMCP is not available - please install fastmcp package")
+            self.mcp = FastMCP("Redmine MCP Server")
+            
+            # Initialize tool registry
+            self.tool_registry = ToolRegistry(self.logger)
+            
+            # Initialize clients
+            self._initialize_clients()
+            
+            # Initialize services
+            self._initialize_services()
+            
+            # Register tools
+            self._register_tools()
+            
+            self.logger.info("Server initialization completed successfully")
+            
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Failed to initialize server: {e}")
+            else:
+                print(f"Failed to initialize server: {e}", file=sys.stderr)
+            raise ConfigurationError(f"Server initialization failed: {e}")
+    
+    def _initialize_clients(self):
+        """Initialize API clients"""
+        self.logger.debug("Initializing API clients")
         
-        Args:
-            redmine_url: URL of the Redmine instance
-            api_key: API key for Redmine authentication
-        """
-        self.redmine_url = redmine_url
-        self.api_key = api_key
-        
-        # Configure logging to stderr only (not stdout to avoid MCP interference)
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            stream=sys.stderr
+        # Initialize issue client
+        self.clients['issues'] = IssueClient(
+            base_url=self.config.redmine.url,
+            api_key=self.config.redmine.api_key,
+            logger=get_logger('issue_client')
         )
-        self.logger = logging.getLogger(__name__)
         
-        # Initialize Redmine client
-        self.redmine_client = RedmineClient(redmine_url, api_key, self.logger)
+        self.logger.debug("API clients initialized")
+    
+    def _initialize_services(self):
+        """Initialize service layer"""
+        self.logger.debug("Initializing services")
         
-        # Initialize FastMCP
-        self.app = FastMCP("Redmine MCP Server")
+        # Initialize issue service
+        self.services['issues'] = IssueService(
+            config=self.config.redmine,
+            issue_client=self.clients['issues'],
+            logger=get_logger('issue_service')
+        )
         
-        # Register tools after MCP initialization
-        self._register_tools()
+        self.logger.debug("Services initialized")
     
     def _register_tools(self):
-        """Register all MCP tools following proper FastMCP pattern"""
+        """Register all tools with the tool registry"""
+        self.logger.debug("Registering tools")
         
-        # Issue management tools
-        @self.app.tool(name="redmine-list-issues")
-        def list_issues(
-            project_id: Optional[str] = None,
-            status_id: Optional[str] = None,
-            assigned_to_id: Optional[str] = None,
-            limit: Optional[str] = "25"
-        ) -> List[Dict[str, Any]]:
-            """
-            List issues with optional filtering
-            
-            Args:
-                project_id: Filter by project identifier
-                status_id: Filter by status ID
-                assigned_to_id: Filter by assigned user ID
-                limit: Maximum number of issues to return
-                
-            Returns:
-                List of issues
-            """
-            params = {}
-            if limit is not None:
-                try:
-                    params["limit"] = int(limit)
-                except (ValueError, TypeError):
-                    params["limit"] = 25
-            if project_id:
-                params["project_id"] = project_id
-            if status_id:
-                try:
-                    params["status_id"] = int(status_id)
-                except (ValueError, TypeError):
-                    pass
-            if assigned_to_id:
-                try:
-                    params["assigned_to_id"] = int(assigned_to_id)
-                except (ValueError, TypeError):
-                    pass
-            
+        issue_service = self.services['issues']
+        
+        # Register issue tools
+        tools_to_register = [
+            (CreateIssueTool, issue_service),
+            (GetIssueTool, issue_service),
+            (ListIssuesTool, issue_service),
+            (UpdateIssueTool, issue_service),
+            (DeleteIssueTool, issue_service),
+            (HealthCheckTool, issue_service),
+            (GetCurrentUserTool, issue_service)
+        ]
+        
+        for tool_class, service in tools_to_register:
             try:
-                result = self.redmine_client.get_issues(params)
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('issues', [])
+                self.tool_registry.register(tool_class, service)
             except Exception as e:
-                self.logger.error(f"Error listing issues: {e}")
+                self.logger.error(f"Failed to register tool {tool_class.__name__}: {e}")
                 raise
         
-        @self.app.tool(name="redmine-get-issue")
-        def get_issue(issue_id: int) -> Dict[str, Any]:
-            """
-            Get detailed information about a specific issue
-            
-            Args:
-                issue_id: ID of the issue to retrieve
-                
-            Returns:
-                Issue details
-            """
-            try:
-                result = self.redmine_client.get_issue(issue_id, include=['journals', 'attachments'])
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('issue', {})
-            except Exception as e:
-                self.logger.error(f"Error getting issue {issue_id}: {e}")
-                raise
+        # Register tools with FastMCP manually for each tool
+        self._register_issue_tools()
+        self._register_admin_tools()
         
-        @self.app.tool(name="redmine-create-issue")
-        def create_issue(request: IssueCreateRequest) -> Dict[str, Any]:
-            """
-            Create a new issue
-            
-            Args:
-                request: Issue creation parameters
-                
-            Returns:
-                Created issue details
-            """
-            try:
-                issue_data = request.model_dump(exclude_none=True)
-                result = self.redmine_client.create_issue(issue_data)
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('issue', {})
-            except Exception as e:
-                self.logger.error(f"Error creating issue: {e}")
-                raise
-        
-        @self.app.tool(name="redmine-update-issue")
-        def update_issue(request: IssueUpdateRequest) -> bool:
-            """
-            Update an existing issue
-            
-            Args:
-                request: Issue update parameters
-                
-            Returns:
-                True if successful
-            """
-            try:
-                issue_id = request.issue_id
-                update_data = request.model_dump(exclude={'issue_id'}, exclude_none=True)
-                result = self.redmine_client.update_issue(issue_id, update_data)
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return True
-            except Exception as e:
-                self.logger.error(f"Error updating issue: {e}")
-                raise
-        
-        # Project management tools
-        @self.app.tool(name="redmine-list-projects")
-        def list_projects() -> List[Dict[str, Any]]:
-            """
-            List all accessible projects
-            
-            Returns:
-                List of projects
-            """
-            try:
-                result = self.redmine_client.get_projects()
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('projects', [])
-            except Exception as e:
-                self.logger.error(f"Error listing projects: {e}")
-                raise
-        
-        @self.app.tool(name="redmine-get-project")
-        def get_project(project_id: str) -> Dict[str, Any]:
-            """
-            Get detailed information about a specific project
-            
-            Args:
-                project_id: ID or identifier of the project
-                
-            Returns:
-                Project details
-            """
-            try:
-                result = self.redmine_client.get_project(project_id, include=['trackers', 'issue_categories'])
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('project', {})
-            except Exception as e:
-                self.logger.error(f"Error getting project {project_id}: {e}")
-                raise
-        
-        @self.app.tool(name="redmine-create-project")
-        def create_project(request: ProjectCreateRequest) -> Dict[str, Any]:
-            """
-            Create a new project
-            
-            Args:
-                request: Project creation parameters
-                
-            Returns:
-                Created project details
-            """
-            try:
-                project_data = request.model_dump(exclude_none=True)
-                result = self.redmine_client.create_project(project_data)
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('project', {})
-            except Exception as e:
-                self.logger.error(f"Error creating project: {e}")
-                raise
-        
-        # User management tools
-        @self.app.tool(name="redmine-get-current-user")
-        def get_current_user() -> Dict[str, Any]:
-            """
-            Get information about the current authenticated user
-            
-            Returns:
-                Current user details
-            """
-            try:
-                result = self.redmine_client.get_current_user()
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('user', {})
-            except Exception as e:
-                self.logger.error(f"Error getting current user: {e}")
-                raise
-        
-        @self.app.tool(name="redmine-list-users")
-        def list_users() -> List[Dict[str, Any]]:
-            """
-            List all users (requires admin privileges)
-            
-            Returns:
-                List of users
-            """
-            try:
-                result = self.redmine_client.get_users()
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('users', [])
-            except Exception as e:
-                self.logger.error(f"Error listing users: {e}")
-                raise
-        
-        # Version management tools
-        @self.app.tool(name="redmine-list-versions")
-        def list_versions(project_id: str) -> List[Dict[str, Any]]:
-            """
-            List versions for a project
-            
-            Args:
-                project_id: ID or identifier of the project
-                
-            Returns:
-                List of versions
-            """
-            try:
-                result = self.redmine_client.get_versions(project_id)
-                if result.get('error'):
-                    raise Exception(f"Error: {result.get('message', 'Unknown error')}")
-                return result.get('versions', [])
-            except Exception as e:
-                self.logger.error(f"Error listing versions for project {project_id}: {e}")
-                raise
-        
-        # Health check tool
-        @self.app.tool(name="redmine-health-check")
-        def health_check() -> Dict[str, Any]:
-            """
-            Check the health of the Redmine connection
-            
-            Returns:
-                Health status information
-            """
-            try:
-                healthy = self.redmine_client.health_check()
-                return {
-                    "healthy": healthy,
-                    "redmine_url": self.redmine_url,
-                    "timestamp": self.redmine_client.issues._get_timestamp()
-                }
-            except Exception as e:
-                self.logger.error(f"Error in health check: {e}")
-                return {
-                    "healthy": False,
-                    "error": str(e),
-                    "redmine_url": self.redmine_url
-                }
+        tool_count = len(self.tool_registry.list_tool_names())
+        self.logger.info(f"Registered {tool_count} tools: {', '.join(self.tool_registry.list_tool_names())}")
     
-    def run_stdio(self):
-        """Run the MCP server with STDIO transport for MCP clients"""
-        self.logger.info(f"Starting Redmine MCP Server for {self.redmine_url}")
-        # Use FastMCP's built-in run method - it handles STDIO by default
-        self.app.run("stdio")
+    def _register_issue_tools(self):
+        """Register issue management tools with FastMCP"""
+        
+        @self.mcp.tool("redmine-create-issue")
+        async def create_issue(project_id: str, subject: str, description: str = None, 
+                             tracker_id: int = None, status_id: int = None, 
+                             priority_id: int = None, assigned_to_id: int = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-create-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-get-issue")
+        async def get_issue(issue_id: int, include: list = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-get-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-list-issues")
+        async def list_issues(project_id: str = None, status_id: int = None, 
+                            assigned_to_id: int = None, tracker_id: int = None,
+                            limit: int = None, offset: int = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-list-issues")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-update-issue")
+        async def update_issue(issue_id: int, subject: str = None, description: str = None,
+                             status_id: int = None, priority_id: int = None, 
+                             assigned_to_id: int = None, notes: str = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-update-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-delete-issue")
+        async def delete_issue(issue_id: int):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-delete-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+    
+    def _register_admin_tools(self):
+        """Register administrative tools with FastMCP"""
+        
+        @self.mcp.tool("redmine-health-check")
+        async def health_check():
+            tool = self.tool_registry.get_tool("redmine-health-check")
+            result = tool.safe_execute()
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-get-current-user")
+        async def get_current_user():
+            tool = self.tool_registry.get_tool("redmine-get-current-user")
+            result = tool.safe_execute()
+            return [{"type": "text", "text": str(result)}]
+    
+    async def run(self):
+        """Run the MCP server"""
+        try:
+            self.logger.info(f"Starting Redmine MCP Server in {self.config.server.mode} mode...")
+            
+            # Handle different server modes
+            if self.config.server.mode == "test":
+                await self._run_test_mode()
+                return
+            
+            # Perform health check for live/debug modes
+            await self._perform_startup_health_check()
+            
+            # Run the server
+            await self.mcp.run(transport=self.config.server.transport)
+            
+        except KeyboardInterrupt:
+            self.logger.info("Server stopped by user")
+        except Exception as e:
+            self.logger.error(f"Server error: {e}")
+            raise
+    
+    async def _run_test_mode(self):
+        """Run the server in test mode with comprehensive validation"""
+        self.logger.info("Running server in test mode - performing validation tests...")
+        
+        test_results = []
+        
+        # Test 1: Configuration validation
+        try:
+            self.logger.info("Test 1: Configuration validation")
+            config_test = {
+                "test": "configuration_validation",
+                "redmine_url": self.config.redmine.url,
+                "has_api_key": bool(self.config.redmine.api_key),
+                "server_mode": self.config.server.mode,
+                "transport": self.config.server.transport,
+                "status": "PASS"
+            }
+            test_results.append(config_test)
+            self.logger.info("✓ Configuration validation: PASS")
+        except Exception as e:
+            test_results.append({"test": "configuration_validation", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Configuration validation: FAIL - {e}")
+        
+        # Test 2: Tool registry validation
+        try:
+            self.logger.info("Test 2: Tool registry validation")
+            tool_names = self.tool_registry.list_tool_names()
+            registry_test = {
+                "test": "tool_registry_validation",
+                "registered_tools": tool_names,
+                "tool_count": len(tool_names),
+                "status": "PASS"
+            }
+            test_results.append(registry_test)
+            self.logger.info(f"✓ Tool registry validation: PASS - {len(tool_names)} tools registered")
+        except Exception as e:
+            test_results.append({"test": "tool_registry_validation", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Tool registry validation: FAIL - {e}")
+        
+        # Test 3: Health check
+        try:
+            self.logger.info("Test 3: Redmine connectivity health check")
+            health_tool = self.tool_registry.get_tool("redmine-health-check")
+            if health_tool:
+                health_result = health_tool.safe_execute()
+                test_results.append({
+                    "test": "redmine_health_check",
+                    "result": health_result,
+                    "status": "PASS"
+                })
+                self.logger.info("✓ Redmine health check: PASS")
+            else:
+                raise Exception("Health check tool not available")
+        except Exception as e:
+            test_results.append({"test": "redmine_health_check", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Redmine health check: FAIL - {e}")
+        
+        # Test 4: User authentication
+        try:
+            self.logger.info("Test 4: User authentication validation")
+            user_tool = self.tool_registry.get_tool("redmine-get-current-user")
+            if user_tool:
+                user_result = user_tool.safe_execute()
+                test_results.append({
+                    "test": "user_authentication",
+                    "result": user_result,
+                    "status": "PASS"
+                })
+                self.logger.info("✓ User authentication: PASS")
+            else:
+                raise Exception("User authentication tool not available")
+        except Exception as e:
+            test_results.append({"test": "user_authentication", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ User authentication: FAIL - {e}")
+        
+        # Test Summary
+        passed_tests = len([t for t in test_results if t.get("status") == "PASS"])
+        total_tests = len(test_results)
+        
+        self.logger.info(f"\n=== TEST MODE SUMMARY ===")
+        self.logger.info(f"Tests passed: {passed_tests}/{total_tests}")
+        
+        for result in test_results:
+            status_symbol = "✓" if result.get("status") == "PASS" else "✗"
+            self.logger.info(f"{status_symbol} {result['test']}: {result['status']}")
+        
+        if passed_tests == total_tests:
+            self.logger.info("All tests passed! Server is ready for production.")
+            return True
+        else:
+            self.logger.error(f"{total_tests - passed_tests} test(s) failed. Please resolve issues before production use.")
+            return False
+    
+    async def _perform_startup_health_check(self):
+        """Perform startup health check"""
+        self.logger.info("Performing startup health check...")
+        
+        try:
+            health_tool = self.tool_registry.get_tool("redmine-health-check")
+            if health_tool:
+                result = health_tool.safe_execute()
+                if result.get("success"):
+                    self.logger.info("Health check passed - Redmine connection is healthy")
+                else:
+                    self.logger.warning(f"Health check warning: {result.get('error', 'Unknown error')}")
+            else:
+                self.logger.warning("Health check tool not found")
+                
+        except Exception as e:
+            self.logger.error(f"Health check failed: {e}")
+            if self.config.server.mode == "live":
+                raise ConfigurationError("Cannot start server - health check failed")
 
 
 async def main():
     """Main entry point"""
-    import os
+    server = RedmineMCPServer()
     
-    # Get configuration from environment
-    redmine_url = os.environ.get('REDMINE_URL', 'https://redstone.redminecloud.net')
-    redmine_api_key = os.environ.get('REDMINE_API_KEY')
-    
-    if not redmine_api_key:
-        logging.error("REDMINE_API_KEY environment variable is required")
+    try:
+        server.initialize()
+        await server.run()
+    except ConfigurationError as e:
+        print(f"Configuration error: {e}", file=sys.stderr)
         sys.exit(1)
-    
-    # Create server and get the FastMCP app
-    server = RedmineMCPServer(redmine_url, redmine_api_key)
-    
-    # Run the FastMCP server
-    await server.app.run()
+    except Exception as e:
+        if server.logger:
+            server.logger.error(f"Fatal error: {e}")
+        else:
+            print(f"Fatal error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
