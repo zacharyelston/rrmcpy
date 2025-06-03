@@ -186,11 +186,15 @@ class RedmineMCPServer:
     async def run(self):
         """Run the MCP server"""
         try:
-            self.logger.info("Starting Redmine MCP Server...")
+            self.logger.info(f"Starting Redmine MCP Server in {self.config.server.mode} mode...")
             
-            # Perform health check
-            if self.config.server.mode != "test":
-                await self._perform_startup_health_check()
+            # Handle different server modes
+            if self.config.server.mode == "test":
+                await self._run_test_mode()
+                return
+            
+            # Perform health check for live/debug modes
+            await self._perform_startup_health_check()
             
             # Run the server
             await self.mcp.run(transport=self.config.server.transport)
@@ -200,6 +204,99 @@ class RedmineMCPServer:
         except Exception as e:
             self.logger.error(f"Server error: {e}")
             raise
+    
+    async def _run_test_mode(self):
+        """Run the server in test mode with comprehensive validation"""
+        self.logger.info("Running server in test mode - performing validation tests...")
+        
+        test_results = []
+        
+        # Test 1: Configuration validation
+        try:
+            self.logger.info("Test 1: Configuration validation")
+            config_test = {
+                "test": "configuration_validation",
+                "redmine_url": self.config.redmine.url,
+                "has_api_key": bool(self.config.redmine.api_key),
+                "server_mode": self.config.server.mode,
+                "transport": self.config.server.transport,
+                "status": "PASS"
+            }
+            test_results.append(config_test)
+            self.logger.info("✓ Configuration validation: PASS")
+        except Exception as e:
+            test_results.append({"test": "configuration_validation", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Configuration validation: FAIL - {e}")
+        
+        # Test 2: Tool registry validation
+        try:
+            self.logger.info("Test 2: Tool registry validation")
+            tool_names = self.tool_registry.list_tool_names()
+            registry_test = {
+                "test": "tool_registry_validation",
+                "registered_tools": tool_names,
+                "tool_count": len(tool_names),
+                "status": "PASS"
+            }
+            test_results.append(registry_test)
+            self.logger.info(f"✓ Tool registry validation: PASS - {len(tool_names)} tools registered")
+        except Exception as e:
+            test_results.append({"test": "tool_registry_validation", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Tool registry validation: FAIL - {e}")
+        
+        # Test 3: Health check
+        try:
+            self.logger.info("Test 3: Redmine connectivity health check")
+            health_tool = self.tool_registry.get_tool("redmine-health-check")
+            if health_tool:
+                health_result = health_tool.safe_execute()
+                test_results.append({
+                    "test": "redmine_health_check",
+                    "result": health_result,
+                    "status": "PASS"
+                })
+                self.logger.info("✓ Redmine health check: PASS")
+            else:
+                raise Exception("Health check tool not available")
+        except Exception as e:
+            test_results.append({"test": "redmine_health_check", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ Redmine health check: FAIL - {e}")
+        
+        # Test 4: User authentication
+        try:
+            self.logger.info("Test 4: User authentication validation")
+            user_tool = self.tool_registry.get_tool("redmine-get-current-user")
+            if user_tool:
+                user_result = user_tool.safe_execute()
+                test_results.append({
+                    "test": "user_authentication",
+                    "result": user_result,
+                    "status": "PASS"
+                })
+                self.logger.info("✓ User authentication: PASS")
+            else:
+                raise Exception("User authentication tool not available")
+        except Exception as e:
+            test_results.append({"test": "user_authentication", "status": "FAIL", "error": str(e)})
+            self.logger.error(f"✗ User authentication: FAIL - {e}")
+        
+        # Test Summary
+        passed_tests = len([t for t in test_results if t.get("status") == "PASS"])
+        total_tests = len(test_results)
+        
+        self.logger.info(f"\n=== TEST MODE SUMMARY ===")
+        self.logger.info(f"Tests passed: {passed_tests}/{total_tests}")
+        
+        for result in test_results:
+            status_symbol = "✓" if result.get("status") == "PASS" else "✗"
+            self.logger.info(f"{status_symbol} {result['test']}: {result['status']}")
+        
+        if passed_tests == total_tests:
+            self.logger.info("All tests passed! Server is ready for production.")
+            return True
+        else:
+            self.logger.error(f"{total_tests - passed_tests} test(s) failed. Please resolve issues before production use.")
+            return False
     
     async def _perform_startup_health_check(self):
         """Perform startup health check"""

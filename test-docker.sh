@@ -56,12 +56,21 @@ fi
 LOG_LEVEL=${LOG_LEVEL:-info}
 SERVER_MODE=${SERVER_MODE:-live}
 
+# Get current git branch for dynamic image tagging
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "local")
+# Sanitize branch name for Docker tag (replace invalid characters)
+DOCKER_TAG=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g' | tr '[:upper:]' '[:lower:]')
+IMAGE_NAME="redmine-mcp-server:$DOCKER_TAG"
+
 echo "Configuration:"
 echo "  Redmine URL: $REDMINE_URL"
 echo "  Log Level: $LOG_LEVEL"
 echo "  Server Mode: $SERVER_MODE"
+echo "  Branch: $BRANCH_NAME"
+echo "  Docker Image: $IMAGE_NAME"
 echo ""
 
+<<<<<<< HEAD
 # Create branch-specific image tag
 BRANCH_TAG=$(echo "$CURRENT_BRANCH" | sed 's/[^a-zA-Z0-9._-]/-/g')
 IMAGE_NAME="redmine-mcp-server:$BRANCH_TAG"
@@ -78,6 +87,11 @@ docker build \
     --label "commit=$CURRENT_COMMIT" \
     --label "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     . || {
+=======
+# Build Docker image
+echo -e "${YELLOW}Building Docker image...${NC}"
+docker build -t "$IMAGE_NAME" . || {
+>>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
@@ -95,7 +109,11 @@ run_tests() {
         --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
+<<<<<<< HEAD
         python -m pytest tests/test_mcp_server.py tests/test_error_handling.py tests/test_logging.py -v
+=======
+        python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
+>>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
 }
 
 # Function to run health check
@@ -107,7 +125,7 @@ run_health_check() {
         -e LOG_LEVEL="$LOG_LEVEL" \
         --name "rmcp-health-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
-        redmine-mcp-server:local \
+        "$IMAGE_NAME" \
         python -c "
 import sys, os
 sys.path.insert(0, '/app/src')
@@ -154,6 +172,7 @@ run_server_test_mode() {
         -e REDMINE_API_KEY="$REDMINE_API_KEY" \
         -e LOG_LEVEL="$LOG_LEVEL" \
         -e SERVER_MODE="test" \
+<<<<<<< HEAD
         --name "rmcp-server-$BRANCH_TAG-$(date +%s)" \
         "$IMAGE_NAME"
 }
@@ -173,6 +192,9 @@ list_branch_versions() {
         echo "  $tag -> Branch: $branch, Commit: $commit, Built: $build_date"
     done
     echo ""
+=======
+        "$IMAGE_NAME"
+>>>>>>> 22bd9fe54202a4fd1c9fbadfbccdb6eace0a0dfc
 }
 
 # Main menu
