@@ -3,6 +3,7 @@ Redmine MCP Server with modular architecture and tool registry
 """
 import sys
 import os
+import json
 import asyncio
 from typing import Optional
 
@@ -101,6 +102,9 @@ class RedmineMCPServer:
             logger=get_logger('issue_client')
         )
         
+        # Add convenience property for FastMCP tools
+        self.issue_client = self.clients['issues']
+        
         self.logger.debug("API clients initialized")
     
     def _initialize_services(self):
@@ -148,70 +152,103 @@ class RedmineMCPServer:
         self.logger.info(f"Registered {tool_count} tools: {', '.join(self.tool_registry.list_tool_names())}")
     
     def _register_issue_tools(self):
-        """Register issue management tools with FastMCP"""
+        """Register issue management tools with FastMCP following standard patterns"""
         
         @self.mcp.tool("redmine-create-issue")
         async def create_issue(project_id: str, subject: str, description: str = None, 
                              tracker_id: int = None, status_id: int = None, 
                              priority_id: int = None, assigned_to_id: int = None):
-            kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("CreateIssueTool")
-            result = tool.safe_execute(**kwargs)
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Create a new issue in Redmine"""
+            try:
+                issue_data = {"project_id": project_id, "subject": subject}
+                if description: issue_data["description"] = description
+                if tracker_id: issue_data["tracker_id"] = tracker_id
+                if status_id: issue_data["status_id"] = status_id
+                if priority_id: issue_data["priority_id"] = priority_id
+                if assigned_to_id: issue_data["assigned_to_id"] = assigned_to_id
+                
+                result = self.issue_client.create_issue(issue_data)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error creating issue: {str(e)}"
         
         @self.mcp.tool("redmine-get-issue")
         async def get_issue(issue_id: int, include: list = None):
-            kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("GetIssueTool")
-            result = tool.safe_execute(**kwargs)
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Get a specific issue by ID"""
+            try:
+                result = self.issue_client.get_issue(issue_id, include)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error getting issue {issue_id}: {str(e)}"
         
         @self.mcp.tool("redmine-list-issues")
         async def list_issues(project_id: str = None, status_id: int = None, 
                             assigned_to_id: int = None, tracker_id: int = None,
                             limit: int = None, offset: int = None):
-            kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("ListIssuesTool")
-            result = tool.safe_execute(**kwargs)
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """List issues with optional filtering"""
+            try:
+                params = {}
+                if project_id: params["project_id"] = project_id
+                if status_id: params["status_id"] = status_id
+                if assigned_to_id: params["assigned_to_id"] = assigned_to_id
+                if tracker_id: params["tracker_id"] = tracker_id
+                if limit: params["limit"] = limit
+                if offset: params["offset"] = offset
+                
+                result = self.issue_client.get_issues(params)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error listing issues: {str(e)}"
         
         @self.mcp.tool("redmine-update-issue")
         async def update_issue(issue_id: int, subject: str = None, description: str = None,
                              status_id: int = None, priority_id: int = None, 
                              assigned_to_id: int = None, notes: str = None):
-            kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("UpdateIssueTool")
-            result = tool.safe_execute(**kwargs)
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Update an existing issue"""
+            try:
+                issue_data = {}
+                if subject: issue_data["subject"] = subject
+                if description: issue_data["description"] = description
+                if status_id: issue_data["status_id"] = status_id
+                if priority_id: issue_data["priority_id"] = priority_id
+                if assigned_to_id: issue_data["assigned_to_id"] = assigned_to_id
+                if notes: issue_data["notes"] = notes
+                
+                result = self.issue_client.update_issue(issue_id, issue_data)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error updating issue {issue_id}: {str(e)}"
         
         @self.mcp.tool("redmine-delete-issue")
         async def delete_issue(issue_id: int):
-            kwargs = {k: v for k, v in locals().items() if v is not None}
-            tool = self.tool_registry.get_tool("DeleteIssueTool")
-            result = tool.safe_execute(**kwargs)
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Delete an issue"""
+            try:
+                result = self.issue_client.delete_issue(issue_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error deleting issue {issue_id}: {str(e)}"
     
     def _register_admin_tools(self):
-        """Register administrative tools with FastMCP"""
+        """Register administrative tools with FastMCP following standard patterns"""
         
         @self.mcp.tool("redmine-health-check")
         async def health_check():
-            tool = self.tool_registry.get_tool("HealthCheckTool")
-            result = tool.safe_execute()
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Check Redmine server health and connectivity"""
+            try:
+                result = self.issue_client.health_check()
+                return json.dumps({"healthy": result, "status": "Connected" if result else "Disconnected"}, indent=2)
+            except Exception as e:
+                return f"Health check failed: {str(e)}"
         
         @self.mcp.tool("redmine-get-current-user")
         async def get_current_user():
-            tool = self.tool_registry.get_tool("GetCurrentUserTool")
-            result = tool.safe_execute()
-            import json
-            return [{"type": "text", "text": json.dumps(result, indent=2)}]
+            """Get current authenticated user information"""
+            try:
+                # Use a simple API call to get user info
+                result = self.issue_client.make_request("GET", "/users/current.json")
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                return f"Error getting current user: {str(e)}"
     
     async def run(self):
         """Run the MCP server"""
@@ -226,8 +263,12 @@ class RedmineMCPServer:
             # Perform health check for live/debug modes
             await self._perform_startup_health_check()
             
-            # Run the server
-            await self.mcp.run(transport=self.config.server.transport)
+            # Run the server with proper transport handling
+            transport = "stdio"  # Default to stdio for MCP compatibility
+            if hasattr(self.config.server, 'transport') and self.config.server.transport:
+                transport = self.config.server.transport
+            
+            await self.mcp.run(transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
@@ -333,10 +374,10 @@ class RedmineMCPServer:
         self.logger.info("Performing startup health check...")
         
         try:
-            health_tool = self.tool_registry.get_tool("redmine-health-check")
+            health_tool = self.tool_registry.get_tool("HealthCheckTool")
             if health_tool:
-                result = health_tool.safe_execute()
-                if result.get("success"):
+                result = health_tool.execute({})
+                if result.get("healthy"):
                     self.logger.info("Health check passed - Redmine connection is healthy")
                 else:
                     self.logger.warning(f"Health check warning: {result.get('error', 'Unknown error')}")
@@ -367,6 +408,29 @@ async def main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def run_server():
+    """Entry point for container environments that handles asyncio properly"""
     import asyncio
-    asyncio.run(main())
+    import sys
+    
+    try:
+        # Handle event loop compatibility for container environments
+        try:
+            # Check if there's already a running event loop
+            loop = asyncio.get_running_loop()
+            # If we get here, there's already a loop running (like in Jupyter/Windsurf)
+            import nest_asyncio
+            nest_asyncio.apply()
+            # Create a task in the existing loop
+            task = loop.create_task(main())
+            return task
+        except RuntimeError:
+            # No event loop running, we can start our own
+            return asyncio.run(main())
+    except Exception as e:
+        print(f"Server startup failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    run_server()
