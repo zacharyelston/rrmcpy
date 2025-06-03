@@ -260,27 +260,33 @@ class RedmineMCPServer:
             except Exception as e:
                 return f"Error getting current user: {str(e)}"
     
-    def run(self):
-        """Run the server with the appropriate mode - non-async version"""
+    def run(self, transport: Optional[str] = None):
+        """Run the server in live mode
+        
+        Args:
+            transport: Optional transport override (stdio, http, etc)
+        """
         try:
-            # Run in appropriate mode
-            if self.config.server.mode == "test":
-                self._run_test_mode_sync()
-                return
+            self.logger.info(f"Starting Redmine MCP Server in live mode...")
             
-            # Get proper transport handling
-            transport = "stdio"  # Default to stdio for MCP compatibility
+            # Use configured transport or fallback to stdio
+            if not transport:
+                transport = "stdio"
+                
             if hasattr(self.config.server, 'transport') and self.config.server.transport:
                 transport = self.config.server.transport
+                
+            self.logger.debug(f"Using transport: {transport}")
             
             # Run the MCP server using FastMCP's run method
-            # which handles its own event loop internally
-            self.mcp.run(transport=transport)
+            # Plain and simple - let FastMCP handle everything
+            self.mcp.run(transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
         except Exception as e:
-            self.logger.error(f"Server error: {e}")
+            self.logger.error(f"Fatal error: {e}")
+            sys.exit(1)
     
     def _run_test_mode_sync(self):
         """Run the server in test mode with comprehensive validation - synchronous version"""
