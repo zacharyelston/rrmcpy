@@ -117,21 +117,71 @@ class RedmineMCPServer:
                 self.logger.error(f"Failed to register tool {tool_class.__name__}: {e}")
                 raise
         
-        # Register tools with FastMCP
-        for tool_name, tool_instance in self.tool_registry.get_all_tools().items():
-            # Create tool handler with proper closure
-            def make_tool_handler(tool_inst):
-                @self.mcp.tool(tool_inst.name())
-                async def tool_handler(**kwargs):
-                    self.logger.debug(f"Executing tool: {tool_inst.name()}")
-                    result = tool_inst.safe_execute(**kwargs)
-                    return [{"type": "text", "text": str(result)}]
-                return tool_handler
-            
-            make_tool_handler(tool_instance)
+        # Register tools with FastMCP manually for each tool
+        self._register_issue_tools()
+        self._register_admin_tools()
         
         tool_count = len(self.tool_registry.list_tool_names())
         self.logger.info(f"Registered {tool_count} tools: {', '.join(self.tool_registry.list_tool_names())}")
+    
+    def _register_issue_tools(self):
+        """Register issue management tools with FastMCP"""
+        
+        @self.mcp.tool("redmine-create-issue")
+        async def create_issue(project_id: str, subject: str, description: str = None, 
+                             tracker_id: int = None, status_id: int = None, 
+                             priority_id: int = None, assigned_to_id: int = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-create-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-get-issue")
+        async def get_issue(issue_id: int, include: list = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-get-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-list-issues")
+        async def list_issues(project_id: str = None, status_id: int = None, 
+                            assigned_to_id: int = None, tracker_id: int = None,
+                            limit: int = None, offset: int = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-list-issues")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-update-issue")
+        async def update_issue(issue_id: int, subject: str = None, description: str = None,
+                             status_id: int = None, priority_id: int = None, 
+                             assigned_to_id: int = None, notes: str = None):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-update-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-delete-issue")
+        async def delete_issue(issue_id: int):
+            kwargs = {k: v for k, v in locals().items() if v is not None}
+            tool = self.tool_registry.get_tool("redmine-delete-issue")
+            result = tool.safe_execute(**kwargs)
+            return [{"type": "text", "text": str(result)}]
+    
+    def _register_admin_tools(self):
+        """Register administrative tools with FastMCP"""
+        
+        @self.mcp.tool("redmine-health-check")
+        async def health_check():
+            tool = self.tool_registry.get_tool("redmine-health-check")
+            result = tool.safe_execute()
+            return [{"type": "text", "text": str(result)}]
+        
+        @self.mcp.tool("redmine-get-current-user")
+        async def get_current_user():
+            tool = self.tool_registry.get_tool("redmine-get-current-user")
+            result = tool.safe_execute()
+            return [{"type": "text", "text": str(result)}]
     
     async def run(self):
         """Run the MCP server"""

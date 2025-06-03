@@ -4,8 +4,7 @@ Decoupled tool definitions with plugin-like architecture
 """
 from .registry import ToolRegistry
 from .base_tool import BaseTool
-from .issue_tools import CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool
-from .project_tools import ListProjectsTool, GetProjectTool
+from .issue_tools import CreateIssueTool, GetIssueTool, ListIssuesTool, UpdateIssueTool, DeleteIssueTool
 from .admin_tools import HealthCheckTool, GetCurrentUserTool
 
 __all__ = [
@@ -15,8 +14,7 @@ __all__ = [
     'GetIssueTool', 
     'ListIssuesTool',
     'UpdateIssueTool',
-    'ListProjectsTool',
-    'GetProjectTool',
+    'DeleteIssueTool',
     'HealthCheckTool',
     'GetCurrentUserTool'
 ]
