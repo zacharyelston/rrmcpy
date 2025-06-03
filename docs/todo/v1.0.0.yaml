@@ -1,0 +1,165 @@
+# TODO: v1.0.0 - Core Architecture Simplification
+# Goal: Simplify architecture by removing unnecessary layers and embracing FastMCP patterns
+# Timeline: Sprint 2-3 (Weeks 2-3)
+# Status: NOT_STARTED
+
+version: "1.0.0"
+name: "Core Architecture Simplification"
+description: "Remove unnecessary abstractions and implement direct FastMCP integration"
+timeline: "Sprint 2-3 (Weeks 2-3)"
+status: "NOT_STARTED"
+depends_on: "v0.9.0"
+
+tasks:
+  remove_abstractions:
+    name: "Remove Unnecessary Abstractions"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    timeline: "Week 2"
+    description: "Eliminate unused abstract classes and redundant systems"
+    subtasks:
+      - name: "Remove unused BaseTool abstract class"
+        status: "TODO"
+        description: "Delete abstract base classes that add no value"
+        files_affected:
+          - "src/tools/base_tool.py"
+          
+      - name: "Eliminate redundant ToolRegistry system"
+        status: "TODO"
+        description: "Remove complex registry in favor of FastMCP decorators"
+        files_affected:
+          - "src/tools/registry.py"
+          - "src/server.py"
+          
+      - name: "Simplify execution flow"
+        status: "TODO"
+        description: "Reduce layers of indirection between API calls and implementation"
+        
+      - name: "Convert tool classes to functions"
+        status: "TODO"
+        description: "Replace class-based tools with simple decorated functions"
+
+  fastmcp_integration:
+    name: "Implement Direct FastMCP Integration"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    timeline: "Week 2"
+    description: "Use FastMCP's native patterns for tool registration and management"
+    subtasks:
+      - name: "Replace custom registration with FastMCP decorators"
+        status: "TODO"
+        description: "Use @mcp.tool decorators instead of custom registry"
+        example: |
+          @mcp.tool("redmine-create-issue")
+          async def create_issue(project_id: str, subject: str, ...):
+              # Direct implementation
+              
+      - name: "Implement proper lifespan management"
+        status: "TODO"
+        description: "Use FastMCP's lifespan hooks for resource initialization"
+        
+      - name: "Add FastMCP schema validation"
+        status: "TODO"
+        description: "Define Pydantic schemas for all tool inputs"
+        
+      - name: "Create shared schema definitions"
+        status: "TODO"
+        description: "Build reusable schemas for Redmine entities"
+
+  refactor_api_client:
+    name: "Refactor API Client"
+    priority: "MEDIUM"
+    status: "NOT_STARTED"
+    timeline: "Week 3"
+    description: "Modernize API client with async patterns and better error handling"
+    subtasks:
+      - name: "Convert to async/await pattern"
+        status: "TODO"
+        description: "Make API client fully async for better performance"
+        files_affected:
+          - "src/base.py"
+          - "src/issues.py"
+          - "src/projects.py"
+          
+      - name: "Improve error handling"
+        status: "TODO"
+        description: "Add proper exception types and error propagation"
+        
+      - name: "Add connection pooling"
+        status: "TODO"
+        description: "Implement connection reuse for better performance"
+        
+      - name: "Create retry mechanism"
+        status: "TODO"
+        description: "Add exponential backoff for transient failures"
+
+  simplify_configuration:
+    name: "Create Configuration System"
+    priority: "MEDIUM"
+    status: "NOT_STARTED"
+    timeline: "Week 3"
+    description: "Simplify configuration management with type safety"
+    subtasks:
+      - name: "Consolidate configuration classes"
+        status: "TODO"
+        description: "Merge multiple config classes into one coherent system"
+        files_affected:
+          - "src/core/config.py"
+          
+      - name: "Add type validation"
+        status: "TODO"
+        description: "Use Pydantic for configuration validation"
+        
+      - name: "Environment-based loading"
+        status: "TODO"
+        description: "Support .env files and environment variables"
+        
+      - name: "Startup validation"
+        status: "TODO"
+        description: "Validate all required configuration on server start"
+
+success_metrics:
+  - metric: "Reduced codebase size by 30%+"
+    status: "NOT_MET"
+    
+  - metric: "No redundant layers of indirection"
+    status: "NOT_MET"
+    
+  - metric: "All tools use FastMCP native patterns"
+    status: "NOT_MET"
+    
+  - metric: "Clear and consistent architectural pattern"
+    status: "NOT_MET"
+
+design_principles:
+  - principle: "KISS - Keep It Simple, Stupid"
+    description: "Remove complexity, not add to it"
+    
+  - principle: "YAGNI - You Ain't Gonna Need It"
+    description: "Don't build abstractions for future features"
+    
+  - principle: "DRY - Don't Repeat Yourself"
+    description: "Eliminate duplicate code patterns"
+
+architecture_goals:
+  before:
+    description: "Complex multi-layered architecture with custom abstractions"
+    layers:
+      - "MCP Server"
+      - "Tool Registry"
+      - "Tool Classes"
+      - "Service Layer"
+      - "API Client"
+      - "Redmine API"
+      
+  after:
+    description: "Simple direct architecture with FastMCP integration"
+    layers:
+      - "FastMCP Server with decorated tools"
+      - "Async API Client"
+      - "Redmine API"
+
+notes:
+  - "This version focuses on simplification, not new features"
+  - "Goal is to reduce complexity while maintaining functionality"
+  - "All changes should make the code more obvious and easier to understand"

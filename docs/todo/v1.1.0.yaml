@@ -1,0 +1,226 @@
+# TODO: v1.1.0 - Tool & Resource Implementation
+# Goal: Provide complete and consistent tools for all Redmine entities
+# Timeline: Sprint 4-5 (Weeks 4-5)
+# Status: NOT_STARTED
+
+version: "1.1.0"
+name: "Tool & Resource Implementation"
+description: "Implement comprehensive tool set using FastMCP patterns"
+timeline: "Sprint 4-5 (Weeks 4-5)"
+status: "NOT_STARTED"
+depends_on: "v1.0.0"
+
+tasks:
+  issue_management_tools:
+    name: "Implement Issue Management Tools"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    timeline: "Week 4"
+    description: "Convert and enhance issue tools with FastMCP patterns"
+    subtasks:
+      - name: "Convert to FastMCP decorators"
+        status: "TODO"
+        description: "Replace class-based tools with decorated functions"
+        tools:
+          - "redmine-create-issue"
+          - "redmine-get-issue"
+          - "redmine-list-issues"
+          - "redmine-update-issue"
+          - "redmine-delete-issue"
+          - "redmine-add-issue-comment"
+          
+      - name: "Add schema validation"
+        status: "TODO"
+        description: "Create Pydantic models for issue parameters"
+        schemas:
+          - "IssueCreateSchema"
+          - "IssueUpdateSchema"
+          - "IssueFilterSchema"
+          
+      - name: "Ensure complete CRUD operations"
+        status: "TODO"
+        description: "Verify all standard operations are available"
+        
+      - name: "Add relationship handling"
+        status: "TODO"
+        description: "Support parent/child issues, related issues"
+
+  project_management_tools:
+    name: "Implement Project Management Tools"
+    priority: "HIGH"
+    status: "NOT_STARTED"
+    timeline: "Week 4"
+    description: "Create comprehensive project management capabilities"
+    subtasks:
+      - name: "Create project CRUD tools"
+        status: "TODO"
+        description: "Implement all project operations"
+        tools:
+          - "redmine-create-project"
+          - "redmine-get-project"
+          - "redmine-list-projects"
+          - "redmine-update-project"
+          - "redmine-delete-project"
+          
+      - name: "Add filtering and pagination"
+        status: "TODO"
+        description: "Support complex project queries"
+        features:
+          - "Filter by status, parent, custom fields"
+          - "Pagination with limit/offset"
+          - "Sorting options"
+          
+      - name: "Implement membership management"
+        status: "TODO"
+        description: "Tools for managing project members"
+        tools:
+          - "redmine-add-project-member"
+          - "redmine-remove-project-member"
+          - "redmine-list-project-members"
+          
+      - name: "Add project hierarchy support"
+        status: "TODO"
+        description: "Handle parent/child project relationships"
+
+  user_group_tools:
+    name: "Implement User & Group Tools"
+    priority: "MEDIUM"
+    status: "NOT_STARTED"
+    timeline: "Week 5"
+    description: "Add user and group management capabilities"
+    subtasks:
+      - name: "Create user management tools"
+        status: "TODO"
+        description: "Tools for user operations"
+        tools:
+          - "redmine-get-user"
+          - "redmine-list-users"
+          - "redmine-create-user"
+          - "redmine-update-user"
+          - "redmine-delete-user"
+          
+      - name: "Implement group management"
+        status: "TODO"
+        description: "Tools for group operations"
+        tools:
+          - "redmine-create-group"
+          - "redmine-list-groups"
+          - "redmine-add-group-member"
+          - "redmine-remove-group-member"
+          
+      - name: "Add permission helpers"
+        status: "TODO"
+        description: "Tools to check and manage permissions"
+        tools:
+          - "redmine-check-permission"
+          - "redmine-list-roles"
+          
+      - name: "Role assignment capabilities"
+        status: "TODO"
+        description: "Assign roles to users in projects"
+
+  resource_system:
+    name: "Implement Resource System"
+    priority: "MEDIUM"
+    status: "NOT_STARTED"
+    timeline: "Week 5"
+    description: "Create FastMCP resource templates for Redmine entities"
+    subtasks:
+      - name: "Create resource templates"
+        status: "TODO"
+        description: "Define resource templates for entities"
+        resources:
+          - "redmine://issue/{id}"
+          - "redmine://project/{id}"
+          - "redmine://user/{id}"
+          - "redmine://version/{id}"
+          
+      - name: "Implement resource retrieval"
+        status: "TODO"
+        description: "Methods to fetch resources by URI"
+        
+      - name: "Add relationship handling"
+        status: "TODO"
+        description: "Navigate between related resources"
+        features:
+          - "Issue -> Project relationship"
+          - "Issue -> Author/Assignee relationship"
+          - "Project -> Members relationship"
+          
+      - name: "Create resource formatters"
+        status: "TODO"
+        description: "Consistent output formatting for all resources"
+
+additional_tools:
+  version_tools:
+    name: "Version/Release Management"
+    priority: "LOW"
+    status: "NOT_STARTED"
+    tools:
+      - "redmine-create-version"
+      - "redmine-list-versions"
+      - "redmine-update-version"
+      - "redmine-close-version"
+      
+  time_tracking_tools:
+    name: "Time Tracking"
+    priority: "LOW"
+    status: "NOT_STARTED"
+    tools:
+      - "redmine-log-time"
+      - "redmine-list-time-entries"
+      - "redmine-update-time-entry"
+      
+  custom_field_tools:
+    name: "Custom Field Management"
+    priority: "LOW"
+    status: "NOT_STARTED"
+    tools:
+      - "redmine-list-custom-fields"
+      - "redmine-get-custom-field-values"
+
+success_metrics:
+  - metric: "Complete CRUD operations for issues, projects, users"
+    status: "NOT_MET"
+    
+  - metric: "All tools use consistent FastMCP patterns"
+    status: "NOT_MET"
+    
+  - metric: "Resource system models all core entities"
+    status: "NOT_MET"
+    
+  - metric: "Tools follow clean and simple design"
+    status: "NOT_MET"
+
+tool_patterns:
+  standard_pattern:
+    description: "Consistent pattern for all tools"
+    example: |
+      @mcp.tool("redmine-{action}-{entity}")
+      async def {action}_{entity}(
+          # Required parameters first
+          id: int,  # for get/update/delete
+          # Optional parameters with defaults
+          include: List[str] = None,
+          **kwargs
+      ) -> Dict[str, Any]:
+          """Clear docstring explaining the tool"""
+          try:
+              # Input validation using Pydantic
+              validated = EntitySchema(**kwargs)
+              
+              # Call async API client
+              result = await client.{action}_{entity}(validated.dict())
+              
+              # Return consistent response
+              return {"success": True, "data": result}
+          except ValidationError as e:
+              return {"success": False, "error": str(e)}
+          except RedmineError as e:
+              return {"success": False, "error": e.message}
+
+notes:
+  - "Focus on completeness - every Redmine entity should have full CRUD"
+  - "Maintain consistency - all tools follow the same patterns"
+  - "Keep it simple - no complex abstractions or clever code"
+  - "FastMCP native - use decorators, schemas, and resources properly"
