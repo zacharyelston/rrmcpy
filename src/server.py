@@ -250,34 +250,30 @@ class RedmineMCPServer:
             except Exception as e:
                 return f"Error getting current user: {str(e)}"
     
-    async def run(self):
-        """Run the MCP server"""
+    def run(self):
+        """Run the server with the appropriate mode - non-async version"""
         try:
-            self.logger.info(f"Starting Redmine MCP Server in {self.config.server.mode} mode...")
-            
-            # Handle different server modes
+            # Run in appropriate mode
             if self.config.server.mode == "test":
-                await self._run_test_mode()
+                self._run_test_mode_sync()
                 return
             
-            # Perform health check for live/debug modes
-            await self._perform_startup_health_check()
-            
-            # Run the server with proper transport handling
+            # Get proper transport handling
             transport = "stdio"  # Default to stdio for MCP compatibility
             if hasattr(self.config.server, 'transport') and self.config.server.transport:
                 transport = self.config.server.transport
             
-            await self.mcp.run(transport)
+            # Start the MCP server using FastMCP's non-async start method
+            # which handles its own event loop internally
+            self.mcp.start(transport=transport)
             
         except KeyboardInterrupt:
             self.logger.info("Server stopped by user")
         except Exception as e:
             self.logger.error(f"Server error: {e}")
-            raise
     
-    async def _run_test_mode(self):
-        """Run the server in test mode with comprehensive validation"""
+    def _run_test_mode_sync(self):
+        """Run the server in test mode with comprehensive validation - synchronous version"""
         self.logger.info("Running server in test mode - performing validation tests...")
         
         test_results = []
@@ -369,8 +365,8 @@ class RedmineMCPServer:
             self.logger.error(f"{total_tests - passed_tests} test(s) failed. Please resolve issues before production use.")
             return False
     
-    async def _perform_startup_health_check(self):
-        """Perform startup health check"""
+    def _perform_startup_health_check(self):
+        """Perform startup health check - synchronous version"""
         self.logger.info("Performing startup health check...")
         
         try:
@@ -390,46 +386,32 @@ class RedmineMCPServer:
                 raise ConfigurationError("Cannot start server - health check failed")
 
 
-async def main():
-    """Main entry point"""
+def run_server():
+    """Simplified entry point that avoids event loop conflicts"""
     server = RedmineMCPServer()
     
     try:
+        # Initialize the server
         server.initialize()
-        await server.run()
+        
+        # Perform health check directly
+        server._perform_startup_health_check()
+        
+        # Let FastMCP handle its own event loop
+        server.logger.info(f"Starting Redmine MCP Server in {server.config.server.mode} mode...")
+        server.mcp.start()
+        
     except ConfigurationError as e:
-        print(f"Configuration error: {e}", file=sys.stderr)
+        if server and server.logger:
+            server.logger.error(f"Configuration error: {e}")
+        else:
+            print(f"Configuration error: {e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        if server.logger:
+        if server and server.logger:
             server.logger.error(f"Fatal error: {e}")
         else:
             print(f"Fatal error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-def run_server():
-    """Entry point for container environments that handles asyncio properly"""
-    import asyncio
-    import sys
-    
-    try:
-        # Handle event loop compatibility for container environments
-        # Apply nest_asyncio unconditionally to patch the event loop
-        import nest_asyncio
-        nest_asyncio.apply()
-        
-        try:
-            # Try to get existing loop
-            loop = asyncio.get_running_loop()
-            # Create a task in the existing loop
-            task = loop.create_task(main())
-            return task
-        except RuntimeError:
-            # No event loop running, we can start our own
-            return asyncio.run(main())
-    except Exception as e:
-        print(f"Server startup failed: {e}", file=sys.stderr)
         sys.exit(1)
 
 
