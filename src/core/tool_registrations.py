@@ -12,19 +12,17 @@ from ..core.errors import RedmineAPIError
 class ToolRegistrations:
     """Handles registration of FastMCP tools"""
     
-    def __init__(self, mcp: FastMCP, client_manager, service_manager, logger=None):
+    def __init__(self, mcp: FastMCP, client_manager, logger=None):
         """
         Initialize tool registrations
         
         Args:
             mcp: FastMCP instance
             client_manager: Client manager instance
-            service_manager: Service manager instance
             logger: Optional logger instance
         """
         self.mcp = mcp
         self.client_manager = client_manager
-        self.service_manager = service_manager
         self.logger = logger or logging.getLogger("redmine_mcp_server.tool_registrations")
         self._registered_tools = []
         self.logger.debug("Tool registrations initialized")

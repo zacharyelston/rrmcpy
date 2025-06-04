@@ -21,7 +21,6 @@ class ToolTester:
     def __init__(self, 
                  config, 
                  client_manager, 
-                 service_manager, 
                  tool_registrations,
                  logger=None):
         """Initialize the tool tester
@@ -29,13 +28,11 @@ class ToolTester:
         Args:
             config: Application configuration
             client_manager: Client manager instance
-            service_manager: Service manager instance
             tool_registrations: Tool registrations instance
             logger: Optional logger instance
         """
         self.config = config
         self.client_manager = client_manager
-        self.service_manager = service_manager
         self.tool_registrations = tool_registrations
         self.logger = logger or logging.getLogger("redmine_mcp_server.tool_test")
         
