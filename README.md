@@ -88,7 +88,7 @@ python src/server.py --test
 python scripts/test_create_real.py
 ```
 
-### pyhton based loading
+### Python based loading
 ```
 {
   "mcpServers": {
