@@ -57,9 +57,6 @@ class LogConfig:
     """Logging configuration"""
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    components: Optional[str] = None  # Comma-separated list of components to log
-    structured: bool = True  # Use structured logging format
-    include_context: bool = True  # Include extra context in logs
     
     def __post_init__(self):
         """Validate logging configuration"""
@@ -72,21 +69,12 @@ class LogConfig:
         """Get logging level as integer"""
         return getattr(logging, self.level)
     
-    def get_filtered_components(self) -> Optional[list]:
-        """Get list of components to filter logs for"""
-        if not self.components:
-            return None
-        return [c.strip() for c in self.components.split(',') if c.strip()]
-    
     @classmethod
     def from_environment(cls) -> 'LogConfig':
         """Create logging configuration from environment variables"""
         return cls(
             level=os.environ.get('LOG_LEVEL', 'INFO'),
-            format=os.environ.get('LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
-            components=os.environ.get('LOG_COMPONENTS'),  # e.g., "issues,projects"
-            structured=os.environ.get('LOG_STRUCTURED', 'true').lower() in ('true', '1', 'yes'),
-            include_context=os.environ.get('LOG_CONTEXT', 'true').lower() in ('true', '1', 'yes')
+            format=os.environ.get('LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         )
 
 

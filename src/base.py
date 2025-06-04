@@ -7,14 +7,7 @@ import logging
 import requests
 import time
 from typing import Dict, List, Optional, Any, Union
-from datetime import datetime, timezone
 from .connection_manager import ConnectionManager
-from .core.errors import (
-    ErrorHandler, ErrorResponse, ErrorCode,
-    validation_error, http_error, connection_error, 
-    timeout_error, unexpected_error
-)
-from .core.logging import log_api_request, log_error_with_context
 
 
 class RedmineBaseClient:
@@ -34,9 +27,6 @@ class RedmineBaseClient:
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.logger = logger or logging.getLogger(__name__)
-        
-        # Initialize error handler with logger
-        self.error_handler = ErrorHandler(self.logger)
         
         # Initialize connection manager for automatic reconnection
         self.connection_manager = ConnectionManager(base_url, api_key, self.logger)
@@ -62,33 +52,30 @@ class RedmineBaseClient:
             Error response dict if validation fails, None if valid
         """
         if not isinstance(data, dict):
-            return self.error_handler.handle_validation_error(
-                "Request data must be a dictionary",
-                context={"data_type": type(data).__name__}
+            return self._create_error_response(
+                "VALIDATION_ERROR", 
+                "Request data must be a dictionary", 
+                400
             )
         
         # Check required fields
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return self.error_handler.handle_validation_error(
+            return self._create_error_response(
+                "VALIDATION_ERROR",
                 f"Missing required fields: {', '.join(missing_fields)}",
-                field_errors={field: "This field is required" for field in missing_fields},
-                context={"provided_fields": list(data.keys())}
+                400
             )
         
         # Check field types if specified
         if field_types:
-            field_errors = {}
             for field, expected_type in field_types.items():
                 if field in data and not isinstance(data[field], expected_type):
-                    field_errors[field] = f"Must be of type {expected_type.__name__}"
-            
-            if field_errors:
-                return self.error_handler.handle_validation_error(
-                    "Field type validation failed",
-                    field_errors=field_errors,
-                    context={"data": data}
-                )
+                    return self._create_error_response(
+                        "VALIDATION_ERROR",
+                        f"Field '{field}' must be of type {expected_type.__name__}",
+                        400
+                    )
         
         return None
     
@@ -148,16 +135,8 @@ class RedmineBaseClient:
                 self.logger.error(f"HTTP ERROR: {str(e)}")
                 raise
             
-            # Log successful request with structured logging
-            log_api_request(
-                self.logger,
-                method,
-                url,
-                duration_ms,
-                response.status_code,
-                params=params,
-                has_data=bool(data)
-            )
+            # Log successful request
+            self.logger.debug(f"Request {method} {url} completed successfully in {duration_ms:.2f}ms (status: {response.status_code})")
             
             # Handle 201 Created status specially for resource creation
             if response.status_code == 201:  # Created
@@ -186,46 +165,16 @@ class RedmineBaseClient:
             
         except requests.exceptions.RequestException as e:
             duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                self.logger,
-                method,
-                url,
-                duration_ms,
-                0,  # No status code for failed requests
-                error=str(e),
-                error_type=type(e).__name__
-            )
+            self.logger.error(f"Request {method} {url} failed after {duration_ms:.2f}ms: {e}")
             return self._handle_request_error(e, method, url, data or {})
         except ValueError as e:
             duration_ms = (time.time() - start_time) * 1000
-            log_error_with_context(
-                self.logger,
-                e,
-                f"JSON parsing for {method} {url}",
-                duration_ms=duration_ms,
-                url=url
-            )
-            return ErrorResponse.create(
-                ErrorCode.INVALID_JSON,
-                f"Invalid JSON response: {str(e)}",
-                502,
-                context={"url": url, "method": method}
-            )
+            self.logger.error(f"Invalid JSON response from {url} after {duration_ms:.2f}ms: {e}")
+            return self._create_error_response("INVALID_JSON", str(e), 502)
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
-            log_error_with_context(
-                self.logger,
-                e,
-                f"API request {method} {url}",
-                duration_ms=duration_ms,
-                url=url,
-                data=data
-            )
-            return self.error_handler.handle_unexpected_error(
-                e,
-                operation=f"{method} {url}",
-                context={"data": data, "params": params}
-            )
+            self.logger.error(f"Unexpected error making request to {url} after {duration_ms:.2f}ms: {e}")
+            return self._create_error_response("UNEXPECTED_ERROR", str(e), 500)
     
     def _handle_request_error(self, error: requests.exceptions.RequestException, 
                              method: str, url: str, data: Dict) -> Dict:
@@ -241,79 +190,60 @@ class RedmineBaseClient:
         Returns:
             Standardized error response dictionary
         """
+        error_code = "REQUEST_ERROR"
+        status_code = 500
+        error_message = str(error)
+        
         # Handle specific error types
         if isinstance(error, requests.exceptions.ConnectionError):
-            return self.error_handler.handle_connection_error(
-                error,
-                url=url,
-                context={"method": method, "data": data}
-            )
+            error_code = "CONNECTION_ERROR"
+            error_message = f"Failed to connect to Redmine server at {url}"
+            status_code = 503
+            self.logger.error(f"Connection error to {url}: {error}")
             
         elif isinstance(error, requests.exceptions.Timeout):
-            return self.error_handler.handle_timeout_error(
-                error,
-                url=url,
-                timeout=getattr(self.connection_manager, 'timeout', None)
-            )
+            error_code = "TIMEOUT_ERROR"
+            error_message = f"Request to {url} timed out"
+            status_code = 504
+            self.logger.error(f"Timeout error for {method} {url}: {error}")
             
         elif isinstance(error, requests.exceptions.HTTPError):
             if hasattr(error, 'response') and error.response is not None:
                 status_code = error.response.status_code
-                response_body = error.response.text
                 
-                # Build appropriate error message based on status code
-                message_map = {
-                    401: "Invalid API key or insufficient permissions",
-                    403: "Access forbidden - check user permissions",
-                    404: f"Resource not found",
-                    422: "Invalid data provided",
-                    429: "Rate limit exceeded",
-                    500: "Redmine server error",
-                    502: "Bad gateway",
-                    503: "Service unavailable",
-                    504: "Gateway timeout"
-                }
+                # Handle specific HTTP status codes
+                if status_code == 401:
+                    error_code = "AUTHENTICATION_ERROR"
+                    error_message = "Invalid API key or insufficient permissions"
+                elif status_code == 403:
+                    error_code = "AUTHORIZATION_ERROR"
+                    error_message = "Access forbidden - check user permissions"
+                elif status_code == 404:
+                    error_code = "NOT_FOUND"
+                    error_message = f"Resource not found: {url}"
+                elif status_code == 422:
+                    error_code = "VALIDATION_ERROR"
+                    error_message = "Invalid data provided"
+                    # Try to extract validation errors from response
+                    try:
+                        response_data = error.response.json()
+                        if 'errors' in response_data:
+                            error_message = f"Validation failed: {response_data['errors']}"
+                    except:
+                        pass
+                elif status_code >= 500:
+                    error_code = "SERVER_ERROR"
+                    error_message = f"Redmine server error (HTTP {status_code})"
                 
-                base_message = message_map.get(status_code, f"HTTP {status_code} error")
-                
-                # Try to extract more specific error from response
-                try:
-                    response_data = error.response.json()
-                    if 'errors' in response_data:
-                        if isinstance(response_data['errors'], list):
-                            base_message += f": {', '.join(response_data['errors'])}"
-                        else:
-                            base_message += f": {response_data['errors']}"
-                    elif 'error' in response_data:
-                        base_message += f": {response_data['error']}"
-                except:
-                    pass
-                
-                return self.error_handler.handle_http_error(
-                    status_code,
-                    base_message,
-                    response_body=response_body,
-                    url=url,
-                    method=method
-                )
+                self.logger.error(f"HTTP {status_code} error for {method} {url}: {error}")
+                self.logger.error(f"Response body: {error.response.text}")
             else:
-                # HTTP error without response
-                return ErrorResponse.create(
-                    ErrorCode.REQUEST_ERROR,
-                    f"HTTP error: {str(error)}",
-                    500,
-                    context={"url": url, "method": method}
-                )
+                self.logger.error(f"HTTP error for {method} {url}: {error}")
                 
         else:
-            # Generic request error
-            return ErrorResponse.create(
-                ErrorCode.REQUEST_ERROR,
-                f"Request failed: {str(error)}",
-                500,
-                details={"error_type": type(error).__name__},
-                context={"url": url, "method": method, "data": data}
-            )
+            self.logger.error(f"Request error for {method} {url}: {error}")
+        
+        return self._create_error_response(error_code, error_message, status_code)
     
     def _extract_id_from_location(self, response) -> Optional[int]:
         """
@@ -370,16 +300,18 @@ class RedmineBaseClient:
         Returns:
             Standardized error response dictionary
         """
-        # Use the new ErrorResponse class
-        return ErrorResponse.create(
-            error_code,
-            error_message,
-            status_code
-        )
+        return {
+            "error": True,
+            "error_code": error_code,
+            "message": error_message,
+            "status_code": status_code,
+            "timestamp": self._get_timestamp()
+        }
     
     def _get_timestamp(self) -> str:
         """Get current timestamp in ISO format"""
-        return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        from datetime import datetime
+        return datetime.utcnow().isoformat() + "Z"
     
     def health_check(self) -> bool:
         """
