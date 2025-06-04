@@ -1,6 +1,147 @@
 # Redmine MCP Server
 
+```
+(repl-nix-workspace) zacelston@ZEMBA rrmcpy % uv run -m src.server                       
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Starting Redmine MCP Server (version: c4ddb42)
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Server mode: live
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Redmine URL: https://redstone.redminecloud.net
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Registered 14 tools: redmine-create-issue, redmine-get-issue, redmine-list-issues, redmine-update-issue, redmine-delete-issue, redmine-health-check, redmine-version-info, redmine-current-user, redmine-list-versions, redmine-get-version, redmine-create-version, redmine-update-version, redmine-delete-version, redmine-get-issues-by-version
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - All components initialized successfully
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Starting Redmine MCP Server in live mode...
+[06/04/25 12:10:26] INFO     Starting MCP server 'Redmine MCP Server' with         server.py:797
+                             transport 'stdio'                                                  
+2025-06-04 12:10:26,692 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Redmine MCP Server' with transport 'stdio'
+
+
+> **⚠️ Python Version Requirement:**
+>
+> This project (and its dependency `fastmcp`) requires **Python 3.10 or higher**.
+> If you use Python 3.9 or lower, installation will fail with an error like:
+> 
+> `ERROR: Package 'fastmcp' requires a different Python: 3.9.20 not in '>=3.10'`
+>
+> To check your Python version, run:
+> ```bash
+> python --version
+> ```
+> or
+> ```bash
+> python3 --version
+> ```
+>
+> If you need to install Python 3.10+, see the [python.org downloads](https://www.python.org/downloads/) or use your OS package manager.
+
+
+## Quick Start with uv and fastmcp
+
+Follow these steps to quickly set up your environment using [uv](https://github.com/astral-sh/uv) and a local fastmcp checkout:
+
+1. **Check Python version (must be 3.10+):**
+   ```bash
+   python --version
+   # or
+   python3 --version
+   ```
+   If your version is lower than 3.10, [install Python 3.10+](https://www.python.org/downloads/) before continuing.
+
+2. **Install uv:**
+   ```bash
+   curl -Ls https://astral.sh/uv/install.sh | sh
+   ```
+
+3. **Install fastmcp in editable mode (preferred for development):**
+   ```bash
+   uv pip install -e /ABSOLUTE/PATH/TO/fastmcp
+   ```
+   > If this fails with a Python version error, you must upgrade your Python to 3.10+.
+
+   Or, to install directly from GitHub (for quick setup or CI):
+   ```bash
+   uv pip install -e 'git+https://github.com/jlowin/fastmcp.git#egg=fastmcp'
+   ```
+
+4. **Install other dependencies:**
+   ```bash
+   uv pip install -r requirements.txt
+   ```
+
+5. **Run the server:**
+   ```bash
+   uv run -m src.server
+   ```
+
+For advanced uv-based server launch and configuration, see [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md).
+
+---
+
+### ⚠️ Using pyenv Virtual Environments
+
+If you use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) to manage your Python versions and virtual environments, follow these steps for a smooth experience:
+
+**1. Create and activate a pyenv virtualenv (Python 3.10+ recommended):**
+```bash
+pyenv install 3.11.12  # or 3.10.x if you prefer
+pyenv virtualenv 3.11.12 rrmcpy
+pyenv activate rrmcpy
+```
+
+**2. Install dependencies using pip (not uv pip):**
+```bash
+pip install -e /ABSOLUTE/PATH/TO/fastmcp
+pip install -r requirements.txt
+```
+
+**3. Run the server:**
+```bash
+python -m src.server
+```
+
+**4. Avoid conflicts with uv/.venv:**
+- If you use pyenv, do not use `uv pip` or `uv run` in the same shell session.
+- If a `.venv` exists in your project root, either remove it or ensure it is not activated when using pyenv.
+- To check your active environment:
+  ```bash
+  echo $VIRTUAL_ENV
+  ```
+
+**Recommendation:**
+Use either pyenv or uv for managing your environment, but not both at the same time. If your team standardizes on pyenv, document the required Python version and virtualenv name in your onboarding docs.
+
+**Troubleshooting:**
+- If you see warnings about `VIRTUAL_ENV` mismatches or missing packages, double-check which environment is active and reinstall dependencies as needed.
+
+---
+
 ![WindSurf](./attached_assets/images/image.png)
+
+---
+
+## Using uv (Fast Python Installer)
+
+[uv](https://github.com/astral-sh/uv) is a fast, modern Python package manager and runtime that supports Python 3.10+ and is recommended for development and deployment. It can dramatically speed up dependency installation and offers robust, reproducible builds.
+
+**Install uv:**
+```bash
+curl -Ls https://astral.sh/uv/install.sh | sh
+```
+Or see the [uv installation instructions](https://github.com/astral-sh/uv#installation).
+
+**Install dependencies (including fastmcp in editable mode):**
+```bash
+uv pip install -e /ABSOLUTE/PATH/TO/fastmcp
+uv pip install -r requirements.txt
+```
+
+**Run the server:**
+```bash
+uv run -m src.server
+```
+
+> **Note:** uv requires Python 3.10 or higher, matching the requirements for this project and fastmcp.
+
+See [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md) for advanced uv-based server launch and configuration examples.
+
+---
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
@@ -82,19 +223,31 @@ Use the provided testing utilities:
 ./test-docker.sh
 
 # Test mode (validates configuration, tool registry, health check, and authentication)
-python src/server.py --test
+uv run -m src.server --test
 
 # Create real issue test
 python scripts/test_create_real.py
 ```
 
 ### Python based loading
+
+> **Note:** Ensure you are using Python 3.10+ before installing dependencies or running the server. If you are using a virtual environment, create it with Python 3.10+:
+> ```bash
+> python3.10 -m venv .venv
+> source .venv/bin/activate
+> ```
+> Then install dependencies:
+> ```bash
+> pip install -e /ABSOLUTE/PATH/TO/fastmcp
+> pip install -r requirements.txt
+> ```
+
 ```
 {
   "mcpServers": {
     "redmine": {
       "command": "python",
-      "args": ["/rrmcpy-path/src/server.py"],
+      "args": ["-m", "src.server"],
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
