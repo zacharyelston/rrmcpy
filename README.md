@@ -5,7 +5,7 @@
 2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Starting Redmine MCP Server (version: c4ddb42)
 2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Server mode: live
 2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Redmine URL: https://redstone.redminecloud.net
-2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Registered 14 tools: redmine-create-issue, redmine-get-issue, redmine-list-issues, redmine-update-issue, redmine-delete-issue, redmine-health-check, redmine-version-info, redmine-current-user, redmine-list-versions, redmine-get-version, redmine-create-version, redmine-update-version, redmine-delete-version, redmine-get-issues-by-version
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Registered 17 tools: redmine-create-issue, redmine-get-issue, redmine-list-issues, redmine-update-issue, redmine-delete-issue, redmine-health-check, redmine-version-info, redmine-current-user, redmine-list-versions, redmine-get-version, redmine-create-version, redmine-update-version, redmine-delete-version, redmine-get-issues-by-version, redmine-create-project, redmine-update-project, redmine-delete-project
 2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - All components initialized successfully
 2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Starting Redmine MCP Server in live mode...
 [06/04/25 12:10:26] INFO     Starting MCP server 'Redmine MCP Server' with         server.py:797
@@ -145,7 +145,7 @@ See [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md) for advanced 
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
-A production-ready PythonFastMCP Server for Redmine with a highly modular architecture, featuring comprehensive API management, robust error handling, and an extensible tool registry system.
+A production-ready Python MCP Server for Redmine built with FastMCP, featuring comprehensive API management, robust error handling, and an extensible tool registry system with 17 available tools.
 
 ### Project Structure
 ```
@@ -169,6 +169,8 @@ src/
 
 - **Built for Clarity Architecture**: Designed with separation of concerns and clear component boundaries
 - **Comprehensive Issue Management**: Full CRUD operations with validation and error handling
+- **Project Management Tools**: Create, update, and delete projects with proper validation
+- **Version/Milestone Management**: Complete version lifecycle management
 - **Centralized Configuration**: Type-safe environment variable handling with validation
 - **Tool Registry System**: Plugin-like architecture for extensible functionality
 - **Robust Error Handling**: Standardized exceptions and consistent error responses
@@ -436,11 +438,11 @@ See [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md) for advanced 
 #### Project Management
 - [ ] `listProjects`: Retrieves all projects accessible to the authenticated user
 - [ ] `getProject`: Fetches detailed information for a specified project
-- [ ] `createProject`: Creates a new project
-- [ ] `updateProject`: Updates attributes of an existing project
+- [x] `createProject`: Creates a new project
+- [x] `updateProject`: Updates attributes of an existing project
 - [ ] `archiveProject`: Archives a project
 - [ ] `unarchiveProject`: Unarchives a project
-- [ ] `deleteProject`: Deletes a project by its ID
+- [x] `deleteProject`: Deletes a project by its ID
 - [ ] `listProjectMemberships`: Retrieves memberships for a project
 - [ ] `addProjectMember`: Adds a user to a project with specified roles
 - [ ] `removeProjectMember`: Removes a membership by its ID

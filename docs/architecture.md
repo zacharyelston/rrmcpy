@@ -73,13 +73,31 @@ The Redmine MCP Server has been completely restructured using a modular architec
 - ✅ Production-ready server implementation
 
 ### Available Tools
+
+#### Issue Management
 1. `redmine-create-issue` - Create new issues with validation
 2. `redmine-get-issue` - Retrieve issue details by ID
 3. `redmine-list-issues` - List issues with filtering options
 4. `redmine-update-issue` - Update existing issues
 5. `redmine-delete-issue` - Delete issues
-6. `redmine-health-check` - Check Redmine connection health
-7. `redmine-get-current-user` - Get current user information
+
+#### Project Management
+6. `redmine-create-project` - Create new projects with validation
+7. `redmine-update-project` - Update project attributes
+8. `redmine-delete-project` - Delete projects by ID or identifier
+
+#### Version Management
+9. `redmine-list-versions` - List versions for a project
+10. `redmine-get-version` - Get version details by ID
+11. `redmine-create-version` - Create new versions
+12. `redmine-update-version` - Update version attributes
+13. `redmine-delete-version` - Delete versions
+14. `redmine-get-issues-by-version` - Get issues for a specific version
+
+#### Administrative Tools
+15. `redmine-health-check` - Check Redmine connection health
+16. `redmine-version-info` - Get server version and environment info
+17. `redmine-current-user` - Get current authenticated user information
 
 ## Usage
 

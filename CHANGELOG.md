@@ -1,59 +1,54 @@
-# CHANGELOG
+# Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to the Redmine MCP Server project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [2.0.0] - 2025-06-03
+### Added
+- Project management tools: `redmine-create-project`, `redmine-update-project`, `redmine-delete-project`
+- Comprehensive test suite for project management tools
+- Live integration tests for project operations
+- Automated cleanup workflow for branches and PRs
+- Scripts for cleaning up badge update PRs
+
+### Changed
+- Updated GitHub Actions workflow to commit badge updates directly instead of creating PRs
+- README now shows 17 tools instead of 14
+
+### Fixed
+- Badge update workflow no longer creates accumulating PRs
+- Create operations bug (201 response handling) - already fixed in codebase
+
+## [0.9.0] - In Progress
+
+### Fixed
+- Create operations now properly handle 201 Created responses
+- Created resources are now returned to clients
+- Location header ID extraction implemented
 
 ### Added
-- Complete modular architecture with core infrastructure modules (config, errors, logging)
-- Service layer for business logic separation from API clients
-- Tool registry system with plugin-like architecture for extensible functionality
-- Comprehensive issue management tools with validation and error handling
-- Administrative tools for health checking and user information
-- Centralized configuration management with type-safe environment variable handling
-- Standardized error handling with custom exception classes
-- Production-ready server implementation with real Redmine API integration
+- Project management tools implementation
+- Test coverage for create operations
 
-### Changed
-- Major restructure from monolithic to modular architecture
-- Separated concerns into core/, services/, and tools/ modules
-- Updated FastMCP integration with proper tool registration
-- Enhanced logging for better debugging and monitoring
-- Improved documentation with detailed architecture guide
+## [0.8.0] - 2025-06-04
 
-### Fixed
-- Tool registration issues with FastMCP parameter handling
-- Import dependencies in modular architecture
-- Service layer initialization and dependency injection
-- Error handling and response formatting throughout the system
+### Added
+- Initial modular architecture implementation
+- Core infrastructure with ClientManager, ServiceManager, ToolRegistrations
+- Issue management tools (create, read, update, delete, list)
+- Version management tools
+- Health check and version info tools
+- Current user authentication tool
+- Docker support with test mode
+- Comprehensive error handling system
+- Configuration management system
+- FastMCP integration
 
-### Removed
-- Legacy testing files after successful modular architecture validation
-- Completed todo-now.md implementation plan
-
-## [1.2.0] - 2025-06-02
-
-### Removed
-- `src/stdio_server.py` - Eliminated redundant STDIO server implementation (340 lines)
-- Duplicate tool definitions and manual JSON-RPC protocol handling
-
-### Changed
-- Renamed `src/proper_mcp_server.py` to `src/mcp_server.py` for clarity
-- Updated `src/main.py` to use consolidated FastMCP server
-- FastMCP.run() is now called synchronously (removed async wrapper)
-
-### Fixed
-- Server implementation duplication causing maintenance overhead
-- Inconsistent tool definitions between server implementations
-- Unnecessary complexity in transport handling
-
-### Technical Notes
-- FastMCP natively supports STDIO transport as default
-- Transport options: STDIO (default), SSE, streamable-HTTP
-- Reduced codebase size by ~15%
-- Single source of truth for MCP server implementation
+### Architecture
+- Implemented "Built for Clarity" design philosophy
+- SOLID principles applied throughout
+- Clear separation of concerns
+- Modular, testable components
