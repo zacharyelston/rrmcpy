@@ -1,5 +1,7 @@
 # Redmine MCP Server
 
+<!-- test-status-badge -->\n[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)\n
+
 ```
 (repl-nix-workspace) zacelston@ZEMBA rrmcpy % uv run -m src.server                       
 2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Starting Redmine MCP Server (version: c4ddb42)
