@@ -1,0 +1,17 @@
+mcpMethods:
+  # Forums
+  - name: listForums
+    summary: "Retrieves forums for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: forum summaries"
+
+  - name: getForum
+    summary: "Fetches detailed information for a specified forum."
+    parameters:
+      - name: forumId
+        type: integer
+        required: true
+    returns: "object: forum details including topics"

@@ -1,0 +1,48 @@
+mcpMethods:
+  - name: listUsers
+    summary: "Retrieves a list of users, with pagination support."
+    parameters:
+      - name: limit
+        type: integer
+        required: false
+      - name: offset
+        type: integer
+        required: false
+    returns: "Array<object>: user summaries"
+
+  - name: getUser
+    summary: "Fetches detailed information for a specified user."
+    parameters:
+      - name: userId
+        type: integer
+        required: true
+    returns: "object: user details"
+
+  - name: createUser
+    summary: "Creates a new user account."
+    parameters:
+      - name: params
+        type: object
+        description: "User fields (login, firstname, lastname, mail, password, etc.)."
+        required: true
+    returns: "object: created user"
+
+  - name: updateUser
+    summary: "Updates attributes of an existing user."
+    parameters:
+      - name: userId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (firstname, lastname, mail, etc.)."
+        required: true
+    returns: "object: updated user"
+
+  - name: deleteUser
+    summary: "Deletes a user by its ID."
+    parameters:
+      - name: userId
+        type: integer
+        required: true
+    returns: "void"

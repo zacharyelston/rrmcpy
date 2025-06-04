@@ -1,0 +1,66 @@
+mcpMethods:
+  # Document Management
+  - name: listDocuments
+    summary: "Retrieves documents for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: categoryId
+        type: integer
+        required: false
+    returns: "Array<object>: document summaries"
+
+  - name: getDocument
+    summary: "Fetches detailed information for a specified document."
+    parameters:
+      - name: documentId
+        type: integer
+        required: true
+    returns: "object: document details including attachments"
+
+  - name: createDocument
+    summary: "Creates a new document in a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Document fields (title, description, category_id)."
+        required: true
+    returns: "object: created document"
+
+  - name: updateDocument
+    summary: "Updates attributes of an existing document."
+    parameters:
+      - name: documentId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (title, description, category_id)."
+        required: true
+    returns: "object: updated document"
+
+  - name: deleteDocument
+    summary: "Deletes a document by its ID."
+    parameters:
+      - name: documentId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: addDocumentAttachment
+    summary: "Adds an attachment to a document."
+    parameters:
+      - name: documentId
+        type: integer
+        required: true
+      - name: file
+        type: file
+        required: true
+      - name: description
+        type: string
+        required: false
+    returns: "object: document with new attachment"

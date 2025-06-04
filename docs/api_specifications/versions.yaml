@@ -1,0 +1,49 @@
+mcpMethods:
+  # Versions
+  - name: listVersions
+    summary: "Retrieves versions for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: version summaries"
+
+  - name: getVersion
+    summary: "Fetches detailed information for a specified version."
+    parameters:
+      - name: versionId
+        type: integer
+        required: true
+    returns: "object: version details"
+
+  - name: createVersion
+    summary: "Creates a new version in a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Version fields (name, description, status, due_date, sharing)."
+        required: true
+    returns: "object: created version"
+
+  - name: updateVersion
+    summary: "Updates attributes of an existing version."
+    parameters:
+      - name: versionId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (name, description, status, due_date, sharing)."
+        required: true
+    returns: "object: updated version"
+
+  - name: deleteVersion
+    summary: "Deletes a version."
+    parameters:
+      - name: versionId
+        type: integer
+        required: true
+    returns: "void"

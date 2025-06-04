@@ -1,0 +1,64 @@
+mcpMethods:
+  # Time Entries
+  - name: listTimeEntries
+    summary: "Retrieves time entries with optional filtering."
+    parameters:
+      - name: projectId
+        type: integer
+        required: false
+      - name: userId
+        type: integer
+        required: false
+      - name: issueId
+        type: integer
+        required: false
+      - name: fromDate
+        type: string
+        required: false
+      - name: toDate
+        type: string
+        required: false
+      - name: limit
+        type: integer
+        required: false
+      - name: offset
+        type: integer
+        required: false
+    returns: "Array<object>: time entry summaries"
+
+  - name: getTimeEntry
+    summary: "Fetches detailed information for a specified time entry."
+    parameters:
+      - name: timeEntryId
+        type: integer
+        required: true
+    returns: "object: time entry details"
+
+  - name: createTimeEntry
+    summary: "Creates a new time entry for an issue or project."
+    parameters:
+      - name: params
+        type: object
+        description: "Time entry fields (issue_id/project_id, hours, spent_on, activity_id, comments)."
+        required: true
+    returns: "object: created time entry"
+
+  - name: updateTimeEntry
+    summary: "Updates an existing time entry."
+    parameters:
+      - name: timeEntryId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (hours, spent_on, activity_id, comments)."
+        required: true
+    returns: "object: updated time entry"
+
+  - name: deleteTimeEntry
+    summary: "Deletes a time entry."
+    parameters:
+      - name: timeEntryId
+        type: integer
+        required: true
+    returns: "void"

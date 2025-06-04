@@ -1,0 +1,96 @@
+mcpMethods:
+  - name: listProjects
+    summary: "Retrieves all projects accessible to the authenticated user, with optional inclusion of associations."
+    parameters:
+      - name: include
+        type: array<string>
+        description: "Optional associations to include (trackers, issue_categories, enabled_modules, etc.)."
+        required: false
+    returns: "Array<object>: project summaries"
+
+  - name: getProject
+    summary: "Fetches detailed information for a specified project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: include
+        type: array<string>
+        description: "Optional associations to include (trackers, issue_categories, etc.)."
+        required: false
+    returns: "object: project details"
+
+  - name: createProject
+    summary: "Creates a new project with the given attributes."
+    parameters:
+      - name: params
+        type: object
+        description: "Project fields (name, identifier, description, homepage, is_public, parent_id, etc.)."
+        required: true
+    returns: "object: created project"
+
+  - name: updateProject
+    summary: "Updates attributes of an existing project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (name, description, homepage, is_public, etc.)."
+        required: true
+    returns: "object: updated project"
+
+  - name: archiveProject
+    summary: "Archives a project (sets archived=true)."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "object: archived project"
+
+  - name: unarchiveProject
+    summary: "Unarchives a project (sets archived=false)."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "object: unarchived project"
+
+  - name: deleteProject
+    summary: "Deletes a project by its ID."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: listProjectMemberships
+    summary: "Retrieves memberships for a specified project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: membership records"
+
+  - name: addProjectMember
+    summary: "Adds a user to a project with specified roles."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: userId
+        type: integer
+        required: true
+      - name: roleIds
+        type: array<integer>
+        required: true
+    returns: "object: membership"
+
+  - name: removeProjectMember
+    summary: "Removes a membership by its membership ID."
+    parameters:
+      - name: membershipId
+        type: integer
+        required: true
+    returns: "void"

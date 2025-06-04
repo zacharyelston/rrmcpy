@@ -1,0 +1,14 @@
+mcpMethods:
+  # Custom Fields
+  - name: listCustomFields
+    summary: "Retrieves all custom fields defined in the system."
+    parameters: []
+    returns: "Array<object>: custom field definitions"
+
+  - name: getCustomField
+    summary: "Fetches detailed information for a specified custom field."
+    parameters:
+      - name: customFieldId
+        type: integer
+        required: true
+    returns: "object: custom field details"

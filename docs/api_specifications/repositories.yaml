@@ -1,0 +1,20 @@
+mcpMethods:
+  # Repositories
+  - name: listRepositories
+    summary: "Retrieves repositories for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: repository summaries"
+
+  - name: getRepository
+    summary: "Fetches detailed information for a specified repository."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: repositoryId
+        type: string
+        required: true
+    returns: "object: repository details"

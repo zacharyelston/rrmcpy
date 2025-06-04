@@ -1,0 +1,55 @@
+mcpMethods:
+  # News
+  - name: listNews
+    summary: "Retrieves news items for all projects or a specific project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: false
+      - name: limit
+        type: integer
+        required: false
+      - name: offset
+        type: integer
+        required: false
+    returns: "Array<object>: news summaries"
+
+  - name: getNewsItem
+    summary: "Fetches detailed information for a specified news item."
+    parameters:
+      - name: newsId
+        type: integer
+        required: true
+    returns: "object: news item details"
+
+  - name: createNews
+    summary: "Creates a new news item in a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "News fields (title, summary, description)."
+        required: true
+    returns: "object: created news item"
+
+  - name: updateNews
+    summary: "Updates a news item."
+    parameters:
+      - name: newsId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (title, summary, description)."
+        required: true
+    returns: "object: updated news item"
+
+  - name: deleteNews
+    summary: "Deletes a news item."
+    parameters:
+      - name: newsId
+        type: integer
+        required: true
+    returns: "void"
