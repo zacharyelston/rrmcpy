@@ -3,7 +3,7 @@
 ## Recent Achievements ✅
 
 ### 1. Consolidated Single Server Architecture
-- **Completed**: Removed redundant stdio_server.py and consolidated all functionality into `src/mcp_server.py`
+- **Completed**: Removed redundant stdio_server.py and consolidated all functionality into `src/server.py`
 - **Impact**: Simplified architecture with FastMCP framework handling all MCP protocol communication
 - **Result**: Single entry point for all MCP operations with proper JSON response handling
 
@@ -60,7 +60,7 @@
 ## Development Workflow
 
 ### Current Setup
-- **Entry Point**: `python src/mcp_server.py` (direct execution)
+- **Entry Point**: `python src/server.py` (direct execution)
 - **Configuration**: Environment variables (REDMINE_URL, REDMINE_API_KEY)
 - **Dependencies**: `requirements.txt` for core functionality, `docker-requirements.txt` for containerization
 - **Testing**: Manual verification with authentic Redmine instances

@@ -1,0 +1,61 @@
+mcpMethods:
+  # Wiki Pages
+  - name: listWikiPages
+    summary: "Retrieves wiki pages for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: wiki page summaries"
+
+  - name: getWikiPage
+    summary: "Fetches detailed information for a specified wiki page."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: page
+        type: string
+        required: true
+      - name: version
+        type: integer
+        required: false
+    returns: "object: wiki page details"
+
+  - name: createWikiPage
+    summary: "Creates a new wiki page in a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Wiki page fields (title, text, comments, parent_title)."
+        required: true
+    returns: "object: created wiki page"
+
+  - name: updateWikiPage
+    summary: "Updates content of an existing wiki page."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: page
+        type: string
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (text, comments, parent_title)."
+        required: true
+    returns: "object: updated wiki page"
+
+  - name: deleteWikiPage
+    summary: "Deletes a wiki page."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+      - name: page
+        type: string
+        required: true
+    returns: "void"

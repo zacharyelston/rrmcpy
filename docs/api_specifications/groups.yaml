@@ -1,0 +1,64 @@
+mcpMethods:
+  - name: listGroups
+    summary: "Retrieves all groups."
+    parameters: []
+    returns: "Array<object>: group summaries"
+
+  - name: getGroup
+    summary: "Fetches detailed information for a specified group."
+    parameters:
+      - name: groupId
+        type: integer
+        required: true
+    returns: "object: group details"
+
+  - name: createGroup
+    summary: "Creates a new group."
+    parameters:
+      - name: params
+        type: object
+        description: "Group fields (name)."
+        required: true
+    returns: "object: created group"
+
+  - name: updateGroup
+    summary: "Updates attributes of an existing group."
+    parameters:
+      - name: groupId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Fields to update (name, user_ids)."
+        required: true
+    returns: "object: updated group"
+
+  - name: deleteGroup
+    summary: "Deletes a group by its ID."
+    parameters:
+      - name: groupId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: addUserToGroup
+    summary: "Adds a user to a group."
+    parameters:
+      - name: groupId
+        type: integer
+        required: true
+      - name: userId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: removeUserFromGroup
+    summary: "Removes a user from a group."
+    parameters:
+      - name: groupId
+        type: integer
+        required: true
+      - name: userId
+        type: integer
+        required: true
+    returns: "void"

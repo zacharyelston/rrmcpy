@@ -1,0 +1,15 @@
+mcpMethods:
+  # Calendar
+  - name: getCalendar
+    summary: "Retrieves calendar data for a specified month."
+    parameters:
+      - name: projectId
+        type: integer
+        required: false
+      - name: year
+        type: integer
+        required: true
+      - name: month
+        type: integer
+        required: true
+    returns: "object: calendar data with issue dates"

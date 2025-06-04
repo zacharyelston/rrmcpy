@@ -1,0 +1,109 @@
+mcpMethods:
+  - name: listIssues
+    summary: "Retrieves issues matching filter criteria with pagination."
+    parameters:
+      - name: filterOptions
+        type: object
+        required: false
+    returns: "Array<object>: issue summaries"
+
+  - name: getIssue
+    summary: "Fetches detailed information for a specified issue."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+      - name: include
+        type: array<string>
+        description: "Optional associations to include (journals, relations, changesets, etc.)."
+        required: false
+    returns: "object: issue details"
+
+  - name: createIssue
+    summary: "Creates a new issue in a project."
+    parameters:
+      - name: params
+        type: object
+        required: true
+    returns: "object: created issue"
+
+  - name: updateIssue
+    summary: "Updates fields of an existing issue."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        required: true
+    returns: "object: updated issue"
+
+  - name: deleteIssue
+    summary: "Deletes an issue by its ID."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: addIssueComment
+    summary: "Adds a journal entry (comment) to an issue."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+      - name: comment
+        type: string
+        required: true
+    returns: "object: updated issue with new journal"
+
+  - name: listIssueRelations
+    summary: "Retrieves relations for a specified issue."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+    returns: "Array<object>: issue relations"
+
+  - name: createIssueRelation
+    summary: "Creates a relation between two issues."
+    parameters:
+      - name: issueId
+        type: integer
+        required: true
+      - name: params
+        type: object
+        description: "Relation fields (issue_to_id, relation_type, delay)."
+        required: true
+    returns: "object: created relation"
+
+  - name: deleteIssueRelation
+    summary: "Deletes an issue relation by its ID."
+    parameters:
+      - name: relationId
+        type: integer
+        required: true
+    returns: "void"
+
+  - name: listTrackers
+    summary: "Retrieves all issue trackers."
+    parameters: []
+    returns: "Array<object>: tracker definitions"
+
+  - name: listIssueStatuses
+    summary: "Retrieves all issue statuses."
+    parameters: []
+    returns: "Array<object>: status definitions"
+
+  - name: listEnumerations
+    summary: "Retrieves all enumerations (priorities, time entry activities, etc.)."
+    parameters: []
+    returns: "Array<object>: enumeration definitions"
+
+  - name: listIssueCategories
+    summary: "Retrieves issue categories for a project."
+    parameters:
+      - name: projectId
+        type: integer
+        required: true
+    returns: "Array<object>: issue category definitions"

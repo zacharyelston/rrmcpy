@@ -1,0 +1,15 @@
+mcpMethods:
+  # Gantt Chart
+  - name: getGanttData
+    summary: "Retrieves Gantt chart data for project planning."
+    parameters:
+      - name: projectId
+        type: integer
+        required: false
+      - name: from
+        type: string
+        required: false
+      - name: to
+        type: string
+        required: false
+    returns: "object: Gantt chart data with issues and versions"

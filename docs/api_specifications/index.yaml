@@ -1,0 +1,19 @@
+# Redmine MCP Features Index
+# This file serves as a central reference to all MCP features supported by Redmine
+
+includes:
+  - projects.yaml    # Project management features
+  - users.yaml       # User management features
+  - groups.yaml      # Group management features
+  - issues.yaml      # Issue tracking features
+  - documents.yaml   # Document management features
+  - wiki.yaml        # Wiki page features
+  - news.yaml        # News features
+  - time_entries.yaml # Time tracking features
+  - versions.yaml    # Version management features
+  - custom_fields.yaml # Custom field features
+  - queries.yaml     # Saved query features
+  - repositories.yaml # Repository features
+  - forums.yaml      # Forum features
+  - calendar.yaml    # Calendar visualization
+  - gantt.yaml       # Gantt chart visualization

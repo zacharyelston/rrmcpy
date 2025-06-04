@@ -1,0 +1,17 @@
+mcpMethods:
+  # Queries/Saved Filters
+  - name: listQueries
+    summary: "Retrieves all saved queries the user has access to."
+    parameters:
+      - name: projectId
+        type: integer
+        required: false
+    returns: "Array<object>: query definitions"
+
+  - name: getQuery
+    summary: "Fetches detailed information for a specified query."
+    parameters:
+      - name: queryId
+        type: integer
+        required: true
+    returns: "object: query details"
