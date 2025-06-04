@@ -8,7 +8,7 @@ A production-ready Python MCP Server for Redmine with a highly modular architect
 
 ## Features
 
-- **Fighting Complexity Architecture**: Designed with separation of concerns and clear component boundaries
+- **Built for Clarity Architecture**: Designed with separation of concerns and clear component boundaries
 - **Comprehensive Issue Management**: Full CRUD operations with validation and error handling
 - **Centralized Configuration**: Type-safe environment variable handling with validation
 - **Tool Registry System**: Plugin-like architecture for extensible functionality
@@ -88,7 +88,7 @@ python src/server.py --test
 python scripts/test_create_real.py
 ```
 
-### pyhton based loading
+### Python based loading
 ```
 {
   "mcpServers": {
