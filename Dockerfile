@@ -19,6 +19,7 @@ COPY src/ /app/src/
 
 # Copy tests
 COPY tests/ /app/tests/
+COPY pytest.ini /app/
 
 # This is a modular FastMCP server that communicates via STDIO
 # No port exposure needed
