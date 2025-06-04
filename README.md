@@ -61,6 +61,34 @@ For advanced uv-based server launch and configuration, see [`docs/mcp-servers-ex
 
 ---
 
+### ⚠️ Virtual Environment Warnings & Best Practices
+
+If you see a warning like:
+```
+warning: VIRTUAL_ENV=... does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+```
+This means your shell is using a different virtual environment (e.g., via pyenv, conda, or custom venv) than the `.venv` used by uv for this project.
+
+**How to resolve:**
+- To install into your currently active environment, add `--active`:
+  ```bash
+  uv pip install -r requirements.txt --active
+  ```
+- Or, deactivate your custom venv and let uv manage `.venv` for you:
+  ```bash
+  deactivate  # or conda deactivate
+  uv pip install -r requirements.txt
+  ```
+- To check your active environment:
+  ```bash
+  echo $VIRTUAL_ENV
+  ```
+
+**Recommendation:**
+For consistency, use the default `.venv` created and managed by uv, unless your team standardizes on another method. If you use pyenv, conda, or a custom venv, always use `--active` when installing with uv pip.
+
+---
+
 ![WindSurf](./attached_assets/images/image.png)
 
 ---
