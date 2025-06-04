@@ -1,6 +1,96 @@
 # Redmine MCP Server
 
+> **⚠️ Python Version Requirement:**
+>
+> This project (and its dependency `fastmcp`) requires **Python 3.10 or higher**.
+> If you use Python 3.9 or lower, installation will fail with an error like:
+> 
+> `ERROR: Package 'fastmcp' requires a different Python: 3.9.20 not in '>=3.10'`
+>
+> To check your Python version, run:
+> ```bash
+> python --version
+> ```
+> or
+> ```bash
+> python3 --version
+> ```
+>
+> If you need to install Python 3.10+, see the [python.org downloads](https://www.python.org/downloads/) or use your OS package manager.
+
+
+## Quick Start with uv and fastmcp
+
+Follow these steps to quickly set up your environment using [uv](https://github.com/astral-sh/uv) and a local fastmcp checkout:
+
+1. **Check Python version (must be 3.10+):**
+   ```bash
+   python --version
+   # or
+   python3 --version
+   ```
+   If your version is lower than 3.10, [install Python 3.10+](https://www.python.org/downloads/) before continuing.
+
+2. **Install uv:**
+   ```bash
+   curl -Ls https://astral.sh/uv/install.sh | sh
+   ```
+
+3. **Install fastmcp in editable mode (preferred for development):**
+   ```bash
+   uv pip install -e /ABSOLUTE/PATH/TO/fastmcp
+   ```
+   > If this fails with a Python version error, you must upgrade your Python to 3.10+.
+
+   Or, to install directly from GitHub (for quick setup or CI):
+   ```bash
+   uv pip install -e 'git+https://github.com/jlowin/fastmcp.git#egg=fastmcp'
+   ```
+
+4. **Install other dependencies:**
+   ```bash
+   uv pip install -r requirements.txt
+   ```
+
+5. **Run the server:**
+   ```bash
+   uv run -m src.server
+   ```
+
+For advanced uv-based server launch and configuration, see [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md).
+
+---
+
 ![WindSurf](./attached_assets/images/image.png)
+
+---
+
+## Using uv (Fast Python Installer)
+
+[uv](https://github.com/astral-sh/uv) is a fast, modern Python package manager and runtime that supports Python 3.10+ and is recommended for development and deployment. It can dramatically speed up dependency installation and offers robust, reproducible builds.
+
+**Install uv:**
+```bash
+curl -Ls https://astral.sh/uv/install.sh | sh
+```
+Or see the [uv installation instructions](https://github.com/astral-sh/uv#installation).
+
+**Install dependencies (including fastmcp in editable mode):**
+```bash
+uv pip install -e /ABSOLUTE/PATH/TO/fastmcp
+uv pip install -r requirements.txt
+```
+
+**Run the server:**
+```bash
+uv run -m src.server
+```
+
+> **Note:** uv requires Python 3.10 or higher, matching the requirements for this project and fastmcp.
+
+See [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md) for advanced uv-based server launch and configuration examples.
+
+---
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
 
@@ -82,19 +172,31 @@ Use the provided testing utilities:
 ./test-docker.sh
 
 # Test mode (validates configuration, tool registry, health check, and authentication)
-python src/server.py --test
+uv run -m src.server --test
 
 # Create real issue test
 python scripts/test_create_real.py
 ```
 
 ### Python based loading
+
+> **Note:** Ensure you are using Python 3.10+ before installing dependencies or running the server. If you are using a virtual environment, create it with Python 3.10+:
+> ```bash
+> python3.10 -m venv .venv
+> source .venv/bin/activate
+> ```
+> Then install dependencies:
+> ```bash
+> pip install -e /ABSOLUTE/PATH/TO/fastmcp
+> pip install -r requirements.txt
+> ```
+
 ```
 {
   "mcpServers": {
     "redmine": {
       "command": "python",
-      "args": ["/rrmcpy-path/src/server.py"],
+      "args": ["-m", "src.server"],
       "env": {
         "REDMINE_URL": "https://your-redmine.com",
         "REDMINE_API_KEY": "your-api-key"
