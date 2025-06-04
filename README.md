@@ -91,7 +91,8 @@ python scripts/test_create_real.py
 ```
 
 ### pyhton based loading
-```{
+```
+{
   "mcpServers": {
     "redmine": {
       "command": "python",
@@ -103,6 +104,8 @@ python scripts/test_create_real.py
     }
   }
 }
+```
+
 ### Environment Variables
 
 - `REDMINE_URL`: URL of your Redmine instance (default: https://redstone.redminecloud.net)
