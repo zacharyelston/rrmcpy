@@ -1,27 +1,5 @@
 # FastMCP Best Practices Guide
 
-## Current Implementation Analysis
-
-### What We Built (Complex Architecture)
-```python
-# Complex multi-layer approach with unnecessary abstractions
-class RedmineMCPServer:
-    def __init__(self):
-        self.config = AppConfig()
-        self.tool_registry = ToolRegistry()  # Custom layer
-        self.clients = {}
-        self.services = {}
-        self.mcp = FastMCP("Redmine MCP Server")
-    
-    def _register_tools(self):
-        # Mixing custom registry with FastMCP
-        @self.mcp.tool("redmine-create-issue")
-        async def create_issue(...):
-            tool = self.tool_registry.get_tool("CreateIssueTool")  # Extra layer
-            result = tool.execute(...)
-            return json.dumps(result, indent=2)
-```
-
 ### FastMCP Best Practice (Simple & Direct)
 ```python
 # Clean, direct FastMCP implementation
@@ -68,23 +46,7 @@ async def main():
 **❌ Avoid:** Custom server wrappers, complex initialization sequences
 **✅ Use:** Direct mcp.run(), minimal setup
 
-## Container Compatibility
 
-### Current Issue
-FastMCP's `mcp.run()` conflicts with existing event loops in container environments.
-
-### Solution
-```python
-if __name__ == "__main__":
-    import asyncio
-    try:
-        loop = asyncio.get_running_loop()
-        import nest_asyncio
-        nest_asyncio.apply()
-        task = loop.create_task(main())
-    except RuntimeError:
-        asyncio.run(main())
-```
 
 ## Recommended Architecture
 
@@ -95,29 +57,5 @@ fastmcp_server.py (210 lines)
 ├── @mcp.tool() decorated functions
 ├── Simple initialization
 └── Container-safe main()
-
-vs.
-
-Current complex structure (1000+ lines)
-├── src/mcp_server.py
-├── src/core/
-├── src/services/
-├── src/tools/
-└── Multiple abstraction layers
 ```
 
-## Migration Benefits
-
-1. **Simplicity**: 80% less code
-2. **Maintainability**: Standard FastMCP patterns
-3. **Compatibility**: Works with all MCP clients
-4. **Performance**: Direct API calls, no middleware
-5. **Debugging**: Clear execution path
-
-## Recommendation
-
-Replace the complex `src/mcp_server.py` with the simple `fastmcp_server.py` approach for:
-- Better FastMCP compliance
-- Universal MCP client compatibility
-- Easier maintenance and debugging
-- Standard patterns other developers expect
