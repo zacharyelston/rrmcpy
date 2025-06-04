@@ -103,48 +103,69 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: false
         
-    - name: Create PR for README badge update
+    - name: Update README badge if needed
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       env:
-        REDMINE_URL: "https://redstone.redminecloud.net"
-        REDMINE_API_KEY: ${{ secrets.REDMINE_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "Creating PR to update README.md with test badge"
+        echo "Checking if README badge needs updating..."
+        
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
         
         # Create badge URL using shields.io
         BADGE_URL="https://img.shields.io/github/actions/workflow/status/${{ github.repository }}/build-and-test.yml?branch=main&label=tests&style=for-the-badge"
         
-        # Create a new branch for the update
-        BRANCH_NAME="update-test-badge-$(date +%s)"
-        git checkout -b "$BRANCH_NAME"
+        # Check if badge already exists with correct URL in README
+        if grep -qF "$BADGE_URL" README.md; then
+          echo "Badge already exists with correct URL. No update needed."
+          exit 0
+        fi
         
-        # Update README with badge
+        # Check if we need to add or update the badge
         if ! grep -q "<!-- test-status-badge -->" README.md; then
-          # Add badge section if it doesn't exist
-          sed -i '1 a\\n<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)\\n' README.md
+          echo "Adding badge to README.md..."
+          # Get the first line of README
+          FIRST_LINE=$(head -n 1 README.md)
+          # Create new content with badge after first line
+          {
+            echo "$FIRST_LINE"
+            echo ""
+            echo "<!-- test-status-badge -->"
+            echo "[![Tests]($BADGE_URL)](https://github.com/${{ github.repository }}/actions)"
+            echo ""
+            tail -n +2 README.md
+          } > README.tmp && mv README.tmp README.md
         else
-          # Update existing badge
-          sed -i 's|<!-- test-status-badge -->.*|<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)|' README.md
+          echo "Updating existing badge in README.md..."
+          # Update the line after <!-- test-status-badge -->
+          awk -v badge="[![Tests]($BADGE_URL)](https://github.com/${{ github.repository }}/actions)" '
+            /<!-- test-status-badge -->/ {print; getline; print badge; next}
+            {print}
+          ' README.md > README.tmp && mv README.tmp README.md
         fi
         
-        # Check if there are changes to commit
+        # Check if there are actual changes
         if git diff --quiet README.md; then
-          echo "No changes to README.md needed"
-        else
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add README.md
-          git commit -m "Update test status badge in README"
-          git push origin "$BRANCH_NAME"
-          
-          # Create pull request using GitHub CLI
-          gh pr create \
-            --title "Update test status badge" \
-            --body "Automated update of test status badge in README.md" \
-            --head "$BRANCH_NAME" \
-            --base main
+          echo "No changes to README.md after processing"
+          exit 0
         fi
+        
+        # Show the changes
+        echo "Changes to be committed:"
+        git diff README.md
+        
+        # Commit and push directly to main
+        git add README.md
+        git commit -m "Update test status badge [skip ci]"
+        
+        # Push the changes
+        git push origin main || {
+          echo "Failed to push badge update. This is not critical."
+          echo "The badge will be updated on the next successful push to main."
+          exit 0
+        }
         
     - name: Run validation tests
       env:
