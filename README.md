@@ -1,4 +1,153 @@
 # Redmine MCP Server
+---
+
+[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
+
+A production-ready PythonFastMCP Server for Redmine with a highly modular architecture, featuring comprehensive API management, robust error handling, and an extensible tool registry system.
+
+### Project Structure
+```
+src/
+├── server.py                # Main MCP server with modular architecture
+├── core/                    # Core infrastructure
+│   ├── config.py           # Configuration management
+│   ├── errors.py           # Error handling
+│   ├── logging.py          # Logging setup
+│   ├── client_manager.py   # Client initialization and management
+│   ├── service_manager.py  # Service layer management
+│   ├── tool_registrations.py # Tool implementation and registration
+│   └── tool_test.py        # Test mode validation
+├── services/                # Business logic layer
+│   └── [service modules]   # Specialized service modules
+└── [api clients]           # API client modules (issues, projects, versions, etc.)
+```
+
+
+## Features
+
+- **Built for Clarity Architecture**: Designed with separation of concerns and clear component boundaries
+- **Comprehensive Issue Management**: Full CRUD operations with validation and error handling
+- **Centralized Configuration**: Type-safe environment variable handling with validation
+- **Tool Registry System**: Plugin-like architecture for extensible functionality
+- **Robust Error Handling**: Standardized exceptions and consistent error responses
+- **Production-Ready**: Health checking, logging, and connection management
+- **Testability**: Dedicated testing module for automated validation
+
+---
+
+## Design Philosophy: Built for Clarity
+
+The Redmine MCP Server is grounded in a single guiding principle: clarity over complexity. Every architectural and implementation decision aims to reduce unnecessary intricacy—making the system simpler, more understandable, and easier to maintain.
+
+We believe the greatest challenge in software development isn’t adding features—it’s managing the complexity that comes with them.
+
+**Key tenets of the Clarity-First approach include:**
+
+- **Simplicity by Default**  
+  Prioritize clear, straightforward solutions. Avoid convoluted logic, special cases, and needless abstractions.
+- **Modular Architecture**  
+  Break the system into small, focused components (e.g., ClientManager, ServiceManager, ToolRegistry) that can be understood, tested, and evolved independently.
+- **Encapsulation**  
+  Expose only what’s necessary via clear interfaces. Keep implementation details internal.
+- **Solid Design Principles**  
+  Apply proven patterns like SOLID, to ensure code is flexible, decoupled, and robust.
+- **Practical Heuristics**  
+  Use KISS, DRY, and YAGNI as guiding lights. Avoid overengineering and premature complexity.
+- **Relentless Refinement**  
+  Treat design as a living process. Refactor continuously to clarify, simplify, and improve.
+
+By emphasizing clarity, the Redmine MCP Server stays nimble, stable, and developer-friendly—even as it scales. It means faster development, fewer bugs, and a system that grows without becoming a burden.
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Redmine API key with appropriate permissions
+
+### Using a .env File for Local Development
+
+You can create a `.env` file in the project root to store environment variables for local development. Example:
+
+```env
+REDMINE_URL=https://your-redmine.com
+REDMINE_API_KEY=your-api-key
+SERVER_MODE=live
+LOG_LEVEL=INFO
+```
+
+The server will automatically load these variables when running locally.
+
+### Using Docker (Recommended)
+
+1. Build the Docker image:
+```bash
+docker build -t redmine-mcp-server .
+```
+
+2. Run the server:
+```bash
+docker run -e REDMINE_URL=https://your-redmine.com -e REDMINE_API_KEY=your-api-key redmine-mcp-server
+```
+
+### Local Testing
+
+Use the provided testing utilities:
+```bash
+# Interactive Docker testing menu
+./test-docker.sh
+
+# Test mode (validates configuration, tool registry, health check, and authentication)
+uv run -m src.server --test
+
+# Create real issue test
+python scripts/test_create_real.py
+```
+
+### Python based loading
+
+> **Note:** Ensure you are using Python 3.10+ before installing dependencies or running the server. If you are using a virtual environment, create it with Python 3.10+:
+> ```bash
+> python3.10 -m venv .venv
+> source .venv/bin/activate
+> ```
+> Then install dependencies:
+> ```bash
+> pip install -e /ABSOLUTE/PATH/TO/fastmcp
+> pip install -r requirements.txt
+> ```
+
+```
+{
+  "mcpServers": {
+    "redmine": {
+      "command": "python",
+      "args": ["-m", "src.server"],
+      "env": {
+        "REDMINE_URL": "https://your-redmine.com",
+        "REDMINE_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+- `REDMINE_URL`: URL of your Redmine instance (default: https://redstone.redminecloud.net)
+- `REDMINE_API_KEY`: Your Redmine API key (required)
+- `SERVER_MODE`: Server mode - 'live', 'test', or 'debug' (default: live)
+- `LOG_LEVEL`: Logging level - 'DEBUG', 'INFO', 'WARNING', or 'ERROR' (default: INFO)
+
+## Usage
+
+The MCP server communicates using the MCP protocol over STDIO. It provides tools for Redmine API operations and integrates seamlessly with MCP clients like Claude Desktop.
+
+### Available Tools (Canonical Inventory)
+
+> **Note:** This inventory is auto-imported from the YAML specifications in [`docs/api_specifications/`](docs/api_specifications/). Checkboxes indicate implementation status and should be kept in sync with the codebase. For full method details, see the YAML files.
+
 
 ```
 (repl-nix-workspace) zacelston@ZEMBA rrmcpy % uv run -m src.server                       
@@ -141,136 +290,6 @@ uv run -m src.server
 
 See [`docs/mcp-servers-examples.md`](docs/mcp-servers-examples.md) for advanced uv-based server launch and configuration examples.
 
----
-
-[![Tests](https://img.shields.io/github/actions/workflow/status/zacharyelston/rrmcpy/build-and-test.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/zacharyelston/rrmcpy/actions)
-
-A production-ready Python MCP Server for Redmine with a highly modular architecture designed to fight complexity, featuring comprehensive API management, robust error handling, and an extensible tool registry system.
-
-## Features
-
-- **Built for Clarity Architecture**: Designed with separation of concerns and clear component boundaries
-- **Comprehensive Issue Management**: Full CRUD operations with validation and error handling
-- **Centralized Configuration**: Type-safe environment variable handling with validation
-- **Tool Registry System**: Plugin-like architecture for extensible functionality
-- **Robust Error Handling**: Standardized exceptions and consistent error responses
-- **Production-Ready**: Health checking, logging, and connection management
-- **Testability**: Dedicated testing module for automated validation
-
----
-
-## Design Philosophy: Built for Clarity
-
-The Redmine MCP Server is grounded in a single guiding principle: clarity over complexity. Every architectural and implementation decision aims to reduce unnecessary intricacy—making the system simpler, more understandable, and easier to maintain.
-
-We believe the greatest challenge in software development isn’t adding features—it’s managing the complexity that comes with them.
-
-**Key tenets of the Clarity-First approach include:**
-
-- **Simplicity by Default**  
-  Prioritize clear, straightforward solutions. Avoid convoluted logic, special cases, and needless abstractions.
-- **Modular Architecture**  
-  Break the system into small, focused components (e.g., ClientManager, ServiceManager, ToolRegistry) that can be understood, tested, and evolved independently.
-- **Encapsulation**  
-  Expose only what’s necessary via clear interfaces. Keep implementation details internal.
-- **Solid Design Principles**  
-  Apply proven patterns like SOLID, to ensure code is flexible, decoupled, and robust.
-- **Practical Heuristics**  
-  Use KISS, DRY, and YAGNI as guiding lights. Avoid overengineering and premature complexity.
-- **Relentless Refinement**  
-  Treat design as a living process. Refactor continuously to clarify, simplify, and improve.
-
-By emphasizing clarity, the Redmine MCP Server stays nimble, stable, and developer-friendly—even as it scales. It means faster development, fewer bugs, and a system that grows without becoming a burden.
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Redmine API key with appropriate permissions
-
-### Using a .env File for Local Development
-
-You can create a `.env` file in the project root to store environment variables for local development. Example:
-
-```env
-REDMINE_URL=https://your-redmine.com
-REDMINE_API_KEY=your-api-key
-SERVER_MODE=live
-LOG_LEVEL=INFO
-```
-
-The server will automatically load these variables when running locally.
-
-### Using Docker (Recommended)
-
-1. Build the Docker image:
-```bash
-docker build -t redmine-mcp-server .
-```
-
-2. Run the server:
-```bash
-docker run -e REDMINE_URL=https://your-redmine.com -e REDMINE_API_KEY=your-api-key redmine-mcp-server
-```
-
-### Local Testing
-
-Use the provided testing utilities:
-```bash
-# Interactive Docker testing menu
-./test-docker.sh
-
-# Test mode (validates configuration, tool registry, health check, and authentication)
-uv run -m src.server --test
-
-# Create real issue test
-python scripts/test_create_real.py
-```
-
-### Python based loading
-
-> **Note:** Ensure you are using Python 3.10+ before installing dependencies or running the server. If you are using a virtual environment, create it with Python 3.10+:
-> ```bash
-> python3.10 -m venv .venv
-> source .venv/bin/activate
-> ```
-> Then install dependencies:
-> ```bash
-> pip install -e /ABSOLUTE/PATH/TO/fastmcp
-> pip install -r requirements.txt
-> ```
-
-```
-{
-  "mcpServers": {
-    "redmine": {
-      "command": "python",
-      "args": ["-m", "src.server"],
-      "env": {
-        "REDMINE_URL": "https://your-redmine.com",
-        "REDMINE_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-### Environment Variables
-
-- `REDMINE_URL`: URL of your Redmine instance (default: https://redstone.redminecloud.net)
-- `REDMINE_API_KEY`: Your Redmine API key (required)
-- `SERVER_MODE`: Server mode - 'live', 'test', or 'debug' (default: live)
-- `LOG_LEVEL`: Logging level - 'DEBUG', 'INFO', 'WARNING', or 'ERROR' (default: INFO)
-
-## Usage
-
-The MCP server communicates using the MCP protocol over STDIO. It provides tools for Redmine API operations and integrates seamlessly with MCP clients like Claude Desktop.
-
-### Available Tools (Canonical Inventory)
-
-> **Note:** This inventory is auto-imported from the YAML specifications in [`docs/api_specifications/`](docs/api_specifications/). Checkboxes indicate implementation status and should be kept in sync with the codebase. For full method details, see the YAML files.
 
 #### Project Management
 - [ ] `listProjects`: Retrieves all projects accessible to the authenticated user
@@ -426,22 +445,7 @@ export LOG_LEVEL=DEBUG
 python main.py
 ```
 
-### Project Structure
-```
-src/
-├── server.py                # Main MCP server with modular architecture
-├── core/                    # Core infrastructure
-│   ├── config.py           # Configuration management
-│   ├── errors.py           # Error handling
-│   ├── logging.py          # Logging setup
-│   ├── client_manager.py   # Client initialization and management
-│   ├── service_manager.py  # Service layer management
-│   ├── tool_registrations.py # Tool implementation and registration
-│   └── tool_test.py        # Test mode validation
-├── services/                # Business logic layer
-│   └── [service modules]   # Specialized service modules
-└── [api clients]           # API client modules (issues, projects, versions, etc.)
-```
+
 
 ### Refactoring Documentation
 Detailed information about the modular architecture and refactoring approach can be found in [refactoring_plan.md](refactoring_plan.md).
