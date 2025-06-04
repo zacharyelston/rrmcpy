@@ -1,0 +1,62 @@
+    - name: Update README badge if needed
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Checking if README badge needs updating..."
+        
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Create badge URL using shields.io
+        BADGE_URL="https://img.shields.io/github/actions/workflow/status/${{ github.repository }}/build-and-test.yml?branch=main&label=tests&style=for-the-badge"
+        
+        # Check if badge already exists in README
+        if grep -q "https://img.shields.io/github/actions/workflow/status/${{ github.repository }}/build-and-test.yml" README.md; then
+          echo "Badge already exists and is correct. No update needed."
+          exit 0
+        fi
+        
+        # Only create a branch if we need to update
+        BRANCH_NAME="update-test-badge-$(date +%s)"
+        git checkout -b "$BRANCH_NAME"
+        
+        # Update README with badge
+        if ! grep -q "<!-- test-status-badge -->" README.md; then
+          # Add badge section if it doesn't exist
+          sed -i '1 a\\n<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)\\n' README.md
+        else
+          # Update existing badge
+          sed -i 's|<!-- test-status-badge -->.*|<!-- test-status-badge -->\\n[![Tests]('$BADGE_URL')](https://github.com/${{ github.repository }}/actions)|' README.md
+        fi
+        
+        # Check if there are actual changes
+        if git diff --quiet README.md; then
+          echo "No changes to README.md needed"
+          exit 0
+        fi
+        
+        # Commit and push
+        git add README.md
+        git commit -m "Update test status badge in README"
+        git push origin "$BRANCH_NAME"
+        
+        # Create and auto-merge PR
+        PR_URL=$(gh pr create \
+          --title "Update test status badge" \
+          --body "Automated update of test status badge in README.md. This PR will be auto-merged." \
+          --head "$BRANCH_NAME" \
+          --base main)
+        
+        # Extract PR number from URL
+        PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+        
+        # Wait a moment for PR checks to register
+        sleep 5
+        
+        # Auto-merge the PR (will wait for checks if required)
+        echo "Auto-merging PR #$PR_NUMBER..."
+        gh pr merge "$PR_NUMBER" --merge --delete-branch || {
+          echo "Failed to auto-merge. PR will remain open for manual review."
+        }
