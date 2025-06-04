@@ -32,14 +32,10 @@ class TestProjectTools(unittest.TestCase):
         self.mock_client_manager = Mock()
         self.mock_client_manager.get_client.return_value = self.mock_project_client
         
-        # Create mock service manager
-        self.mock_service_manager = Mock()
-        
         # Create tool registrations instance
         self.tool_registrations = ToolRegistrations(
             self.mcp,
             self.mock_client_manager,
-            self.mock_service_manager,
             self.logger
         )
     

@@ -32,14 +32,12 @@ try:
     # Core imports
     from .core import AppConfig, ConfigurationError, setup_logging, get_logger
     from .core.client_manager import ClientManager
-    from .core.service_manager import ServiceManager
     from .core.tool_registrations import ToolRegistrations
     from .core.tool_test import ToolTester
 except ImportError:
     # Fallback imports for direct execution
     from src.core import AppConfig, ConfigurationError, setup_logging, get_logger
     from src.core.client_manager import ClientManager
-    from src.core.service_manager import ServiceManager
     from src.core.tool_registrations import ToolRegistrations
     from src.core.tool_test import ToolTester
 
@@ -53,7 +51,6 @@ class RedmineMCPServer:
         self.logger = None
         self.mcp = None
         self.client_manager = None
-        self.service_manager = None
         self.tool_registrations = None
     
     def initialize(self):
@@ -97,8 +94,7 @@ class RedmineMCPServer:
         This method follows a clear initialization sequence:
         1. FastMCP (MCP framework)
         2. Client manager (API clients)
-        3. Service manager (business logic)
-        4. Tool registrations (MCP tools)
+        3. Tool registrations (MCP tools)
         
         Raises:
             ConfigurationError: If FastMCP is not available
@@ -113,15 +109,10 @@ class RedmineMCPServer:
         self.client_manager = ClientManager(self.config, self.logger)
         self.client_manager.initialize_clients()
         
-        # Initialize service manager with access to clients
-        self.service_manager = ServiceManager(self.config, self.client_manager, self.logger)
-        self.service_manager.initialize_services()
-        
-        # Initialize tool registrations with access to clients and services
+        # Initialize tool registrations with access to clients
         self.tool_registrations = ToolRegistrations(
             mcp=self.mcp,
             client_manager=self.client_manager,
-            service_manager=self.service_manager,
             logger=self.logger
         )
         self.tool_registrations.register_all_tools()
@@ -178,7 +169,6 @@ class RedmineMCPServer:
         tool_tester = ToolTester(
             config=self.config,
             client_manager=self.client_manager,
-            service_manager=self.service_manager,
             tool_registrations=self.tool_registrations,
             logger=self.logger
         )

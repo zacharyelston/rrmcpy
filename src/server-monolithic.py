@@ -32,13 +32,11 @@ try:
     # Core imports
     from .core import AppConfig, ConfigurationError, setup_logging, get_logger
     from .core.client_manager import ClientManager
-    from .core.service_manager import ServiceManager
     from .core.tool_registrations import ToolRegistrations
 except ImportError:
     # Fallback imports for direct execution
     from src.core import AppConfig, ConfigurationError, setup_logging, get_logger
     from src.core.client_manager import ClientManager
-    from src.core.service_manager import ServiceManager
     from src.core.tool_registrations import ToolRegistrations
 
 
@@ -50,7 +48,6 @@ class RedmineMCPServer:
         self.logger = None
         self.mcp = None
         self.client_manager = None
-        self.service_manager = None
         self.tool_registrations = None
     
     def initialize(self):
@@ -96,12 +93,8 @@ class RedmineMCPServer:
         self.client_manager = ClientManager(self.config, self.logger)
         self.client_manager.initialize_clients()
         
-        # Initialize service manager
-        self.service_manager = ServiceManager(self.config, self.client_manager, self.logger)
-        self.service_manager.initialize_services()
-        
         # Initialize tool registrations
-        self.tool_registrations = ToolRegistrations(self.mcp, self.client_manager, self.service_manager, self.logger)
+        self.tool_registrations = ToolRegistrations(self.mcp, self.client_manager, self.logger)
         self.tool_registrations.register_all_tools()
         
         self.logger.info("All components initialized successfully")
