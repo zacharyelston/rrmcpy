@@ -2,7 +2,7 @@
 
 ## Design Philosophy
 
-Following the "Fighting Complexity" philosophy, this refactoring aims to:
+Following the "Clarity Over Complexity ("Built for Clarity")" philosophy, this refactoring aims to:
 
 1. **Simplify the code structure** by breaking the monolithic `server.py` into specialized modules
 2. **Encapsulate complexity** through clear separation of concerns

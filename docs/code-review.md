@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This review examines how well the rrmcpy project follows the FastMCP design principles for working with Redmica. While the codebase demonstrates a solid attempt at creating a modular architecture, several areas could be improved to better align with FastMCP's design philosophy and general software design principles that focus on simplicity and fighting complexity.
+This review examines how well the rrmcpy project follows the FastMCP design principles for working with Redmica. While the codebase demonstrates a solid attempt at creating a modular architecture, several areas could be improved to better align with FastMCP's design philosophy of prioritizing clarity and simplicity, adhering to the "Built for Clarity" principle.
 
 ## Strengths
 
@@ -176,7 +176,7 @@ async def lifespan(server: FastMCP):
 
 ## Architectural Recommendations
 
-1. **Simplify the Architecture**: Following the principle of fighting complexity, reduce the number of abstraction layers and focus on a clean implementation that directly leverages FastMCP's features.
+1. **Simplify the Architecture**: Following the principle of clarity over complexity ("Built for Clarity"), reduce the number of abstraction layers and focus on a clean implementation that directly leverages FastMCP's features.
 
 2. **Adopt FastMCP Patterns**: More fully embrace FastMCP patterns such as decorators for tool registration, proper resource management, and built-in parameter validation.
 

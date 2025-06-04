@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines an improved architecture for the rrmcpy project that follows software design principles focused on simplicity, maintainability, and fighting complexity. It leverages FastMCP's native capabilities while providing a clean interface to Redmica.
+This document outlines an improved architecture for the rrmcpy project that follows software design principles focused on simplicity, maintainability, and clarity over complexity ("Built for Clarity"). It leverages FastMCP's native capabilities while providing a clean interface to Redmica.
 
 ## Core Design Goals
 

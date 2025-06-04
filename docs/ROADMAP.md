@@ -1,6 +1,6 @@
 # rrmcpy Improved Implementation Roadmap
 
-This roadmap incorporates findings from both our code review and the c4-review.md document, focusing on our design philosophy of fighting complexity while ensuring a complete and robust Redmine integration.
+This roadmap incorporates findings from both our code review and the c4-review.md document, focusing on our design philosophy of clarity over complexity ("Built for Clarity") while ensuring a complete and robust Redmine integration.
 
 
 ## Version Roadmap Overview
@@ -166,7 +166,7 @@ This roadmap incorporates findings from both our code review and the c4-review.m
 
 ## Implementation Principles
 
-Throughout all versions, we will adhere to our design philosophy of fighting complexity:
+Throughout all versions, we will adhere to our design philosophy of clarity over complexity ("Built for Clarity"):
 
 1. **Simplicity Over Complexity**
    - Eliminate complexity by making code simpler and more obvious
@@ -280,4 +280,4 @@ We will track the following metrics throughout development:
 
 ## Conclusion
 
-This roadmap provides a structured approach to transforming rrmcpy into a robust, well-designed Redmine MCP server. By starting with critical bug fixes and then simplifying the architecture, we ensure both immediate functionality and long-term maintainability. Throughout the process, we'll adhere to our design philosophy of fighting complexity to create a system that's easy to understand, maintain, and extend.
+This roadmap provides a structured approach to transforming rrmcpy into a robust, well-designed Redmine MCP server. By starting with critical bug fixes and then simplifying the architecture, we ensure both immediate functionality and long-term maintainability. Throughout the process, we'll adhere to our design philosophy of clarity over complexity ("Built for Clarity") to create a system that's easy to understand, maintain, and extend.
