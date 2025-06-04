@@ -34,6 +34,7 @@ class ToolRegistrations:
         self.register_issue_tools()
         self.register_admin_tools()
         self.register_version_tools()
+        self.register_project_tools()
         
         self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
         return self._registered_tools
@@ -384,3 +385,98 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
                 
         self._registered_tools.append("redmine-get-issues-by-version")
+        
+    def register_project_tools(self):
+        """Register project management tools with FastMCP"""
+        project_client = self.client_manager.get_client('projects')
+        self.logger.debug("Registering project tools")
+        
+        @self.mcp.tool("redmine-create-project")
+        async def create_project(name: str, identifier: str, description: str = None,
+                                is_public: bool = True, parent_id: int = None,
+                                inherit_members: bool = False):
+            """Create a new project in Redmine"""
+            try:
+                # Input validation
+                if not name or not identifier:
+                    error = "name and identifier are required"
+                    self.logger.error(f"MCP tool redmine-create-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                # Build project data
+                project_data = {
+                    "name": name,
+                    "identifier": identifier,
+                    "is_public": is_public
+                }
+                
+                # Add optional fields if provided
+                if description:
+                    project_data["description"] = description
+                if parent_id:
+                    project_data["parent_id"] = parent_id
+                if inherit_members:
+                    project_data["inherit_members"] = inherit_members
+                
+                result = project_client.create_project(project_data)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error creating project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-create-project")
+        
+        @self.mcp.tool("redmine-update-project")
+        async def update_project(project_id: str, name: str = None, description: str = None,
+                                is_public: bool = None, parent_id: int = None):
+            """Update attributes of an existing project"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-update-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                # Build project data
+                project_data = {}
+                
+                # Add fields if provided
+                if name:
+                    project_data["name"] = name
+                if description:
+                    project_data["description"] = description
+                if is_public is not None:
+                    project_data["is_public"] = is_public
+                if parent_id:
+                    project_data["parent_id"] = parent_id
+                
+                if not project_data:
+                    error = "No update fields provided"
+                    self.logger.error(f"MCP tool redmine-update-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.update_project(project_id, project_data)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error updating project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-update-project")
+        
+        @self.mcp.tool("redmine-delete-project")
+        async def delete_project(project_id: str):
+            """Delete a project by its ID or identifier"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-delete-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.delete_project(project_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error deleting project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-delete-project")
