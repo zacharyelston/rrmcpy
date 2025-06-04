@@ -1,5 +1,18 @@
 # Redmine MCP Server
 
+```
+(repl-nix-workspace) zacelston@ZEMBA rrmcpy % uv run -m src.server                       
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Starting Redmine MCP Server (version: c4ddb42)
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Server mode: live
+2025-06-04 12:10:26,681 - redmine_mcp_server - INFO - Redmine URL: https://redstone.redminecloud.net
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Registered 14 tools: redmine-create-issue, redmine-get-issue, redmine-list-issues, redmine-update-issue, redmine-delete-issue, redmine-health-check, redmine-version-info, redmine-current-user, redmine-list-versions, redmine-get-version, redmine-create-version, redmine-update-version, redmine-delete-version, redmine-get-issues-by-version
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - All components initialized successfully
+2025-06-04 12:10:26,688 - redmine_mcp_server - INFO - Starting Redmine MCP Server in live mode...
+[06/04/25 12:10:26] INFO     Starting MCP server 'Redmine MCP Server' with         server.py:797
+                             transport 'stdio'                                                  
+2025-06-04 12:10:26,692 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Redmine MCP Server' with transport 'stdio'
+
+
 > **⚠️ Python Version Requirement:**
 >
 > This project (and its dependency `fastmcp`) requires **Python 3.10 or higher**.
@@ -61,31 +74,41 @@ For advanced uv-based server launch and configuration, see [`docs/mcp-servers-ex
 
 ---
 
-### ⚠️ Virtual Environment Warnings & Best Practices
+### ⚠️ Using pyenv Virtual Environments
 
-If you see a warning like:
-```
-warning: VIRTUAL_ENV=... does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
-```
-This means your shell is using a different virtual environment (e.g., via pyenv, conda, or custom venv) than the `.venv` used by uv for this project.
+If you use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) to manage your Python versions and virtual environments, follow these steps for a smooth experience:
 
-**How to resolve:**
-- To install into your currently active environment, add `--active`:
-  ```bash
-  uv pip install -r requirements.txt --active
-  ```
-- Or, deactivate your custom venv and let uv manage `.venv` for you:
-  ```bash
-  deactivate  # or conda deactivate
-  uv pip install -r requirements.txt
-  ```
+**1. Create and activate a pyenv virtualenv (Python 3.10+ recommended):**
+```bash
+pyenv install 3.11.12  # or 3.10.x if you prefer
+pyenv virtualenv 3.11.12 rrmcpy
+pyenv activate rrmcpy
+```
+
+**2. Install dependencies using pip (not uv pip):**
+```bash
+pip install -e /ABSOLUTE/PATH/TO/fastmcp
+pip install -r requirements.txt
+```
+
+**3. Run the server:**
+```bash
+python -m src.server
+```
+
+**4. Avoid conflicts with uv/.venv:**
+- If you use pyenv, do not use `uv pip` or `uv run` in the same shell session.
+- If a `.venv` exists in your project root, either remove it or ensure it is not activated when using pyenv.
 - To check your active environment:
   ```bash
   echo $VIRTUAL_ENV
   ```
 
 **Recommendation:**
-For consistency, use the default `.venv` created and managed by uv, unless your team standardizes on another method. If you use pyenv, conda, or a custom venv, always use `--active` when installing with uv pip.
+Use either pyenv or uv for managing your environment, but not both at the same time. If your team standardizes on pyenv, document the required Python version and virtualenv name in your onboarding docs.
+
+**Troubleshooting:**
+- If you see warnings about `VIRTUAL_ENV` mismatches or missing packages, double-check which environment is active and reinstall dependencies as needed.
 
 ---
 
