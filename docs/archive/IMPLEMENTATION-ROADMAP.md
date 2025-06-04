@@ -1,6 +1,6 @@
 # rrmcpy Implementation Roadmap
 
-This document outlines the implementation plan for refactoring rrmcpy according to our design philosophy centered on fighting complexity. The roadmap is organized into versions with clear goals, tasks, and success metrics.
+This document outlines the implementation plan for refactoring rrmcpy according to our design philosophy centered on clarity over complexity ("Built for Clarity"). The roadmap is organized into versions with clear goals, tasks, and success metrics.
 
 ## Version Roadmap Overview
 
@@ -220,4 +220,4 @@ Regular review points will be scheduled to assess progress and adjust plans:
 3. **End of v1.2.0**: Evaluate tool and resource API design
 4. **End of v1.3.0**: Comprehensive quality review before release
 
-This roadmap provides a structured approach to refactoring rrmcpy while staying true to our design philosophy of fighting complexity and building maintainable software.
+This roadmap provides a structured approach to refactoring rrmcpy while staying true to our design philosophy of clarity over complexity ("Built for Clarity") and building maintainable software.

@@ -1,6 +1,33 @@
 # rrmcpy Implementation Plan
 
-This document provides a prioritized list of implementation tasks based on our roadmap and design philosophy of fighting complexity. Tasks are ordered by priority and dependency.
+This document provides a prioritized list of implementation tasks based on our roadmap and design philosophy of clarity over complexity ("Built for Clarity"). Tasks are ordered by priority and dependency.
+
+---
+
+### Design Philosophy: Built for Clarity
+
+The Redmine MCP Server is grounded in a single guiding principle: clarity over complexity. Every architectural and implementation decision aims to reduce unnecessary intricacy—making the system simpler, more understandable, and easier to maintain.
+
+We believe the greatest challenge in software development isn’t adding features—it’s managing the complexity that comes with them.
+
+**Key tenets of the Clarity-First approach include:**
+
+- **Simplicity by Default**  
+  Prioritize clear, straightforward solutions. Avoid convoluted logic, special cases, and needless abstractions.
+- **Modular Architecture**  
+  Break the system into small, focused components (e.g., ClientManager, ServiceManager, ToolRegistry) that can be understood, tested, and evolved independently.
+- **Encapsulation**  
+  Expose only what’s necessary via clear interfaces. Keep implementation details internal.
+- **Solid Design Principles**  
+  Apply proven patterns like SOLID, to ensure code is flexible, decoupled, and robust.
+- **Practical Heuristics**  
+  Use KISS, DRY, and YAGNI as guiding lights. Avoid overengineering and premature complexity.
+- **Relentless Refinement**  
+  Treat design as a living process. Refactor continuously to clarify, simplify, and improve.
+
+By emphasizing clarity, the Redmine MCP Server stays nimble, stable, and developer-friendly—even as it scales. It means faster development, fewer bugs, and a system that grows without becoming a burden.
+
+---
 
 ## Phase 1: Critical Bug Fixes (v0.9.0)
 
@@ -144,7 +171,7 @@ We will track progress using these metrics:
 
 ## Design Philosophy Alignment
 
-Throughout implementation, we will continuously evaluate our work against our design philosophy of fighting complexity:
+Throughout the process, we'll adhere to our design philosophy of clarity over complexity ("Built for Clarity") to create a system that's easy to understand, maintain, and extend.
 
 1. **Simplicity Over Complexity**
    - Are we making code simpler and more obvious?
