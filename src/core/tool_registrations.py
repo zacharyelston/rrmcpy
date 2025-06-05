@@ -122,7 +122,7 @@ class ToolRegistrations:
         @self.mcp.tool("redmine-update-issue")
         async def update_issue(issue_id: int, subject: str = None, description: str = None, 
                               status_id: int = None, priority_id: int = None, 
-                              assigned_to_id: int = None):
+                              assigned_to_id: int = None, tracker_id: int = None):
             """Update an existing issue"""
             try:
                 if not issue_id:
@@ -144,7 +144,9 @@ class ToolRegistrations:
                     issue_data["priority_id"] = priority_id
                 if assigned_to_id:
                     issue_data["assigned_to_id"] = assigned_to_id
-                
+                if tracker_id:
+                    issue_data["tracker_id"] = tracker_id
+        
                 if not issue_data:
                     error = "No update fields provided"
                     self.logger.error(f"MCP tool redmine-update-issue failed: {error}")
