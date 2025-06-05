@@ -69,7 +69,8 @@ class TestLogging(unittest.TestCase):
         # Verify the request was logged
         self.assertIn("Making GET request", log_output)
         self.assertIn("users/current.json", log_output)
-        self.assertIn("completed successfully", log_output)
+        self.assertIn("API request:", log_output)
+        self.assertIn("(200)", log_output)  # Status code
         self.assertIn("ms", log_output)  # Timing information
         
         # Verify no error was logged
@@ -91,7 +92,8 @@ class TestLogging(unittest.TestCase):
         # Verify debug information is logged
         self.assertIn("Making GET request", log_output)
         self.assertIn("Response data keys", log_output)
-        self.assertIn("completed successfully", log_output)
+        self.assertIn("API request:", log_output)
+        self.assertIn("(200)", log_output)  # Status code
     
     def test_error_logging(self):
         """Test that errors are properly logged"""
@@ -126,7 +128,7 @@ class TestLogging(unittest.TestCase):
         # Look for timing information in the logs
         timing_found = False
         for line in log_output.split('\n'):
-            if 'completed successfully' in line and 'ms' in line:
+            if 'API request:' in line and 'ms' in line:
                 timing_found = True
                 # Extract timing value
                 import re

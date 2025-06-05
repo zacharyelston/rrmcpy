@@ -75,7 +75,11 @@ class TestErrorHandling(unittest.TestCase):
         # Should return an error response
         self.assertTrue(result.get('error', False))
         self.assertEqual(result.get('error_code'), 'VALIDATION_ERROR')
-        self.assertIn('must be of type', result.get('message', ''))
+        # Check that the error details contain the specific field error
+        details = result.get('details', {})
+        field_errors = details.get('field_errors', {})
+        self.assertIn('tracker_id', field_errors)
+        self.assertIn('Must be of type', field_errors.get('tracker_id', ''))
     
     def test_nonexistent_issue_access(self):
         """Test error handling when accessing a non-existent issue"""
