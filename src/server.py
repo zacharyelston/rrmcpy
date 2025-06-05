@@ -30,13 +30,15 @@ except ImportError:
 
 try:
     # Core imports
-    from .core import AppConfig, ConfigurationError, setup_logging, get_logger
+    from .core import AppConfig, setup_logging, get_logger
+    from .core.errors import ConfigurationError
     from .core.client_manager import ClientManager
     from .core.tool_registrations import ToolRegistrations
     from .core.tool_test import ToolTester
 except ImportError:
     # Fallback imports for direct execution
-    from src.core import AppConfig, ConfigurationError, setup_logging, get_logger
+    from src.core import AppConfig, setup_logging, get_logger
+    from src.core.errors import ConfigurationError
     from src.core.client_manager import ClientManager
     from src.core.tool_registrations import ToolRegistrations
     from src.core.tool_test import ToolTester
