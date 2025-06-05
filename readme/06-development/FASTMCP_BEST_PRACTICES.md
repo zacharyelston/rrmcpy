@@ -47,15 +47,3 @@ async def main():
 **✅ Use:** Direct mcp.run(), minimal setup
 
 
-
-## Recommended Architecture
-
-```
-fastmcp_server.py (210 lines)
-├── FastMCP instance
-├── Global client variables
-├── @mcp.tool() decorated functions
-├── Simple initialization
-└── Container-safe main()
-```
-
