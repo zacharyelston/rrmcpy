@@ -21,6 +21,33 @@ https://redstone.redminecloud.net/issues/166
 
 Add this to your Windsurf configuration file to enable the Redmine MCP server:
 
+```json
+"redminecloud": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "REDMINE_URL",
+        "-e",
+        "REDMINE_API_KEY",
+        "-e",
+        "SERVER_MODE",
+        "-e",
+        "LOG_LEVEL",
+        "redmine-mcp-server:main"
+      ],
+      "env": {
+        "REDMINE_URL": "https://redstone.redminecloud.net",
+        "REDMINE_API_KEY": "APIKEYHERE",
+        "SERVER_MODE": "live",
+        "LOG_LEVEL": "ERROR"
+      },
+      "disabled": false
+    }
+```
+
 ```bash
 rrmcpy % ./test-docker.sh   
 Redmine MCP Server - Local Docker Testing
