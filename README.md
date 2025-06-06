@@ -6,6 +6,8 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 ## Quick Start
 
+
+
 ![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
 ![WindsurfConfig](attached_assets/images/WindsurfConfig.png)
 ![aic1](attached_assets/images/aic1.png)
@@ -15,6 +17,65 @@ https://redstone.redminecloud.net/issues/166
 
 ![166](attached_assets/images/166.png)
 
+### Windsurf Configuration Example
+
+Add this to your Windsurf configuration file to enable the Redmine MCP server:
+
+```bash
+rrmcpy % ./test-docker.sh   
+Redmine MCP Server - Local Docker Testing
+==========================================
+Branch: fix/issue155-update-issue-tracker-support
+Commit: 4c6653b
+
+Loading configuration from .env file...
+Configuration:
+  Redmine URL: https://redstone.redminecloud.net
+  Log Level: INFO
+  Server Mode: live
+  Branch: main
+  Docker Image: redmine-mcp-server:main
+
+Building Docker image...
+[+] Building 14.1s (13/13) FINISHED docker:desktop-linux=> => resolve docker.io/library/python:3.11-sli  0.0s
+ => [internal] load build definition from Docker  0.0s
+ => => transferring dockerfile: 977B              0.0s
+ => [internal] load metadata for docker.io/libra  0.4s
+ => [internal] load .dockerignore                 0.0s
+ => => transferring context: 2B                   0.0s
+ => [1/8] FROM docker.io/library/python:3.11-sli  0.0s
+ => => resolve docker.io/library/python:3.11-sli  0.0s
+ => [internal] load build context                 0.0s
+ => => transferring context: 10.21kB              0.0s
+ => CACHED [2/8] WORKDIR /app                     0.0s
+ => [3/8] COPY docker-requirements.txt .          0.0s
+ => [4/8] RUN pip install --no-cache-dir -r doc  11.5s 
+ => [5/8] RUN mkdir -p /app/src /app/tests        0.1s 
+ => [6/8] COPY src/ /app/src/                     0.0s 
+ => [7/8] COPY tests/ /app/tests/                 0.0s 
+ => [8/8] COPY pytest.ini /app/                   0.0s 
+ => exporting to image                            1.9s 
+ => => exporting layers                           1.5s
+ => => exporting manifest sha256:6927af329be321c  0.0s
+ => => exporting config sha256:fbdd5fe1ec7b10b20  0.0s
+ => => exporting attestation manifest sha256:7c0  0.0s
+ => => exporting manifest list sha256:91837586a9  0.0s
+ => => naming to docker.io/library/redmine-mcp-s  0.0s
+ => => unpacking to docker.io/library/redmine-mc  0.3s
+Docker image built successfully
+
+
+Select test option:
+1) Run unit tests
+2) Run health check
+3) Run server in test mode
+4) Interactive container shell
+5) List branch versions
+6) Exit
+
+Enter your choice (1-6): 6
+Exiting...
+```
 
 ```bash
 # Set environment variables
