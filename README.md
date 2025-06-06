@@ -47,13 +47,14 @@ Add this to your Windsurf configuration file to enable the Redmine MCP server:
       "disabled": false
     }
 ```
+### Docker build   Example
 
 ```bash
 rrmcpy % ./test-docker.sh   
 Redmine MCP Server - Local Docker Testing
 ==========================================
-Branch: fix/issue155-update-issue-tracker-support
-Commit: 4c6653b
+Branch: main
+Commit: 
 
 Loading configuration from .env file...
 Configuration:
