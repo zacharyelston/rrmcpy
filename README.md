@@ -6,6 +6,16 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 ## Quick Start
 
+![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
+![WindsurfConfig](attached_assets/images/WindsurfConfig.png)
+![aic1](attached_assets/images/aic1.png)
+![aiw1](attached_assets/images/aiw1.png)
+
+https://redstone.redminecloud.net/issues/166
+
+![166](attached_assets/images/166.png)
+
+
 ```bash
 # Set environment variables
 export REDMINE_URL="https://your-redmine-instance.com"
