@@ -10,10 +10,14 @@ import json
 from unittest.mock import Mock, patch, MagicMock
 import requests
 
-# Add the parent directory to the path to access src
+# Handle import paths for both local development and CI environment
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from src.base import RedmineBaseClient
+try:
+    from src.base import RedmineBaseClient
+except ImportError:
+    # Alternative import path for CI environment
+    from rrmcpy.src.base import RedmineBaseClient
 
 
 class TestStandardizedErrorHandling(unittest.TestCase):

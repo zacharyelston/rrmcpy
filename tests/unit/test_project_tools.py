@@ -9,11 +9,16 @@ import unittest
 import json
 from unittest.mock import Mock, patch, MagicMock
 
-# Add the parent directory to the path to access src
+# Handle import paths for both local development and CI environment
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from src.base import RedmineBaseClient
-from src.projects import ProjectClient
+try:
+    from src.base import RedmineBaseClient
+    from src.projects import ProjectClient
+except ImportError:
+    # Alternative import path for CI environment
+    from rrmcpy.src.base import RedmineBaseClient
+    from rrmcpy.src.projects import ProjectClient
 
 
 class TestProjectTools(unittest.TestCase):

@@ -10,12 +10,18 @@ import random
 import string
 import pytest
 
-# Add the parent directory to the path to access src
+# Handle import paths for both local development and CI environment
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from src.base import RedmineBaseClient
-from src.issues import IssueClient
-from src.projects import ProjectClient
+try:
+    from src.base import RedmineBaseClient
+    from src.issues import IssueClient
+    from src.projects import ProjectClient
+except ImportError:
+    # Alternative import path for CI environment
+    from rrmcpy.src.base import RedmineBaseClient
+    from rrmcpy.src.issues import IssueClient
+    from rrmcpy.src.projects import ProjectClient
 
 
 def generate_test_id(length=6):
