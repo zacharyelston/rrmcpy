@@ -391,6 +391,30 @@ class ToolRegistrations:
         project_client = self.client_manager.get_client('projects')
         self.logger.debug("Registering project tools")
         
+        @self.mcp.tool("redmine-list-projects")
+        async def list_projects(include: list = None):
+            """Lists all available projects
+            
+            Args:
+                include: Optional list of associations to include
+                         (trackers, issue_categories, enabled_modules, etc.)
+            """
+            try:
+                params = {}
+                if include:
+                    if isinstance(include, list):
+                        params['include'] = ','.join(include)
+                    else:
+                        params['include'] = include
+                        
+                result = project_client.get_projects(params=params)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error listing projects: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-list-projects")
+        
         @self.mcp.tool("redmine-create-project")
         async def create_project(name: str, identifier: str, description: str = None,
                                 is_public: bool = True, parent_id: int = None,

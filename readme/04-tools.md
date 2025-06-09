@@ -52,6 +52,6 @@ This document lists the available MCP tools in the Redmine MCP Server.
 - [ ] `redmine-update-time-entry`: Updates an existing time entry
 
 ### Server Administration
-- [ ] `redmine-list-projects`: Lists all available projects
+- ✅ `redmine-list-projects`: Lists all available projects
 - [ ] `redmine-get-project-details`: Gets detailed information about a project
 - [ ] `redmine-get-status-options`: Gets available status options
