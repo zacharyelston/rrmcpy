@@ -142,7 +142,7 @@ class ProjectClient(RedmineBaseClient):
     
     def archive_project(self, project_id: Union[int, str]) -> Dict:
         """
-        Archives a project (sets archived=true)
+        Archives a project using the dedicated archive endpoint
         
         Args:
             project_id: The ID or identifier of the project to archive
@@ -150,14 +150,11 @@ class ProjectClient(RedmineBaseClient):
         Returns:
             Dictionary containing the archived project data
         """
-        project_data = {
-            'status': 9  # 9 is the status code for archived projects in Redmine
-        }
-        return self.make_request('PUT', f'projects/{project_id}.json', data={'project': project_data})
+        return self.make_request('PUT', f'projects/{project_id}/archive.json')
     
     def unarchive_project(self, project_id: Union[int, str]) -> Dict:
         """
-        Unarchives a project (sets archived=false)
+        Unarchives a project using the dedicated unarchive endpoint
         
         Args:
             project_id: The ID or identifier of the project to unarchive
@@ -165,7 +162,4 @@ class ProjectClient(RedmineBaseClient):
         Returns:
             Dictionary containing the unarchived project data
         """
-        project_data = {
-            'status': 1  # 1 is the status code for active projects in Redmine
-        }
-        return self.make_request('PUT', f'projects/{project_id}.json', data={'project': project_data})
+        return self.make_request('PUT', f'projects/{project_id}/unarchive.json')
