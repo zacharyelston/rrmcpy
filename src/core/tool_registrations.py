@@ -504,3 +504,39 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
         
         self._registered_tools.append("redmine-delete-project")
+        
+        @self.mcp.tool("redmine-archive-project")
+        async def archive_project(project_id: str):
+            """Archive a project (sets status to archived)"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-archive-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.archive_project(project_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error archiving project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-archive-project")
+        
+        @self.mcp.tool("redmine-unarchive-project")
+        async def unarchive_project(project_id: str):
+            """Unarchive a project (sets status to active)"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-unarchive-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.unarchive_project(project_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error unarchiving project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-unarchive-project")

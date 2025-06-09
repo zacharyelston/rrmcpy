@@ -260,6 +260,53 @@ class TestLiveProjectTools:
             if "trackers" in project:
                 assert isinstance(project["trackers"], list), f"Trackers is not a list: {project}"
                 print(f"✓ Included trackers in project listing successfully")
+                
+    def test_project_archive_unarchive(self):
+        """Test project archive and unarchive functionality"""
+        test_id = generate_test_id()
+        
+        # Create a project to test with
+        project_data = {
+            "name": f"Archive Test Project {test_id}",
+            "identifier": f"archive-test-{test_id}",
+            "description": "Testing project archive/unarchive for v0.9.0",
+            "is_public": True
+        }
+        
+        result = self.project_client.create_project(project_data)
+        
+        # Verify response
+        assert "project" in result, f"Response missing 'project' key: {result}"
+        assert "id" in result["project"], f"Project missing 'id': {result}"
+        
+        project_id = result["project"]["id"]
+        self.created_resources.append(("project", project_id))
+        
+        print(f"✓ Created project #{project_id} for archive testing")
+        
+        # Archive the project
+        archive_result = self.project_client.archive_project(project_id)
+        assert archive_result.get("success") is not False, f"Archive failed: {archive_result}"
+        
+        # Get project to verify archive status
+        get_result = self.project_client.get_project(project_id)
+        assert "project" in get_result, f"Response missing 'project' key: {get_result}"
+        assert "status" in get_result["project"], f"Project missing 'status': {get_result}"
+        assert get_result["project"]["status"] == 9, f"Project not archived, status: {get_result['project']['status']}"
+        
+        print(f"✓ Project #{project_id} archived successfully")
+        
+        # Unarchive the project
+        unarchive_result = self.project_client.unarchive_project(project_id)
+        assert unarchive_result.get("success") is not False, f"Unarchive failed: {unarchive_result}"
+        
+        # Get project to verify unarchive status
+        get_result = self.project_client.get_project(project_id)
+        assert "project" in get_result, f"Response missing 'project' key: {get_result}"
+        assert "status" in get_result["project"], f"Project missing 'status': {get_result}"
+        assert get_result["project"]["status"] == 1, f"Project not unarchived, status: {get_result['project']['status']}"
+        
+        print(f"✓ Project #{project_id} unarchived successfully")
 
 
 class TestLiveErrorHandling:
