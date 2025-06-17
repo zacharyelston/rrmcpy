@@ -523,6 +523,62 @@ class ToolRegistrations:
                 
         self._registered_tools.append("redmine-create-from-template")
         
+        @self.mcp.tool("redmine-use-template")
+        async def use_template(template_id: int, target_project: str = "rrmcpy", **kwargs):
+            """Create an issue using a Redmine template issue
+            
+            Args:
+                template_id: ID of the template issue in Templates project
+                target_project: Target project for the new issue (default: rrmcpy)
+                **kwargs: Replacements for placeholders in template
+                
+            Template IDs:
+                226: Feature - Standard Feature Request
+                227: Bug - Standard Bug Report  
+                228: Subtask - Research & Analysis
+                
+            Example:
+                template_id=226
+                target_project="rrmcpy"
+                FEATURE_NAME="Add OAuth support"
+                OVERVIEW="Implement OAuth2 authentication"
+                BRANCH_SUFFIX="oauth"
+            """
+            try:
+                from ..tools.simple_template_tool import SimpleTemplateTool
+                
+                # Create tool instance
+                tool = SimpleTemplateTool(issue_client)
+                
+                # Build replacements dict from kwargs
+                replacements = {}
+                special_fields = ['tracker_id', 'priority_id', 'assigned_to_id', 'parent_issue_id']
+                
+                for key, value in kwargs.items():
+                    if key not in special_fields:
+                        replacements[key] = value
+                
+                # Execute with arguments
+                arguments = {
+                    'template_id': template_id,
+                    'target_project': target_project,
+                    'replacements': replacements
+                }
+                
+                # Add special fields if provided
+                for field in special_fields:
+                    if field in kwargs:
+                        arguments[field] = kwargs[field]
+                
+                result = tool.execute(arguments)
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error using template: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-use-template")
+        
         @self.mcp.tool("redmine-create-subtasks")
         async def create_subtasks(parent_issue_id: int, subtask_template: str = "default_subtasks"):
             """Create standard subtasks for a parent issue
