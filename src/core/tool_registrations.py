@@ -33,6 +33,7 @@ class ToolRegistrations:
         self.register_admin_tools()
         self.register_version_tools()
         self.register_project_tools()
+        self.register_template_tools()
         
         self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
         return self._registered_tools
@@ -480,3 +481,85 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
         
         self._registered_tools.append("redmine-delete-project")
+        
+    def register_template_tools(self):
+        """Register template management tools with FastMCP"""
+        from ..tools.template_tools import TemplateManager, CreateFromTemplateTool, CreateSubtasksTool
+        issue_client = self.client_manager.get_client('issues')
+        template_manager = TemplateManager()
+        self.logger.debug("Registering template tools")
+        
+        @self.mcp.tool("redmine-create-from-template")
+        async def create_from_template(template_type: str, **kwargs):
+            """Create an issue from a predefined template
+            
+            Args:
+                template_type: Template to use (feature, bug, research)
+                **kwargs: Variables to fill in the template
+                
+            Available templates: feature, bug, research
+            
+            Example for feature template:
+                template_type="feature"
+                feature_name="Add user authentication"
+                overview="Implement OAuth2 authentication"
+                technical_notes="Use existing auth library"
+                branch_suffix="oauth-auth"
+            """
+            try:
+                # Create tool instance
+                tool = CreateFromTemplateTool(issue_client, template_manager)
+                
+                # Execute with arguments
+                result = tool.execute({
+                    'template_type': template_type,
+                    'variables': kwargs
+                })
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error creating from template: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-create-from-template")
+        
+        @self.mcp.tool("redmine-create-subtasks")
+        async def create_subtasks(parent_issue_id: int, subtask_template: str = "default_subtasks"):
+            """Create standard subtasks for a parent issue
+            
+            Args:
+                parent_issue_id: ID of the parent issue
+                subtask_template: Template to use for subtasks (default: default_subtasks)
+            """
+            try:
+                # Create tool instance
+                tool = CreateSubtasksTool(issue_client, template_manager)
+                
+                # Execute with arguments
+                result = tool.execute({
+                    'parent_issue_id': parent_issue_id,
+                    'subtask_template': subtask_template
+                })
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error creating subtasks: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-create-subtasks")
+        
+        @self.mcp.tool("redmine-list-templates")
+        async def list_templates():
+            """List available issue templates"""
+            try:
+                templates = template_manager.list_templates()
+                return json.dumps({
+                    "templates": templates,
+                    "count": len(templates),
+                    "success": True
+                }, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error listing templates: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-list-templates")
