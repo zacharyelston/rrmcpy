@@ -1,0 +1,13 @@
+{
+  "_metadata": {
+    "template_name": "Feature Request",
+    "template_type": "feature",
+    "required_variables": ["feature_name", "overview"],
+    "optional_variables": ["technical_notes", "branch_suffix"]
+  },
+  "project_id": "rrmcpy",
+  "tracker_id": 2,
+  "subject": "$feature_name",
+  "description": "# Feature: $feature_name\n\n## Overview\n$overview\n\n## Acceptance Criteria\n- [ ] Criterion 1: [To be defined]\n- [ ] Criterion 2: [To be defined]\n- [ ] Criterion 3: [To be defined]\n\n## Technical Details\n### Current State\n[Describe current implementation]\n\n### Desired State\n[Describe desired outcome]\n\n### Implementation Notes\n$technical_notes\n\n## Branch Information\n- Branch name: `feature/${issue_id}-${branch_suffix}`\n- Base branch: main\n\n## Definition of Done\n- [ ] All acceptance criteria met\n- [ ] Unit tests passing\n- [ ] Documentation updated\n- [ ] PR approved and merged",
+  "priority_id": 2
+}
