@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unit tests for project management tools
+Unit tests for project client implementation
 Tests use mocks - no actual API calls
 """
 import os
@@ -21,7 +21,7 @@ except ImportError:
     from rrmcpy.src.projects import ProjectClient
 
 
-class TestProjectTools(unittest.TestCase):
+class TestProjectClient(unittest.TestCase):
     """Test project management tools implementation"""
     
     def setUp(self):
@@ -37,7 +37,7 @@ class TestProjectTools(unittest.TestCase):
         self.mock_client.get_projects.return_value = {"projects": [{"id": 1, "name": "Test Project"}]}
     
     @patch('src.core.tool_registrations.ToolRegistrations')
-    def test_project_tools_registered(self, mock_tool_registrations):
+    def test_project_client_tools_registered(self, mock_tool_registrations):
         """Test that all project tools are registered"""
         # This is a placeholder for testing tool registration
         # In a real test, we would verify that each tool is registered with the MCP
