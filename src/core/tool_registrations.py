@@ -47,7 +47,12 @@ class ToolRegistrations:
         async def create_issue(project_id: str, subject: str, description: str = None, 
                                tracker_id: int = None, status_id: int = None, 
                                priority_id: int = None, assigned_to_id: int = None):
-            """Create a new issue in Redmine"""
+            """Create a new issue in Redmine
+            
+            NOTE: Consider using redmine-use-template for consistent formatting.
+            Available templates can be listed with redmine-list-issue-templates.
+            Common templates: 226 (Feature), 227 (Bug), 228 (Research)
+            """
             try:
                 # Input validation
                 if not project_id or not subject:
@@ -619,3 +624,56 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
                 
         self._registered_tools.append("redmine-list-templates")
+        
+        @self.mcp.tool("redmine-list-issue-templates")
+        async def list_issue_templates():
+            """List all available issue templates from the Templates project
+            
+            Returns template IDs, names, and descriptions with placeholder information.
+            Templates are stored as issues in the Templates project (ID: 47).
+            """
+            try:
+                # Get all issues from Templates project
+                result = issue_client.get_issues(params={
+                    'project_id': 47,  # Templates project
+                    'status_id': 'open',
+                    'limit': 100
+                })
+                
+                if 'error' in result:
+                    return json.dumps(result, indent=2)
+                
+                templates = []
+                for issue in result.get('issues', []):
+                    # Extract placeholders from description
+                    import re
+                    description = issue.get('description', '')
+                    placeholders = re.findall(r'\[([A-Z_]+)\]', description)
+                    
+                    template_info = {
+                        'id': issue['id'],
+                        'subject': issue['subject'],
+                        'type': 'Unknown',
+                        'placeholders': list(set(placeholders))
+                    }
+                    
+                    # Parse template type from subject
+                    match = re.match(r'Template:\s*(\w+)\s*-\s*(.+)', issue['subject'])
+                    if match:
+                        template_info['type'] = match.group(1)
+                        template_info['name'] = match.group(2)
+                    
+                    templates.append(template_info)
+                
+                return json.dumps({
+                    'templates': templates,
+                    'count': len(templates),
+                    'usage': 'Use redmine-use-template with template_id and placeholder values',
+                    'success': True
+                }, indent=2)
+                
+            except Exception as e:
+                self.logger.error(f"Error listing templates: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-list-issue-templates")
