@@ -122,8 +122,20 @@ class ToolRegistrations:
         @self.mcp.tool("redmine-update-issue")
         async def update_issue(issue_id: int, subject: str = None, description: str = None, 
                               status_id: int = None, priority_id: int = None, 
-                              assigned_to_id: int = None, tracker_id: int = None):
-            """Update an existing issue"""
+                              assigned_to_id: int = None, tracker_id: int = None,
+                              notes: str = None):
+            """Update an existing issue
+            
+            Args:
+                issue_id: The ID of the issue to update
+                subject: New subject for the issue
+                description: New description (replaces existing)
+                status_id: New status ID
+                priority_id: New priority ID
+                assigned_to_id: New assignee ID
+                tracker_id: New tracker ID
+                notes: Add a comment/note without modifying other fields
+            """
             try:
                 if not issue_id:
                     error = "issue_id is required"
@@ -146,6 +158,8 @@ class ToolRegistrations:
                     issue_data["assigned_to_id"] = assigned_to_id
                 if tracker_id:
                     issue_data["tracker_id"] = tracker_id
+                if notes:
+                    issue_data["notes"] = notes
         
                 if not issue_data:
                     error = "No update fields provided"
@@ -391,6 +405,30 @@ class ToolRegistrations:
         project_client = self.client_manager.get_client('projects')
         self.logger.debug("Registering project tools")
         
+        @self.mcp.tool("redmine-list-projects")
+        async def list_projects(include: list = None):
+            """Lists all available projects
+            
+            Args:
+                include: Optional list of associations to include
+                         (trackers, issue_categories, enabled_modules, etc.)
+            """
+            try:
+                params = {}
+                if include:
+                    if isinstance(include, list):
+                        params['include'] = ','.join(include)
+                    else:
+                        params['include'] = include
+                        
+                result = project_client.get_projects(params=params)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error listing projects: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-list-projects")
+        
         @self.mcp.tool("redmine-create-project")
         async def create_project(name: str, identifier: str, description: str = None,
                                 is_public: bool = True, parent_id: int = None,
@@ -480,3 +518,39 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
         
         self._registered_tools.append("redmine-delete-project")
+        
+        @self.mcp.tool("redmine-archive-project")
+        async def archive_project(project_id: str):
+            """Archive a project (sets status to archived)"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-archive-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.archive_project(project_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error archiving project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-archive-project")
+        
+        @self.mcp.tool("redmine-unarchive-project")
+        async def unarchive_project(project_id: str):
+            """Unarchive a project (sets status to active)"""
+            try:
+                # Input validation
+                if not project_id:
+                    error = "project_id is required"
+                    self.logger.error(f"MCP tool redmine-unarchive-project failed: {error}")
+                    return json.dumps({"error": error}, indent=2)
+                
+                result = project_client.unarchive_project(project_id)
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error unarchiving project: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+        
+        self._registered_tools.append("redmine-unarchive-project")

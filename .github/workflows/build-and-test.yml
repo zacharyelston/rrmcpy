@@ -175,7 +175,7 @@ jobs:
         SERVER_MODE: "test"
       run: |
         echo "Running validation tests against Redmine with core features"
-        python -m pytest tests/test_core_features.py -v
+        python -m pytest tests/unit/test_core_features.py -v
         
     - name: Run Docker container tests
       env:

@@ -139,3 +139,27 @@ class ProjectClient(RedmineBaseClient):
             Empty dictionary on success
         """
         return self.make_request('DELETE', f'memberships/{membership_id}.json')
+    
+    def archive_project(self, project_id: Union[int, str]) -> Dict:
+        """
+        Archives a project using the dedicated archive endpoint
+        
+        Args:
+            project_id: The ID or identifier of the project to archive
+            
+        Returns:
+            Dictionary containing the archived project data
+        """
+        return self.make_request('PUT', f'projects/{project_id}/archive.json')
+    
+    def unarchive_project(self, project_id: Union[int, str]) -> Dict:
+        """
+        Unarchives a project using the dedicated unarchive endpoint
+        
+        Args:
+            project_id: The ID or identifier of the project to unarchive
+            
+        Returns:
+            Dictionary containing the unarchived project data
+        """
+        return self.make_request('PUT', f'projects/{project_id}/unarchive.json')
