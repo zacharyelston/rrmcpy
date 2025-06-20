@@ -1,0 +1,13 @@
+{
+  "_metadata": {
+    "template_name": "Bug Report",
+    "template_type": "bug",
+    "required_variables": ["bug_summary", "steps_to_reproduce", "expected_behavior", "actual_behavior"],
+    "optional_variables": ["environment", "additional_info"]
+  },
+  "project_id": "rrmcpy",
+  "tracker_id": 1,
+  "subject": "Bug: $bug_summary",
+  "description": "# Bug Report: $bug_summary\n\n## Environment\n$environment\n\n## Steps to Reproduce\n$steps_to_reproduce\n\n## Expected Behavior\n$expected_behavior\n\n## Actual Behavior\n$actual_behavior\n\n## Additional Information\n$additional_info\n\n## Acceptance Criteria\n- [ ] Bug can be reproduced\n- [ ] Root cause identified\n- [ ] Fix implemented and tested\n- [ ] Regression test added\n\n## Branch Information\n- Branch name: `fix/${issue_id}-${bug_summary_slug}`",
+  "priority_id": 3
+}
