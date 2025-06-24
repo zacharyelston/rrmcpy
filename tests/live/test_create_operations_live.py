@@ -45,44 +45,12 @@ def setup_environment():
     
     return redmine_url, redmine_api_key
 
-def find_or_create_test_project(project_client):
-    """Find a test project or create one if needed"""
-    # Try to find a project named "MCP Test Project"
-    logger.info("Looking for test project...")
-    projects = project_client.get_projects()
-    
-    if 'projects' not in projects:
-        logger.error("Failed to get projects list")
-        return None
-    
-    for project in projects['projects']:
-        if project['name'] == "MCP Test Project":
-            logger.info(f"Found test project with ID: {project['id']}")
-            return project['id']
-    
-    # Create test project if it doesn't exist
-    logger.info("Test project not found, creating new one...")
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    
-    new_project = {
-        "name": "MCP Test Project",
-        "identifier": f"mcp-test-{timestamp}",
-        "description": "Test project for MCP create operations"
-    }
-    
-    result = project_client.create_project(new_project)
-    logger.info(f"Create project result: {result}")
-    
-    # Check if result contains the created project ID
-    if 'project' in result and 'id' in result['project']:
-        logger.info(f"Created test project with ID: {result['project']['id']}")
-        return result['project']['id']
-    elif 'id' in result:  # With our fix, empty responses return ID from Location header
-        logger.info(f"Created test project with ID: {result['id']} (from Location header)")
-        return result['id']
-    else:
-        logger.error("Failed to create test project")
-        return None
+def get_test_project_id():
+    """Return the ID of the default test project (P1)"""
+    # Always use project ID 1 (P1) as specified by user
+    test_project_id = 1
+    logger.info(f"Using default test project with ID: {test_project_id}")
+    return test_project_id
 
 @pytest.mark.skipif(not os.environ.get("REDMINE_API_KEY"), reason="REDMINE_API_KEY not available")
 def test_create_operations():
@@ -99,21 +67,19 @@ def test_create_operations():
     project_client = ProjectClient(redmine_url, redmine_api_key, logger)
     issue_client = IssueClient(redmine_url, redmine_api_key, logger)
     
-    # Find test project (or create one if needed)
-    test_project_id = find_or_create_test_project(project_client)
-    assert test_project_id is not None, "Could not find or create test project"
+    # Get the test project ID
+    test_project_id = get_test_project_id()
+    logger.info(f"Using test project with ID: {test_project_id}")
     
-    # Test issue creation
-    logger.info(f"Creating test issue in project {test_project_id}")
-    
+    # Test creating an issue
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    new_issue = {
+    issue_data = {
         "project_id": test_project_id,
         "subject": f"Test issue created at {timestamp}",
         "description": "This is a test issue to verify the create operations fix"
     }
     
-    result = issue_client.create_issue(new_issue)
+    result = issue_client.create_issue(issue_data)
     logger.info(f"Create issue result: {result}")
     
     # Verify the result

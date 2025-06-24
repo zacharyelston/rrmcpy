@@ -1,0 +1,33 @@
+{
+  "_metadata": {
+    "template_name": "Default Subtasks",
+    "template_type": "subtasks",
+    "description": "Standard subtasks for feature development"
+  },
+  "subtasks": [
+    {
+      "subject": "Research & Analysis",
+      "description": "## Research Tasks\n- Analyze existing code patterns\n- Research best practices\n- Identify potential challenges\n- Document findings\n\n## Deliverables\n- Technical analysis document\n- Recommended approach\n- Risk assessment",
+      "tracker_id": 3,
+      "assigned_to_id": null
+    },
+    {
+      "subject": "Implementation",
+      "description": "## Implementation Tasks\n- Write core functionality\n- Follow coding standards\n- Make incremental commits\n- Handle edge cases\n\n## Deliverables\n- Working code\n- Unit tests\n- Clean commit history",
+      "tracker_id": 3,
+      "assigned_to_id": null
+    },
+    {
+      "subject": "Testing & Validation",
+      "description": "## Testing Tasks\n- Write comprehensive tests\n- Validate acceptance criteria\n- Performance testing\n- Edge case testing\n\n## Deliverables\n- Test suite\n- Test results report\n- Performance metrics",
+      "tracker_id": 3,
+      "assigned_to_id": null
+    },
+    {
+      "subject": "Documentation",
+      "description": "## Documentation Tasks\n- Update API documentation\n- Create usage examples\n- Update README/wiki\n- Add inline code comments\n\n## Deliverables\n- Updated documentation\n- Usage examples\n- Changelog entry",
+      "tracker_id": 3,
+      "assigned_to_id": null
+    }
+  ]
+}

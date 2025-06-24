@@ -19,7 +19,8 @@ from src.issues import IssueClient # Assuming IssueClient is in src.issues
 # From MEMORY: Bug: 1, Feature: 2, Support: 3
 INITIAL_TRACKER_ID = 1  # Bug
 NEW_TRACKER_ID = 2      # Feature
-TEST_PROJECT_ID = "1"   # Project P1 as specified by user
+# Always use the default project with ID 1 (P1) as specified by user
+TEST_PROJECT_ID = "1"   # Using default project P1
 
 @pytest.mark.live # Marking as a live test as per pytest.ini
 @pytest.mark.integration # Marking as an integration test

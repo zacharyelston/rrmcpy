@@ -1,0 +1,13 @@
+{
+  "_metadata": {
+    "template_name": "Research Task",
+    "template_type": "research", 
+    "required_variables": ["research_topic", "objectives"],
+    "optional_variables": ["constraints", "deliverables"]
+  },
+  "project_id": "rrmcpy",
+  "tracker_id": 3,
+  "subject": "Research: $research_topic",
+  "description": "# Research Task: $research_topic\n\n## Objectives\n$objectives\n\n## Research Questions\n- [ ] Question 1: [To be defined]\n- [ ] Question 2: [To be defined]\n- [ ] Question 3: [To be defined]\n\n## Constraints\n$constraints\n\n## Methodology\n1. Literature review\n2. Code analysis\n3. Prototype/POC development\n4. Performance testing\n5. Documentation\n\n## Deliverables\n$deliverables\n\n## Success Criteria\n- [ ] All research questions answered\n- [ ] Findings documented\n- [ ] Recommendations provided\n- [ ] POC implemented (if applicable)",
+  "priority_id": 2
+}

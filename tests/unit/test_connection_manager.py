@@ -63,52 +63,50 @@ class TestConnectionManager(unittest.TestCase):
         self.assertFalse(result.get('error', False))
         self.assertIn('user', result)
     
-    @patch('requests.get')
-    def test_retry_on_connection_error(self, mock_get):
+    def test_retry_on_connection_error(self):
         """Test retry behavior when connection fails"""
-        # Set up mock to fail first time, succeed second time
-        mock_get.side_effect = [
-            requests.exceptions.ConnectionError("Connection failed"),
-            MagicMock(status_code=200, content='{"user": {"id": 1}}', json=lambda: {"user": {"id": 1}})
-        ]
-        
-        # Configure minimal retry settings for faster test
-        self.client.configure_connection_settings(
-            max_retries=2,
-            base_delay=0.1,
-            max_delay=1.0
-        )
-        
-        # Make request that should retry and succeed
-        result = self.client.get_current_user()
-        
-        # Should succeed after retry
-        self.assertIn('user', result)
-        
-        # Should have been called twice (initial + 1 retry)
-        self.assertEqual(mock_get.call_count, 2)
+        with patch.object(self.client.connection_manager.session, 'get') as mock_get:
+            # Set up mock to fail first time, succeed second time
+            mock_get.side_effect = [
+                requests.exceptions.ConnectionError("Connection failed"),
+                MagicMock(
+                    status_code=200, 
+                    content=b'{"user": {"id": 1}}', 
+                    json=lambda: {"user": {"id": 1}},
+                    headers={}
+                )
+            ]
+            
+            # Configure minimal retry settings for faster test
+            self.client.connection_manager.max_retries = 2
+            self.client.connection_manager.base_delay = 0.1
+            self.client.connection_manager.max_delay = 1.0
+            
+            # Make request that should retry and succeed
+            result = self.client.get_current_user()
+            
+            # Should succeed after retry
+            self.assertIn('user', result)
+            
+            # Should have been called twice (initial + 1 retry)
+            self.assertEqual(mock_get.call_count, 2)
     
-    @patch('requests.get')
-    def test_max_retries_exhausted(self, mock_get):
+    def test_max_retries_exhausted(self):
         """Test behavior when max retries are exhausted"""
-        # Set up mock to always fail
-        mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
-        
-        # Configure minimal retry settings for faster test
-        self.client.configure_connection_settings(
-            max_retries=1,
-            base_delay=0.1
-        )
-        
-        # Make request that should fail after retries
-        result = self.client.get_current_user()
-        
-        # Should return error response
-        self.assertTrue(result.get('error', False))
-        self.assertEqual(result.get('error_code'), 'CONNECTION_ERROR')
-        
-        # Should have been called max_retries + 1 times
-        self.assertEqual(mock_get.call_count, 2)  # 1 initial + 1 retry
+        with patch.object(self.client.connection_manager.session, 'get') as mock_get:
+            # Set up mock to always fail with a connection error
+            mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
+            
+            # Configure minimal retry settings for faster test
+            self.client.connection_manager.max_retries = 1
+            self.client.connection_manager.base_delay = 0.1
+            
+            # Make request that should fail after retries
+            with self.assertRaises(requests.exceptions.ConnectionError):
+                self.client.get_current_user()
+                
+            # Should have been called max_retries + 1 times (initial + retries)
+            self.assertEqual(mock_get.call_count, 2)
     
     def test_delay_calculation(self):
         """Test exponential backoff delay calculation"""

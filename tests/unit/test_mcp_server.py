@@ -24,6 +24,10 @@ class TestProperMCP(unittest.TestCase):
         if not self.redmine_api_key:
             self.skipTest("REDMINE_API_KEY environment variable not set")
         
+        # Set environment variables for the server to pick up
+        os.environ['REDMINE_URL'] = self.redmine_url
+        os.environ['REDMINE_API_KEY'] = self.redmine_api_key
+        
         # Configure logging to stderr (proper MCP pattern)
         # Clear existing handlers and force stderr configuration
         root_logger = logging.getLogger()
@@ -35,7 +39,9 @@ class TestProperMCP(unittest.TestCase):
             force=True
         )
         
-        self.server = RedmineMCPServer(self.redmine_url, self.redmine_api_key)
+        # Create and initialize the server
+        self.server = RedmineMCPServer()
+        self.server.initialize()
     
     def test_server_initialization(self):
         """Test that server initializes properly"""

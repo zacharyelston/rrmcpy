@@ -50,27 +50,14 @@ class TestLiveErrorHandling:
         cls.issue_client = IssueClient(base_url=base_url, api_key=api_key)
         cls.project_client = ProjectClient(base_url=base_url, api_key=api_key)
         
-        # Create a test project for issue operations
-        test_id = generate_test_id()
-        project_data = {
-            "name": f"Error Test Project {test_id}",
-            "identifier": f"error-test-{test_id}",
-            "description": "Project for testing error handling",
-            "is_public": True
-        }
-        
-        result = cls.project_client.create_project(project_data)
-        cls.test_project_id = result["project"]["id"]
-        print(f"✓ Created test project #{cls.test_project_id}")
+        # Use the default project with ID 1 (P1)
+        cls.test_project_id = 1
+        print(f"✓ Using default test project #{cls.test_project_id}")
     
     @classmethod
     def teardown_class(cls):
-        """Clean up test resources"""
-        try:
-            cls.project_client.delete_project(cls.test_project_id)
-            print(f"✓ Cleaned up test project #{cls.test_project_id}")
-        except Exception as e:
-            print(f"⚠️ Failed to clean up test project: {e}")
+        """No cleanup needed since we're using the default project"""
+        pass
     
     def test_validation_error(self):
         """Test validation error handling"""

@@ -33,6 +33,7 @@ class ToolRegistrations:
         self.register_admin_tools()
         self.register_version_tools()
         self.register_project_tools()
+        self.register_template_tools()
         
         self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
         return self._registered_tools
@@ -46,7 +47,12 @@ class ToolRegistrations:
         async def create_issue(project_id: str, subject: str, description: str = None, 
                                tracker_id: int = None, status_id: int = None, 
                                priority_id: int = None, assigned_to_id: int = None):
-            """Create a new issue in Redmine"""
+            """Create a new issue in Redmine
+            
+            NOTE: Consider using redmine-use-template for consistent formatting.
+            Available templates can be listed with redmine-list-issue-templates.
+            Common templates: 226 (Feature), 227 (Bug), 228 (Research)
+            """
             try:
                 # Input validation
                 if not project_id or not subject:
@@ -554,3 +560,271 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
         
         self._registered_tools.append("redmine-unarchive-project")
+
+    def register_template_tools(self):
+        """Register template management tools with FastMCP"""
+        from ..tools.template_tools import TemplateManager, CreateFromTemplateTool, CreateSubtasksTool
+        issue_client = self.client_manager.get_client('issues')
+        template_manager = TemplateManager()
+        self.logger.debug("Registering template tools")
+        
+        @self.mcp.tool("redmine-create-from-template")
+        async def create_from_template(
+            template_type: str,
+            # Common parameters
+            feature_name: str = None,
+            overview: str = None,
+            technical_notes: str = None,
+            branch_suffix: str = None,
+            # Feature-specific parameters
+            acceptance_criteria: str = None,
+            # Bug-specific parameters
+            steps_to_reproduce: str = None,
+            expected_behavior: str = None,
+            actual_behavior: str = None,
+            # Research-specific parameters
+            research_question: str = None,
+            hypothesis: str = None,
+            # Additional fields
+            tracker_id: int = None,
+            priority_id: int = None,
+            assigned_to_id: int = None,
+            parent_issue_id: int = None
+        ):
+            """Create an issue from a predefined template
+            
+            Args:
+                template_type: Template to use (feature, bug, research)
+                
+                # Common parameters
+                feature_name: Name of the feature
+                overview: Brief overview/description
+                technical_notes: Technical implementation details
+                branch_suffix: Suffix for git branch name
+                
+                # Feature-specific parameters
+                acceptance_criteria: Criteria for feature acceptance
+                
+                # Bug-specific parameters
+                steps_to_reproduce: Steps to reproduce the bug
+                expected_behavior: What was expected to happen
+                actual_behavior: What actually happened
+                
+                # Research-specific parameters
+                research_question: The research question to answer
+                hypothesis: The hypothesis to test
+                
+                # Additional fields
+                tracker_id: Tracker ID for the issue
+                priority_id: Priority ID for the issue
+                assigned_to_id: User ID to assign the issue to
+                parent_issue_id: ID of parent issue if this is a subtask
+                
+            Available templates: feature, bug, research
+            """
+            try:
+                # Create tool instance
+                tool = CreateFromTemplateTool(issue_client, template_manager)
+                
+                # Build variables dictionary from provided parameters
+                variables = {
+                    'feature_name': feature_name,
+                    'overview': overview,
+                    'technical_notes': technical_notes,
+                    'branch_suffix': branch_suffix,
+                    'acceptance_criteria': acceptance_criteria,
+                    'steps_to_reproduce': steps_to_reproduce,
+                    'expected_behavior': expected_behavior,
+                    'actual_behavior': actual_behavior,
+                    'research_question': research_question,
+                    'hypothesis': hypothesis
+                }
+                
+                # Remove None values
+                variables = {k: v for k, v in variables.items() if v is not None}
+                
+                # Execute with arguments
+                result = tool.execute({
+                    'template_type': template_type,
+                    'variables': variables,
+                    'tracker_id': tracker_id,
+                    'priority_id': priority_id,
+                    'assigned_to_id': assigned_to_id,
+                    'parent_issue_id': parent_issue_id
+                })
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error creating from template: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-create-from-template")
+        
+        @self.mcp.tool("redmine-use-template")
+        async def use_template(
+            template_id: int,
+            target_project: str = "rrmcpy",
+            # Common template variables
+            FEATURE_NAME: str = None,
+            OVERVIEW: str = None,
+            TECHNICAL_NOTES: str = None,
+            BRANCH_SUFFIX: str = None,
+            # Additional fields
+            tracker_id: int = None,
+            priority_id: int = None,
+            assigned_to_id: int = None,
+            parent_issue_id: int = None
+        ):
+            """Create an issue using a Redmine template issue
+            
+            Args:
+                template_id: ID of the template issue in Templates project
+                target_project: Target project for the new issue (default: rrmcpy)
+                
+                # Common template variables
+                FEATURE_NAME: Name of the feature
+                OVERVIEW: Brief overview/description
+                TECHNICAL_NOTES: Technical implementation details
+                BRANCH_SUFFIX: Suffix for git branch name
+                
+                # Additional fields
+                tracker_id: Tracker ID for the issue
+                priority_id: Priority ID for the issue
+                assigned_to_id: User ID to assign the issue to
+                parent_issue_id: ID of parent issue if this is a subtask
+                
+            Template IDs:
+                226: Feature - Standard Feature Request
+                227: Bug - Standard Bug Report  
+                228: Subtask - Research & Analysis
+            """
+            try:
+                from ..tools.simple_template_tool import SimpleTemplateTool
+                
+                # Create tool instance
+                tool = SimpleTemplateTool(issue_client)
+                
+                # Build replacements dict from provided parameters
+                replacements = {
+                    'FEATURE_NAME': FEATURE_NAME,
+                    'OVERVIEW': OVERVIEW,
+                    'TECHNICAL_NOTES': TECHNICAL_NOTES,
+                    'BRANCH_SUFFIX': BRANCH_SUFFIX
+                }
+                
+                # Remove None values
+                replacements = {k: v for k, v in replacements.items() if v is not None}
+                
+                # Execute with arguments
+                arguments = {
+                    'template_id': template_id,
+                    'target_project': target_project,
+                    'replacements': replacements,
+                    'tracker_id': tracker_id,
+                    'priority_id': priority_id,
+                    'assigned_to_id': assigned_to_id,
+                    'parent_issue_id': parent_issue_id
+                }
+                
+                result = tool.execute(arguments)
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error using template: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-use-template")
+        
+        @self.mcp.tool("redmine-create-subtasks")
+        async def create_subtasks(parent_issue_id: int, subtask_template: str = "default_subtasks"):
+            """Create standard subtasks for a parent issue
+            
+            Args:
+                parent_issue_id: ID of the parent issue
+                subtask_template: Template to use for subtasks (default: default_subtasks)
+            """
+            try:
+                # Create tool instance
+                tool = CreateSubtasksTool(issue_client, template_manager)
+                
+                # Execute with arguments
+                result = tool.execute({
+                    'parent_issue_id': parent_issue_id,
+                    'subtask_template': subtask_template
+                })
+                
+                return json.dumps(result, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error creating subtasks: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-create-subtasks")
+        
+        @self.mcp.tool("redmine-list-templates")
+        async def list_templates():
+            """List available issue templates"""
+            try:
+                templates = template_manager.list_templates()
+                return json.dumps({
+                    "templates": templates,
+                    "count": len(templates),
+                    "success": True
+                }, indent=2)
+            except Exception as e:
+                self.logger.error(f"Error listing templates: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-list-templates")
+        
+        @self.mcp.tool("redmine-list-issue-templates")
+        async def list_issue_templates():
+            """List all available issue templates from the Templates project
+            
+            Returns template IDs, names, and descriptions with placeholder information.
+            Templates are stored as issues in the Templates project (ID: 47).
+            """
+            try:
+                # Get all issues from Templates project
+                result = issue_client.get_issues(params={
+                    'project_id': 47,  # Templates project
+                    'status_id': 'open',
+                    'limit': 100
+                })
+                
+                if 'error' in result:
+                    return json.dumps(result, indent=2)
+                
+                templates = []
+                for issue in result.get('issues', []):
+                    # Extract placeholders from description
+                    import re
+                    description = issue.get('description', '')
+                    placeholders = re.findall(r'\[([A-Z_]+)\]', description)
+                    
+                    template_info = {
+                        'id': issue['id'],
+                        'subject': issue['subject'],
+                        'type': 'Unknown',
+                        'placeholders': list(set(placeholders))
+                    }
+                    
+                    # Parse template type from subject
+                    match = re.match(r'Template:\s*(\w+)\s*-\s*(.+)', issue['subject'])
+                    if match:
+                        template_info['type'] = match.group(1)
+                        template_info['name'] = match.group(2)
+                    
+                    templates.append(template_info)
+                
+                return json.dumps({
+                    'templates': templates,
+                    'count': len(templates),
+                    'usage': 'Use redmine-use-template with template_id and placeholder values',
+                    'success': True
+                }, indent=2)
+                
+            except Exception as e:
+                self.logger.error(f"Error listing templates: {e}")
+                return json.dumps({"error": str(e), "success": False}, indent=2)
+                
+        self._registered_tools.append("redmine-list-issue-templates")
