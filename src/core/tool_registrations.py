@@ -569,30 +569,88 @@ class ToolRegistrations:
         self.logger.debug("Registering template tools")
         
         @self.mcp.tool("redmine-create-from-template")
-        async def create_from_template(template_type: str, **kwargs):
+        async def create_from_template(
+            template_type: str,
+            # Common parameters
+            feature_name: str = None,
+            overview: str = None,
+            technical_notes: str = None,
+            branch_suffix: str = None,
+            # Feature-specific parameters
+            acceptance_criteria: str = None,
+            # Bug-specific parameters
+            steps_to_reproduce: str = None,
+            expected_behavior: str = None,
+            actual_behavior: str = None,
+            # Research-specific parameters
+            research_question: str = None,
+            hypothesis: str = None,
+            # Additional fields
+            tracker_id: int = None,
+            priority_id: int = None,
+            assigned_to_id: int = None,
+            parent_issue_id: int = None
+        ):
             """Create an issue from a predefined template
             
             Args:
                 template_type: Template to use (feature, bug, research)
-                **kwargs: Variables to fill in the template
+                
+                # Common parameters
+                feature_name: Name of the feature
+                overview: Brief overview/description
+                technical_notes: Technical implementation details
+                branch_suffix: Suffix for git branch name
+                
+                # Feature-specific parameters
+                acceptance_criteria: Criteria for feature acceptance
+                
+                # Bug-specific parameters
+                steps_to_reproduce: Steps to reproduce the bug
+                expected_behavior: What was expected to happen
+                actual_behavior: What actually happened
+                
+                # Research-specific parameters
+                research_question: The research question to answer
+                hypothesis: The hypothesis to test
+                
+                # Additional fields
+                tracker_id: Tracker ID for the issue
+                priority_id: Priority ID for the issue
+                assigned_to_id: User ID to assign the issue to
+                parent_issue_id: ID of parent issue if this is a subtask
                 
             Available templates: feature, bug, research
-            
-            Example for feature template:
-                template_type="feature"
-                feature_name="Add user authentication"
-                overview="Implement OAuth2 authentication"
-                technical_notes="Use existing auth library"
-                branch_suffix="oauth-auth"
             """
             try:
                 # Create tool instance
                 tool = CreateFromTemplateTool(issue_client, template_manager)
                 
+                # Build variables dictionary from provided parameters
+                variables = {
+                    'feature_name': feature_name,
+                    'overview': overview,
+                    'technical_notes': technical_notes,
+                    'branch_suffix': branch_suffix,
+                    'acceptance_criteria': acceptance_criteria,
+                    'steps_to_reproduce': steps_to_reproduce,
+                    'expected_behavior': expected_behavior,
+                    'actual_behavior': actual_behavior,
+                    'research_question': research_question,
+                    'hypothesis': hypothesis
+                }
+                
+                # Remove None values
+                variables = {k: v for k, v in variables.items() if v is not None}
+                
                 # Execute with arguments
                 result = tool.execute({
                     'template_type': template_type,
-                    'variables': kwargs
+                    'variables': variables,
+                    'tracker_id': tracker_id,
+                    'priority_id': priority_id,
+                    'assigned_to_id': assigned_to_id,
+                    'parent_issue_id': parent_issue_id
                 })
                 
                 return json.dumps(result, indent=2)
@@ -603,25 +661,42 @@ class ToolRegistrations:
         self._registered_tools.append("redmine-create-from-template")
         
         @self.mcp.tool("redmine-use-template")
-        async def use_template(template_id: int, target_project: str = "rrmcpy", **kwargs):
+        async def use_template(
+            template_id: int,
+            target_project: str = "rrmcpy",
+            # Common template variables
+            FEATURE_NAME: str = None,
+            OVERVIEW: str = None,
+            TECHNICAL_NOTES: str = None,
+            BRANCH_SUFFIX: str = None,
+            # Additional fields
+            tracker_id: int = None,
+            priority_id: int = None,
+            assigned_to_id: int = None,
+            parent_issue_id: int = None
+        ):
             """Create an issue using a Redmine template issue
             
             Args:
                 template_id: ID of the template issue in Templates project
                 target_project: Target project for the new issue (default: rrmcpy)
-                **kwargs: Replacements for placeholders in template
+                
+                # Common template variables
+                FEATURE_NAME: Name of the feature
+                OVERVIEW: Brief overview/description
+                TECHNICAL_NOTES: Technical implementation details
+                BRANCH_SUFFIX: Suffix for git branch name
+                
+                # Additional fields
+                tracker_id: Tracker ID for the issue
+                priority_id: Priority ID for the issue
+                assigned_to_id: User ID to assign the issue to
+                parent_issue_id: ID of parent issue if this is a subtask
                 
             Template IDs:
                 226: Feature - Standard Feature Request
                 227: Bug - Standard Bug Report  
                 228: Subtask - Research & Analysis
-                
-            Example:
-                template_id=226
-                target_project="rrmcpy"
-                FEATURE_NAME="Add OAuth support"
-                OVERVIEW="Implement OAuth2 authentication"
-                BRANCH_SUFFIX="oauth"
             """
             try:
                 from ..tools.simple_template_tool import SimpleTemplateTool
@@ -629,25 +704,27 @@ class ToolRegistrations:
                 # Create tool instance
                 tool = SimpleTemplateTool(issue_client)
                 
-                # Build replacements dict from kwargs
-                replacements = {}
-                special_fields = ['tracker_id', 'priority_id', 'assigned_to_id', 'parent_issue_id']
+                # Build replacements dict from provided parameters
+                replacements = {
+                    'FEATURE_NAME': FEATURE_NAME,
+                    'OVERVIEW': OVERVIEW,
+                    'TECHNICAL_NOTES': TECHNICAL_NOTES,
+                    'BRANCH_SUFFIX': BRANCH_SUFFIX
+                }
                 
-                for key, value in kwargs.items():
-                    if key not in special_fields:
-                        replacements[key] = value
+                # Remove None values
+                replacements = {k: v for k, v in replacements.items() if v is not None}
                 
                 # Execute with arguments
                 arguments = {
                     'template_id': template_id,
                     'target_project': target_project,
-                    'replacements': replacements
+                    'replacements': replacements,
+                    'tracker_id': tracker_id,
+                    'priority_id': priority_id,
+                    'assigned_to_id': assigned_to_id,
+                    'parent_issue_id': parent_issue_id
                 }
-                
-                # Add special fields if provided
-                for field in special_fields:
-                    if field in kwargs:
-                        arguments[field] = kwargs[field]
                 
                 result = tool.execute(arguments)
                 

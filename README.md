@@ -9,6 +9,7 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 
 ![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
+![ClaudeDesktopMCPConfigSettings](attached_assets/images/ClaudeDesktopMCPConfigSettings.png)
 ![WindsurfConfig](attached_assets/images/WindsurfConfig.png)
 ![aic1](attached_assets/images/aic1.png)
 ![aiw1](attached_assets/images/aiw1.png)

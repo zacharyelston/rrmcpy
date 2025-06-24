@@ -39,15 +39,21 @@ class TestCreateOperations(unittest.TestCase):
     @patch('requests.request')
     def test_201_with_json_response(self, mock_request):
         """Test handling of 201 response with JSON body"""
-        # Mock a 201 Created response with JSON body
+        # Create a proper mock response with all required attributes
         mock_response = Mock()
         mock_response.status_code = 201
         mock_response.json.return_value = {"issue": {"id": 1, "subject": "Test Issue"}}
         mock_response.headers = {}
+        mock_response.content = b'{"issue": {"id": 1, "subject": "Test Issue"}}'
+        mock_response.text = '{"issue": {"id": 1, "subject": "Test Issue"}}'
+        mock_response.raise_for_status = Mock()
+        
+        # Configure the mock request to return our mock response
         mock_request.return_value = mock_response
         
         # Make a create request
-        result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
+        with patch.object(self.base_client.connection_manager, 'make_request', return_value=mock_response):
+            result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
         
         # Verify the response was processed correctly
         self.assertIn("issue", result)
@@ -57,16 +63,19 @@ class TestCreateOperations(unittest.TestCase):
     @patch('requests.request')
     def test_201_with_location_header(self, mock_request):
         """Test handling of 201 response with Location header but no body"""
-        # Mock a 201 Created response with Location header but empty body
+        # Create a proper mock response with Location header
         mock_response = Mock()
         mock_response.status_code = 201
         mock_response.json.side_effect = ValueError("No JSON body")
         mock_response.text = ""
+        mock_response.content = b""
         mock_response.headers = {"Location": "http://example.com/issues/42.json"}
+        mock_response.raise_for_status = Mock()
         mock_request.return_value = mock_response
         
-        # Make a create request
-        result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
+        # Make a create request with the mock
+        with patch.object(self.base_client.connection_manager, 'make_request', return_value=mock_response):
+            result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
         
         # Verify the ID was extracted from Location header
         self.assertIn("id", result)
@@ -75,16 +84,19 @@ class TestCreateOperations(unittest.TestCase):
     @patch('requests.request')
     def test_201_empty_response_fallback(self, mock_request):
         """Test handling of 201 response with no body and no Location header"""
-        # Mock a 201 Created response with no body and no Location header
+        # Create a proper mock response with empty body
         mock_response = Mock()
         mock_response.status_code = 201
         mock_response.json.side_effect = ValueError("No JSON body")
         mock_response.text = ""
+        mock_response.content = b""
         mock_response.headers = {}
+        mock_response.raise_for_status = Mock()
         mock_request.return_value = mock_response
         
-        # Make a create request
-        result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
+        # Make a create request with the mock
+        with patch.object(self.base_client.connection_manager, 'make_request', return_value=mock_response):
+            result = self.base_client.post("/issues.json", {"issue": {"subject": "Test Issue"}})
         
         # Verify a success response was returned
         self.assertIn("success", result)

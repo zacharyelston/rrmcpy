@@ -91,7 +91,7 @@ run_tests() {
         --name "rmcp-test-$BRANCH_TAG-$(date +%s)" \
         --entrypoint="" \
         "$IMAGE_NAME" \
-        python -m pytest tests/test_modular_client.py tests/test_error_handling.py tests/test_logging.py -v
+        python -m pytest tests/ -v
 }
 
 # Function to run health check
