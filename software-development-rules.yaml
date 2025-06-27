@@ -1,0 +1,122 @@
+# 100 Rules for Building Software
+# Generated from comprehensive software development best practices guide
+
+working_methodology:
+  - Work on one thing at a time and validate it works before moving to the next task
+  - Slow, careful work produces fewer bugs than rushed work
+  - Always ask "is this new feature actually needed?" before building it
+  - Complete each task fully before starting another
+  - Test your changes immediately after making them
+  - Take breaks to maintain focus and catch mistakes
+  - Document your decisions as you make them, not later
+  - Review your own code before asking others to review it
+  - Fix bugs before adding new features
+  - Measure twice, code once
+
+clean_code_principles:
+  - Name variables and functions to clearly express their purpose
+  - Keep functions small and focused on a single task
+  - Write code that reads like well-written prose
+  - Avoid clever code - be clear instead
+  - Delete commented-out code immediately
+  - Refactor as you go, not "later"
+  - Constants should be named, not magic numbers
+  - Early returns reduce nesting and improve readability
+  - Prefer composition over inheritance
+  - Make the happy path obvious
+
+solid_and_design_principles:
+  - Each class should have only one reason to change
+  - Design modules open for extension but closed for modification
+  - Derived classes must be substitutable for their base classes
+  - Clients shouldn't depend on interfaces they don't use
+  - Depend on abstractions, not concrete implementations
+  - Don't Repeat Yourself (DRY) - extract common code
+  - You Aren't Gonna Need It (YAGNI) - build only what's needed now
+  - Keep It Simple, Stupid (KISS) - choose simple solutions
+  - Favor explicit over implicit behavior
+  - Make dependencies clear and minimal
+
+testing_and_quality:
+  - Write tests before writing code (TDD)
+  - Test behavior, not implementation details
+  - Each test should test one thing
+  - Fast tests get run more often - keep unit tests under 100ms
+  - Use descriptive test names that explain what and why
+  - Maintain the test pyramid: many unit, some integration, few E2E tests
+  - Mock external dependencies in unit tests
+  - Test edge cases and error conditions, not just happy paths
+  - Code coverage is a tool, not a goal - focus on critical paths
+  - Flaky tests are worse than no tests - fix or delete them
+
+architecture_and_design_patterns:
+  - Start with a monolith, extract microservices when needed
+  - Design around business capabilities, not technical layers
+  - Keep services loosely coupled and highly cohesive
+  - Use events for asynchronous communication between services
+  - Apply Circuit Breaker pattern to prevent cascading failures
+  - Cache expensive operations, but handle cache invalidation carefully
+  - Design for failure - assume everything can and will break
+  - Make services stateless when possible
+  - Use appropriate patterns - don't force patterns where they don't fit
+  - Document architectural decisions and their rationale
+
+security_best_practices:
+  - Never trust user input - validate and sanitize everything
+  - Use parameterized queries to prevent SQL injection
+  - Hash passwords with bcrypt or similar - never store plain text
+  - Implement authentication and authorization on the server side
+  - Use HTTPS everywhere, no exceptions
+  - Keep dependencies updated to patch vulnerabilities
+  - Log security events for monitoring and forensics
+  - Implement rate limiting to prevent abuse
+  - Use security headers to prevent common attacks
+  - Principle of least privilege - grant minimal necessary access
+
+performance_optimization:
+  - Measure before optimizing - profile to find actual bottlenecks
+  - Optimize algorithms before micro-optimizing code
+  - Database queries are often the bottleneck - optimize them first
+  - Use appropriate data structures for your access patterns
+  - Lazy load resources that aren't immediately needed
+  - Implement pagination for large data sets
+  - Use CDNs for static assets
+  - Compress responses to reduce bandwidth
+  - Cache at multiple levels: browser, CDN, application, database
+  - Monitor performance in production, not just development
+
+devops_and_deployment:
+  - Automate everything that can be automated
+  - Use version control for everything, including infrastructure
+  - Every commit should trigger automated builds and tests
+  - Deploy small changes frequently rather than big changes rarely
+  - Use feature flags to decouple deployment from release
+  - Infrastructure as Code - no manual server configuration
+  - Monitor everything: logs, metrics, traces, and user experience
+  - Have rollback plans for every deployment
+  - Practice disaster recovery before you need it
+  - Keep environments as similar as possible
+
+documentation_and_communication:
+  - Write README files that get developers started in 5 minutes
+  - Document why decisions were made, not just what was built
+  - Keep documentation close to code and update them together
+  - Use examples in documentation - show, don't just tell
+  - API documentation should include request/response examples
+  - Write error messages that help users fix the problem
+  - Comment why, not what - code should show what
+  - Create architecture diagrams for complex systems
+  - Document deployment procedures step by step
+  - Maintain a changelog for user-facing changes
+
+team_collaboration_and_ai_usage:
+  - Code reviews are for learning, not just finding bugs
+  - Keep pull requests small - under 400 lines when possible
+  - Respond to code review comments within one business day
+  - Pair program on complex or critical features
+  - Use AI as an assistant, not a replacement for thinking
+  - Always review and understand AI-generated code before using it
+  - Share knowledge through documentation, not just conversations
+  - Celebrate both successes and learning from failures
+  - Give specific, actionable feedback in reviews
+  - Remember: code is written for humans to read, not just computers to execute
