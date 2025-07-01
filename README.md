@@ -54,7 +54,7 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 ## Quick Start
 
 how we use this:
-![HowWeUseThis](attached_assets/images/TransScribeMeeting2Project.png)
+![how we use this](attached_assets/images/transcribe-example.png)
 ![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
 ![ClaudeDesktopMCPConfigSettings](attached_assets/images/ClaudeDesktopMCPConfigSettings.png)
 ![WindsurfConfig](attached_assets/images/WindsurfConfig.png)
