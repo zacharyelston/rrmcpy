@@ -1,0 +1,50 @@
+"""
+Tool registration module for FastMCP tools
+"""
+import json
+import logging
+from typing import Any, Dict, Optional
+
+from fastmcp import FastMCP
+from ..core import get_logger
+from ..core.errors import RedmineAPIError
+
+class ToolRegistrations:
+    """Handles registration of FastMCP tools"""
+    
+    def __init__(self, mcp: FastMCP, client_manager, logger=None):
+        """
+        Initialize tool registrations
+        
+        Args:
+            mcp: FastMCP instance
+            client_manager: Client manager instance
+            logger: Optional logger instance
+        """
+        self.mcp = mcp
+        self.client_manager = client_manager
+        self.logger = logger or logging.getLogger("redmine_mcp_server.tool_registrations")
+        self._registered_tools = []
+        self.logger.debug("Tool registrations initialized")
+    
+    def register_all_tools(self):
+        """Register all tools with FastMCP"""
+        self.register_issue_tools()
+        self.register_admin_tools()
+        self.register_version_tools()
+        self.register_project_tools()
+        self.register_template_tools()
+        self.register_wiki_tools()
+        
+        self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
+        return self._registered_tools
+
+    def register_wiki_tools(self):
+        """Register wiki management tools with FastMCP"""
+        from ..wiki.tools import WikiTools
+        WikiTools.register_wiki_tools(
+            self.mcp, 
+            self.client_manager, 
+            self._registered_tools, 
+            self.logger
+        )

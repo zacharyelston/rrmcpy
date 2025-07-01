@@ -4,6 +4,53 @@
 
 A Model Context Protocol (MCP) server that enables AI assistants to interact with Redmine project management.
 
+## Developed Tools
+
+### Project Management
+- `redmine-list-projects` - Lists all available projects
+- `redmine-create-project` - Creates a new project in Redmine
+- `redmine-update-project` - Updates attributes of an existing project
+- `redmine-delete-project` - Deletes a project by its ID or identifier
+- `redmine-archive-project` - Archives a project (sets status to archived)
+- `redmine-unarchive-project` - Unarchives a project (sets status to active)
+
+### Issue Management
+- `redmine-create-issue` - Creates a new issue in Redmine
+- `redmine-get-issue` - Gets details of a specific issue
+- `redmine-list-issues` - Lists issues with optional filters
+- `redmine-update-issue` - Updates an existing issue
+- `redmine-delete-issue` - Deletes an issue by ID
+
+### Version Management
+- `redmine-list-versions` - Lists versions for a project
+- `redmine-get-version` - Gets version details by ID
+- `redmine-create-version` - Creates a new version
+- `redmine-update-version` - Updates an existing version
+- `redmine-delete-version` - Deletes a version by ID
+- `redmine-get-issues-by-version` - Gets all issues for a specific version
+
+### Template Management
+- `redmine-create-from-template` - Creates an issue from a predefined template
+- `redmine-use-template` - Creates an issue using a Redmine template issue
+- `redmine-create-subtasks` - Creates standard subtasks for a parent issue
+- `redmine-list-templates` - Lists available issue templates
+- `redmine-list-issue-templates` - Lists all available issue templates from the Templates project
+
+### Wiki Management
+- `redmine-list-wiki-pages` - Lists all wiki pages for a project
+- `redmine-get-wiki-page` - Gets content of a specific wiki page
+- `redmine-create-wiki-page` - Creates a new wiki page
+- `redmine-update-wiki-page` - Updates an existing wiki page
+- `redmine-delete-wiki-page` - Deletes a wiki page
+
+### User Management
+- `redmine-current-user` - Gets current authenticated user information
+
+### Utility
+- `redmine-health-check` - Checks Redmine API health
+- `redmine-version-info` - Gets version and environment information 
+
+
 ## Quick Start
 
 
