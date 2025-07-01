@@ -53,7 +53,90 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 ## Quick Start
 
-how we use this:
+### Prerequisites
+
+- Docker installed on your system
+- Git (for branch information and version control)
+- Redmine instance with API access
+
+### Configuration
+
+1. Create a `.env` file in the project root with the following variables:
+
+```
+# Redmine instance URL (required)
+REDMINE_URL=https://your-redmine-instance.com
+
+# Redmine API key (required)
+REDMINE_API_KEY=your_api_key_here
+
+# Logging level (optional, default: info)
+# Options: debug, info, warning, error
+LOG_LEVEL=info
+
+# Server mode (optional, default: live)
+# Options: live, test
+SERVER_MODE=live
+```
+
+### Building and Running the Container
+
+The project includes a convenient script `test-docker.sh` that handles building and running the Docker container:
+
+```bash
+./test-docker.sh
+```
+
+This script:
+1. Loads configuration from your `.env` file
+2. Builds a Docker image tagged with your current git branch name
+3. Provides a menu of options for testing and running the server
+
+### Available Options
+
+After running the script, you can select from the following options:
+
+1. **Run unit tests**: Executes the test suite to verify functionality
+2. **Run health check**: Verifies the connection to your Redmine instance
+3. **Run server in test mode**: Starts the MCP server for manual testing
+4. **Interactive container shell**: Opens a shell inside the container for debugging
+5. **List branch versions**: Shows available container versions by branch
+
+### Using with Claude Desktop or other AI Assistants
+
+To use the Redmine MCP Server with Claude Desktop:
+
+1. Edit your Claude Desktop configuration file (typically at `~/Library/Application Support/Claude/claude_desktop_config.json`)
+2. Add the Redmine MCP server configuration:
+
+```json
+"redminecloud": {
+  "command": "docker",
+  "args": [
+    "run",
+    "-i",
+    "--rm",
+    "-e",
+    "REDMINE_URL",
+    "-e",
+    "REDMINE_API_KEY",
+    "-e",
+    "SERVER_MODE",
+    "-e",
+    "LOG_LEVEL",
+    "redmine-mcp-server:your-branch-name"
+  ],
+  "env": {
+    "REDMINE_URL": "https://your-redmine-instance.com",
+    "REDMINE_API_KEY": "your_api_key_here",
+    "SERVER_MODE": "live",
+    "LOG_LEVEL": "error"
+  }
+}
+```
+
+### Integration Examples
+
 ![how we use this](attached_assets/images/transcribe-example.png)
 ![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
 ![ClaudeDesktopMCPConfigSettings](attached_assets/images/ClaudeDesktopMCPConfigSettings.png)
@@ -61,7 +144,7 @@ how we use this:
 ![aic1](attached_assets/images/aic1.png)
 ![aiw1](attached_assets/images/aiw1.png)
 
-https://redstone.redminecloud.net/issues/166
+Example issue: https://redstone.redminecloud.net/issues/166
 
 ![166](attached_assets/images/166.png)
 
