@@ -11,6 +11,7 @@ from ..issues import IssueClient
 from ..groups import GroupClient
 from ..roadmap import RoadmapClient
 from ..versions import VersionClient
+from ..wiki import WikiClient
 
 class ClientManager:
     """Manages the lifecycle and access to API clients"""
@@ -72,6 +73,13 @@ class ClientManager:
             base_url=self.config.redmine.url,
             api_key=self.config.redmine.api_key,
             logger=get_logger('version_client')
+        )
+        
+        # Initialize wiki client
+        self.clients['wiki'] = WikiClient(
+            base_url=self.config.redmine.url,
+            api_key=self.config.redmine.api_key,
+            logger=get_logger('wiki_client')
         )
         
         self.logger.debug("API clients initialized")

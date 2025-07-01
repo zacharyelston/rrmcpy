@@ -79,9 +79,25 @@ class RedmineBaseClient:
         # Check field types if specified
         if field_types:
             field_errors = {}
-            for field, expected_type in field_types.items():
-                if field in data and not isinstance(data[field], expected_type):
-                    field_errors[field] = f"Must be of type {expected_type.__name__}"
+            for field, expected_types in field_types.items():
+                if field not in data or data[field] is None:
+                    continue
+                    
+                # Convert single type to tuple for consistent handling
+                expected_types = expected_types if isinstance(expected_types, tuple) else (expected_types,)
+                
+                # Check if the field value is an instance of any of the expected types
+                if not any(isinstance(data[field], t) for t in expected_types if t is not type(None)):
+                    # Format type names for error message
+                    type_names = []
+                    for t in expected_types:
+                        if t is type(None):
+                            type_names.append('None')
+                        elif hasattr(t, '__name__'):
+                            type_names.append(t.__name__)
+                        else:
+                            type_names.append(str(t))
+                    field_errors[field] = f"Must be one of: {', '.join(type_names)}"
             
             if field_errors:
                 return self.error_handler.handle_validation_error(

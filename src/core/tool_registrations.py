@@ -34,6 +34,7 @@ class ToolRegistrations:
         self.register_version_tools()
         self.register_project_tools()
         self.register_template_tools()
+        self.register_wiki_tools()
         
         self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
         return self._registered_tools
@@ -828,3 +829,13 @@ class ToolRegistrations:
                 return json.dumps({"error": str(e), "success": False}, indent=2)
                 
         self._registered_tools.append("redmine-list-issue-templates")
+        
+    def register_wiki_tools(self):
+        """Register wiki management tools with FastMCP"""
+        from ..wiki.tools import WikiTools
+        WikiTools.register_wiki_tools(
+            self.mcp, 
+            self.client_manager, 
+            self._registered_tools, 
+            self.logger
+        )
