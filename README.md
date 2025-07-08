@@ -83,7 +83,9 @@ how we use this:
 ![aic1](attached_assets/images/aic1.png)
 ![aiw1](attached_assets/images/aiw1.png)
 
-Example issue: https://redstone.redminecloud.net/issues/166
+Example issue: 
+![sample issue solutioning with redmine mcp](attached_assets/image-659.png)
+https://redstone.redminecloud.net/issues/166
 
 ![166](attached_assets/images/166.png)
 
