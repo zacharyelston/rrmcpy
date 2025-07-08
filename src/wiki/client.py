@@ -162,10 +162,12 @@ class WikiClient(RedmineBaseClient):
         if comments:
             page_data['wiki_page']['comments'] = comments
             
-        endpoint = f"/projects/{project_id}/wiki/index.json"
+        # Changed endpoint to match update_wiki_page pattern which is known to work
+        endpoint = f"/projects/{project_id}/wiki/{title}.json"
         
         try:
-            response = self.make_request('POST', endpoint, data=page_data)
+            # Using PUT method instead of POST since this is the method used by update_wiki_page
+            response = self.make_request('PUT', endpoint, data=page_data)
             
             if 'error' in response:
                 error_msg = f"Failed to create wiki page: {response.get('error', 'Unknown error')}"
