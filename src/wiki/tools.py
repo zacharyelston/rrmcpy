@@ -67,8 +67,9 @@ class WikiTools:
                     local_logger.error(f"MCP tool redmine-create-wiki-page failed: {error}")
                     return json.dumps({"error": error}, indent=2)
                 
+                # Fix parameter order to match client method (title=page_name, parent_title first, then comments)
                 result = wiki_client.create_wiki_page(project_id, page_name, text, 
-                                                    comments=comments, parent_title=parent_title)
+                                                    parent_title=parent_title, comments=comments)
                 return json.dumps(result, indent=2)
             except Exception as e:
                 local_logger.error(f"Error creating wiki page: {e}")
