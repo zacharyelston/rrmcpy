@@ -4,6 +4,26 @@
 
 A Model Context Protocol (MCP) server that enables AI assistants to interact with Redmine project management.
 
+## RedMica Standardization
+
+The Redmine MCP Server is designed to work seamlessly with [RedMica](https://github.com/redmica/redmica), a fully compatible fork of Redmine with enhanced features and improved performance. We've standardized on RedMica for several reasons:
+
+- **Feature Parity+**: RedMica maintains full compatibility with Redmine while offering additional features and improvements
+- **Active Development**: Regular updates and maintenance ensure stability and security
+- **Enhanced Performance**: Optimizations that benefit enterprise-scale deployments
+- **Better Plugin Support**: Improved ecosystem for extensions and customizations
+
+### RedMineCloud Support
+
+We extend our sincere gratitude to [RedMineCloud](https://www.redminecloud.net/) for their exceptional support and hosting services. Their reliable infrastructure and expertise have been invaluable in the development and testing of this MCP server. RedMineCloud provides:
+
+- Enterprise-grade RedMica hosting
+- Excellent technical support
+- Reliable and scalable infrastructure
+- Regular backups and maintenance
+
+All MCP tools in this project are thoroughly tested against RedMineCloud's RedMica implementation to ensure optimal compatibility and performance.
+
 ## Developed Tools
 
 ### Project Management
@@ -51,9 +71,9 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 - `redmine-version-info` - Gets version and environment information 
 
 
-## Quick Start
-
+### Integration Examples
 how we use this:
+
 ![how we use this](attached_assets/images/transcribe-example.png)
 ![ClaudeDesktopMCPConfig](attached_assets/images/ClaudeDesktopMCPConfig.png)
 ![ClaudeDesktopMCPConfigSettings](attached_assets/images/ClaudeDesktopMCPConfigSettings.png)
@@ -61,7 +81,7 @@ how we use this:
 ![aic1](attached_assets/images/aic1.png)
 ![aiw1](attached_assets/images/aiw1.png)
 
-https://redstone.redminecloud.net/issues/166
+Example issue: https://redstone.redminecloud.net/issues/166
 
 ![166](attached_assets/images/166.png)
 
