@@ -564,102 +564,13 @@ class ToolRegistrations:
 
     def register_template_tools(self):
         """Register template management tools with FastMCP"""
-        from ..tools.template_tools import TemplateManager, CreateFromTemplateTool, CreateSubtasksTool
+        from ..tools.template_tools import TemplateManager, CreateSubtasksTool
         issue_client = self.client_manager.get_client('issues')
         template_manager = TemplateManager()
         self.logger.debug("Registering template tools")
         
-        @self.mcp.tool("redmine-create-from-template")
-        async def create_from_template(
-            template_type: str,
-            # Common parameters
-            feature_name: str = None,
-            overview: str = None,
-            technical_notes: str = None,
-            branch_suffix: str = None,
-            # Feature-specific parameters
-            acceptance_criteria: str = None,
-            # Bug-specific parameters
-            steps_to_reproduce: str = None,
-            expected_behavior: str = None,
-            actual_behavior: str = None,
-            # Research-specific parameters
-            research_question: str = None,
-            hypothesis: str = None,
-            # Additional fields
-            tracker_id: int = None,
-            priority_id: int = None,
-            assigned_to_id: int = None,
-            parent_issue_id: int = None
-        ):
-            """Create an issue from a predefined template
-            
-            Args:
-                template_type: Template to use (feature, bug, research)
-                
-                # Common parameters
-                feature_name: Name of the feature
-                overview: Brief overview/description
-                technical_notes: Technical implementation details
-                branch_suffix: Suffix for git branch name
-                
-                # Feature-specific parameters
-                acceptance_criteria: Criteria for feature acceptance
-                
-                # Bug-specific parameters
-                steps_to_reproduce: Steps to reproduce the bug
-                expected_behavior: What was expected to happen
-                actual_behavior: What actually happened
-                
-                # Research-specific parameters
-                research_question: The research question to answer
-                hypothesis: The hypothesis to test
-                
-                # Additional fields
-                tracker_id: Tracker ID for the issue
-                priority_id: Priority ID for the issue
-                assigned_to_id: User ID to assign the issue to
-                parent_issue_id: ID of parent issue if this is a subtask
-                
-            Available templates: feature, bug, research
-            """
-            try:
-                # Create tool instance
-                tool = CreateFromTemplateTool(issue_client, template_manager)
-                
-                # Build variables dictionary from provided parameters
-                variables = {
-                    'feature_name': feature_name,
-                    'overview': overview,
-                    'technical_notes': technical_notes,
-                    'branch_suffix': branch_suffix,
-                    'acceptance_criteria': acceptance_criteria,
-                    'steps_to_reproduce': steps_to_reproduce,
-                    'expected_behavior': expected_behavior,
-                    'actual_behavior': actual_behavior,
-                    'research_question': research_question,
-                    'hypothesis': hypothesis
-                }
-                
-                # Remove None values
-                variables = {k: v for k, v in variables.items() if v is not None}
-                
-                # Execute with arguments
-                result = tool.execute({
-                    'template_type': template_type,
-                    'variables': variables,
-                    'tracker_id': tracker_id,
-                    'priority_id': priority_id,
-                    'assigned_to_id': assigned_to_id,
-                    'parent_issue_id': parent_issue_id
-                })
-                
-                return json.dumps(result, indent=2)
-            except Exception as e:
-                self.logger.error(f"Error creating from template: {e}")
-                return json.dumps({"error": str(e), "success": False}, indent=2)
-                
-        self._registered_tools.append("redmine-create-from-template")
+        # Note: The 'redmine-create-from-template' tool has been removed in favor of 'redmine-use-template'.
+        # Please use 'redmine-use-template' instead as it provides more flexible and maintainable functionality.
         
         @self.mcp.tool("redmine-use-template")
         async def use_template(
