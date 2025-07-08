@@ -50,11 +50,12 @@ All MCP tools in this project are thoroughly tested against RedMineCloud's RedMi
 - `redmine-get-issues-by-version` - Gets all issues for a specific version
 
 ### Template Management
-- `redmine-create-from-template` - Creates an issue from a predefined template
-- `redmine-use-template` - Creates an issue using a Redmine template issue
+- `redmine-use-template` - Creates an issue using a Redmine template issue (recommended method)
 - `redmine-create-subtasks` - Creates standard subtasks for a parent issue
 - `redmine-list-templates` - Lists available issue templates
 - `redmine-list-issue-templates` - Lists all available issue templates from the Templates project
+
+> **Note**: The previously available `redmine-create-from-template` tool has been removed. Please use `redmine-use-template` instead, which provides more flexibility and better integration with Redmine template issues.
 
 ### Wiki Management
 - `redmine-list-wiki-pages` - Lists all wiki pages for a project

@@ -82,53 +82,9 @@ class TemplateManager:
         return None
 
 
-class CreateFromTemplateTool:
-    """Tool for creating issues from templates"""
-    
-    def __init__(self, service, template_manager: Optional[TemplateManager] = None):
-        self.service = service
-        self.template_manager = template_manager or TemplateManager()
-        self.logger = logging.getLogger("redmine_mcp_server.create_from_template_tool")
-        
-    def execute(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute issue creation from template"""
-        template_type = arguments.get('template_type')
-        variables = arguments.get('variables', {})
-        
-        # Validate template exists
-        available = self.template_manager.list_templates()
-        if template_type not in available:
-            return {
-                "error": f"Template '{template_type}' not found. Available: {', '.join(available)}",
-                "success": False
-            }
-        
-        # Validate required fields
-        validation_error = self.template_manager.validate_required_fields(template_type, variables)
-        if validation_error:
-            return {"error": validation_error, "success": False}
-        
-        try:
-            # Render template with variables
-            issue_data = self.template_manager.render_template(template_type, variables)
-            
-            # Remove metadata before creating issue
-            if '_metadata' in issue_data:
-                del issue_data['_metadata']
-            
-            # Create the issue
-            result = self.service.create_issue(issue_data)
-            
-            # Add template info to successful result
-            if isinstance(result, dict) and 'issue' in result:
-                result['template_used'] = template_type
-                result['variables_applied'] = variables
-                
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"Failed to create issue from template: {e}")
-            return {"error": str(e), "success": False}
+# Note: The CreateFromTemplateTool class has been removed as part of issue #441.
+# Use the redmine-use-template functionality instead, which provides more flexibility
+# and better integration with actual Redmine template issues.
 
 
 class CreateSubtasksTool:
