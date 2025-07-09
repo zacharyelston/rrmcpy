@@ -47,7 +47,11 @@ class ToolRegistrations:
         @self.mcp.tool("redmine-create-issue")
         async def create_issue(project_id: str, subject: str, description: str = None, 
                                tracker_id: int = None, status_id: int = None, 
-                               priority_id: int = None, assigned_to_id: int = None):
+                               priority_id: int = None, assigned_to_id: int = None,
+                               parent_issue_id: int = None, done_ratio: int = None,
+                               start_date: str = None, due_date: str = None,
+                               estimated_hours: float = None, category_id: int = None,
+                               fixed_version_id: int = None):
             """Create a new issue in Redmine
             
             NOTE: Consider using redmine-use-template for consistent formatting.
@@ -75,6 +79,20 @@ class ToolRegistrations:
                     issue_data["priority_id"] = priority_id
                 if assigned_to_id:
                     issue_data["assigned_to_id"] = assigned_to_id
+                if parent_issue_id:
+                    issue_data["parent_issue_id"] = parent_issue_id
+                if done_ratio is not None:
+                    issue_data["done_ratio"] = done_ratio
+                if start_date:
+                    issue_data["start_date"] = start_date
+                if due_date:
+                    issue_data["due_date"] = due_date
+                if estimated_hours is not None:
+                    issue_data["estimated_hours"] = estimated_hours
+                if category_id:
+                    issue_data["category_id"] = category_id
+                if fixed_version_id:
+                    issue_data["fixed_version_id"] = fixed_version_id
                 
                 result = issue_client.create_issue(issue_data)
                 return json.dumps(result, indent=2)
@@ -130,7 +148,10 @@ class ToolRegistrations:
         async def update_issue(issue_id: int, subject: str = None, description: str = None, 
                               status_id: int = None, priority_id: int = None, 
                               assigned_to_id: int = None, tracker_id: int = None,
-                              notes: str = None):
+                              notes: str = None, parent_issue_id: int = None,
+                              done_ratio: int = None, start_date: str = None,
+                              due_date: str = None, estimated_hours: float = None,
+                              category_id: int = None, fixed_version_id: int = None):
             """Update an existing issue
             
             Args:
@@ -142,6 +163,13 @@ class ToolRegistrations:
                 assigned_to_id: New assignee ID
                 tracker_id: New tracker ID
                 notes: Add a comment/note without modifying other fields
+                parent_issue_id: Parent issue ID for subtasks
+                done_ratio: Percentage complete (0-100)
+                start_date: Start date (YYYY-MM-DD)
+                due_date: Due date (YYYY-MM-DD)
+                estimated_hours: Estimated time in hours
+                category_id: Issue category ID
+                fixed_version_id: Target version ID
             """
             try:
                 if not issue_id:
@@ -167,6 +195,20 @@ class ToolRegistrations:
                     issue_data["tracker_id"] = tracker_id
                 if notes:
                     issue_data["notes"] = notes
+                if parent_issue_id:
+                    issue_data["parent_issue_id"] = parent_issue_id
+                if done_ratio is not None:
+                    issue_data["done_ratio"] = done_ratio
+                if start_date:
+                    issue_data["start_date"] = start_date
+                if due_date:
+                    issue_data["due_date"] = due_date
+                if estimated_hours is not None:
+                    issue_data["estimated_hours"] = estimated_hours
+                if category_id:
+                    issue_data["category_id"] = category_id
+                if fixed_version_id:
+                    issue_data["fixed_version_id"] = fixed_version_id
         
                 if not issue_data:
                     error = "No update fields provided"
