@@ -618,39 +618,34 @@ class ToolRegistrations:
         async def use_template(
             template_id: int,
             target_project: str = "rrmcpy",
-            # Common template variables
-            FEATURE_NAME: str = None,
-            OVERVIEW: str = None,
-            TECHNICAL_NOTES: str = None,
-            BRANCH_SUFFIX: str = None,
             # Additional fields
             tracker_id: int = None,
             priority_id: int = None,
             assigned_to_id: int = None,
-            parent_issue_id: int = None
+            parent_issue_id: int = None,
+            # Template variables - use **kwargs to accept any template placeholders
+            **template_vars
         ):
             """Create an issue using a Redmine template issue
             
             Args:
                 template_id: ID of the template issue in Templates project
                 target_project: Target project for the new issue (default: rrmcpy)
-                
-                # Common template variables
-                FEATURE_NAME: Name of the feature
-                OVERVIEW: Brief overview/description
-                TECHNICAL_NOTES: Technical implementation details
-                BRANCH_SUFFIX: Suffix for git branch name
-                
-                # Additional fields
                 tracker_id: Tracker ID for the issue
                 priority_id: Priority ID for the issue
                 assigned_to_id: User ID to assign the issue to
                 parent_issue_id: ID of parent issue if this is a subtask
+                **template_vars: Any template placeholder variables (e.g., FEATURE_NAME, OVERVIEW, etc.)
                 
             Template IDs:
                 226: Feature - Standard Feature Request
                 227: Bug - Standard Bug Report  
                 228: Subtask - Research & Analysis
+                
+            Common template variables by template type:
+                Feature (226): FEATURE_NAME, OVERVIEW, TECHNICAL_NOTES, BRANCH_SUFFIX, ISSUE_ID, etc.
+                Bug (227): BUG_SUMMARY, EXPECTED_BEHAVIOR, ACTUAL_BEHAVIOR, ERROR_LOGS, etc.
+                Research (228): PARENT_SUBJECT, EXTERNAL_RESOURCES, CODE_REFERENCES, etc.
             """
             try:
                 from ..tools.simple_template_tool import SimpleTemplateTool
@@ -658,16 +653,9 @@ class ToolRegistrations:
                 # Create tool instance
                 tool = SimpleTemplateTool(issue_client)
                 
-                # Build replacements dict from provided parameters
-                replacements = {
-                    'FEATURE_NAME': FEATURE_NAME,
-                    'OVERVIEW': OVERVIEW,
-                    'TECHNICAL_NOTES': TECHNICAL_NOTES,
-                    'BRANCH_SUFFIX': BRANCH_SUFFIX
-                }
-                
-                # Remove None values
-                replacements = {k: v for k, v in replacements.items() if v is not None}
+                # Build replacements dict from all template variables
+                # Convert all kwargs to uppercase to match template placeholders
+                replacements = {k.upper(): v for k, v in template_vars.items() if v is not None}
                 
                 # Execute with arguments
                 arguments = {
