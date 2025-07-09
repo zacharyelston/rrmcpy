@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated documentation to reflect all 29 available tools (was showing 17)
+- Architecture documentation now includes wiki management and template system tools
+- README now shows accurate tool count and categories
+
+### Added
+- Documentation for 5 wiki management tools
+- Documentation for 4 template system tools
+- Documentation for 3 additional project management tools (list, archive, unarchive)
+
 ## [0.9.0] - 2025-06-04
 
 ### Added

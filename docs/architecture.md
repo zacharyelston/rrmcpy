@@ -48,8 +48,13 @@ The Redmine MCP Server has been completely restructured using a modular architec
 - Error handling and safety wrappers
 
 **Tool Implementations**
-- `issue_tools.py` - Complete issue management tools
-- `admin_tools.py` - Health checking and user information tools
+The tools are registered through `tool_registrations.py` which organizes them by category:
+- Issue management tools - CRUD operations for issues
+- Project management tools - Full project lifecycle management
+- Version management tools - Roadmap and version control
+- Wiki management tools - Wiki page operations
+- Template system tools - Issue templates and subtask creation
+- Administrative tools - Health checks and system information
 
 ## Key Benefits
 
@@ -72,32 +77,48 @@ The Redmine MCP Server has been completely restructured using a modular architec
 - ✅ Comprehensive test suite validation
 - ✅ Production-ready server implementation
 
-### Available Tools
+### Available Tools (29 Total)
 
-#### Issue Management
-1. `redmine-create-issue` - Create new issues with validation
+#### Issue Management (5 tools)
+1. `redmine-create-issue` - Create new issues with full parameter support
 2. `redmine-get-issue` - Retrieve issue details by ID
 3. `redmine-list-issues` - List issues with filtering options
 4. `redmine-update-issue` - Update existing issues
 5. `redmine-delete-issue` - Delete issues
 
-#### Project Management
-6. `redmine-create-project` - Create new projects with validation
-7. `redmine-update-project` - Update project attributes
-8. `redmine-delete-project` - Delete projects by ID or identifier
+#### Project Management (6 tools)
+6. `redmine-list-projects` - List all available projects
+7. `redmine-create-project` - Create new projects with validation
+8. `redmine-update-project` - Update project attributes
+9. `redmine-delete-project` - Delete projects by ID or identifier
+10. `redmine-archive-project` - Archive a project (set status to archived)
+11. `redmine-unarchive-project` - Unarchive a project (set status to active)
 
-#### Version Management
-9. `redmine-list-versions` - List versions for a project
-10. `redmine-get-version` - Get version details by ID
-11. `redmine-create-version` - Create new versions
-12. `redmine-update-version` - Update version attributes
-13. `redmine-delete-version` - Delete versions
-14. `redmine-get-issues-by-version` - Get issues for a specific version
+#### Version Management (6 tools)
+12. `redmine-list-versions` - List versions for a project
+13. `redmine-get-version` - Get version details by ID
+14. `redmine-create-version` - Create new versions
+15. `redmine-update-version` - Update version attributes
+16. `redmine-delete-version` - Delete versions
+17. `redmine-get-issues-by-version` - Get issues for a specific version
 
-#### Administrative Tools
-15. `redmine-health-check` - Check Redmine connection health
-16. `redmine-version-info` - Get server version and environment info
-17. `redmine-current-user` - Get current authenticated user information
+#### Wiki Management (5 tools)
+18. `redmine-list-wiki-pages` - List wiki pages in a project
+19. `redmine-get-wiki-page` - Get wiki page content
+20. `redmine-create-wiki-page` - Create new wiki pages
+21. `redmine-update-wiki-page` - Update existing wiki pages
+22. `redmine-delete-wiki-page` - Delete wiki pages
+
+#### Template System (4 tools)
+23. `redmine-use-template` - Create issues from templates with placeholders
+24. `redmine-create-subtasks` - Create standard subtasks for a parent issue
+25. `redmine-list-templates` - List available templates
+26. `redmine-list-issue-templates` - List issue templates from Templates project
+
+#### Administrative Tools (3 tools)
+27. `redmine-health-check` - Check Redmine connection health
+28. `redmine-version-info` - Get server version and environment info
+29. `redmine-current-user` - Get current authenticated user information
 
 ## Usage
 
@@ -142,36 +163,41 @@ The modular architecture provides a solid foundation for future enhancements:
 ## Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    MCP Server                               │
-├─────────────────────────────────────────────────────────────┤
-│  FastMCP Integration & Tool Registration                    │
-├─────────────────────────────────────────────────────────────┤
-│                  Tool Registry                              │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────┐  │
-│  │   Issue Tools   │ │   Admin Tools   │ │ Future Tools │  │
-│  └─────────────────┘ └─────────────────┘ └──────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                  Service Layer                              │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────┐  │
-│  │ Issue Service   │ │ Future Services │ │ Base Service │  │
-│  └─────────────────┘ └─────────────────┘ └──────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                API Client Layer                             │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────┐  │
-│  │ Issue Client    │ │ Other Clients   │ │ Base Client  │  │
-│  └─────────────────┘ └─────────────────┘ └──────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                Core Infrastructure                          │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────┐  │
-│  │ Configuration   │ │ Error Handling  │ │   Logging    │  │
-│  └─────────────────┘ └─────────────────┘ └──────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌─────────────────┐
-                    │ Redmine API     │
-                    └─────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         MCP Server (29 Tools)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│          FastMCP Integration & Tool Registration System             │
+├─────────────────────────────────────────────────────────────────────┤
+│                        Tool Registry Layer                          │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │
+│ │ Issue Tools  │ │Project Tools │ │Version Tools │ │ Wiki Tools │ │
+│ │  (5 tools)   │ │  (6 tools)   │ │  (6 tools)   │ │ (5 tools)  │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘ │
+│ ┌──────────────┐ ┌──────────────┐                                  │
+│ │Template Tools│ │ Admin Tools  │                                  │
+│ │  (4 tools)   │ │  (3 tools)   │                                  │
+│ └──────────────┘ └──────────────┘                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                        Service Layer                                │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │
+│ │Issue Service │ │Project Svc   │ │Wiki Service  │ │Template Svc│ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘ │
+├─────────────────────────────────────────────────────────────────────┤
+│                      API Client Layer                               │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │
+│ │Issue Client  │ │Project Client│ │Roadmap Client│ │Wiki Client │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘ │
+├─────────────────────────────────────────────────────────────────────┤
+│                    Core Infrastructure                              │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │
+│ │Configuration │ │Error Handling│ │   Logging    │ │Client Mgr  │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                      ┌─────────────────┐
+                      │  Redmine API    │
+                      └─────────────────┘
 ```
 
 This modular architecture provides a robust, maintainable, and extensible foundation for the Redmine MCP Server.

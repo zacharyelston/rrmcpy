@@ -24,9 +24,9 @@ We extend our sincere gratitude to [RedMineCloud](https://www.redminecloud.net/)
 
 All MCP tools in this project are thoroughly tested against RedMineCloud's RedMica implementation to ensure optimal compatibility and performance.
 
-## Developed Tools
+## Developed Tools (29 Total)
 
-### Project Management
+### Project Management (6 tools)
 - `redmine-list-projects` - Lists all available projects
 - `redmine-create-project` - Creates a new project in Redmine
 - `redmine-update-project` - Updates attributes of an existing project
@@ -34,14 +34,14 @@ All MCP tools in this project are thoroughly tested against RedMineCloud's RedMi
 - `redmine-archive-project` - Archives a project (sets status to archived)
 - `redmine-unarchive-project` - Unarchives a project (sets status to active)
 
-### Issue Management
-- `redmine-create-issue` - Creates a new issue in Redmine
+### Issue Management (5 tools)
+- `redmine-create-issue` - Creates a new issue in Redmine with full parameter support
 - `redmine-get-issue` - Gets details of a specific issue
 - `redmine-list-issues` - Lists issues with optional filters
 - `redmine-update-issue` - Updates an existing issue
 - `redmine-delete-issue` - Deletes an issue by ID
 
-### Version Management
+### Version Management (6 tools)
 - `redmine-list-versions` - Lists versions for a project
 - `redmine-get-version` - Gets version details by ID
 - `redmine-create-version` - Creates a new version
@@ -49,25 +49,23 @@ All MCP tools in this project are thoroughly tested against RedMineCloud's RedMi
 - `redmine-delete-version` - Deletes a version by ID
 - `redmine-get-issues-by-version` - Gets all issues for a specific version
 
-### Template Management
-- `redmine-use-template` - Creates an issue using a Redmine template issue (recommended method)
-- `redmine-create-subtasks` - Creates standard subtasks for a parent issue
-- `redmine-list-templates` - Lists available issue templates
-- `redmine-list-issue-templates` - Lists all available issue templates from the Templates project
-
-> **Note**: The previously available `redmine-create-from-template` tool has been removed. Please use `redmine-use-template` instead, which provides more flexibility and better integration with Redmine template issues.
-
-### Wiki Management
+### Wiki Management (5 tools)
 - `redmine-list-wiki-pages` - Lists all wiki pages for a project
 - `redmine-get-wiki-page` - Gets content of a specific wiki page
 - `redmine-create-wiki-page` - Creates a new wiki page
 - `redmine-update-wiki-page` - Updates an existing wiki page
 - `redmine-delete-wiki-page` - Deletes a wiki page
 
-### User Management
-- `redmine-current-user` - Gets current authenticated user information
+### Template Management (4 tools)
+- `redmine-use-template` - Creates an issue using a Redmine template issue with dynamic placeholders
+- `redmine-create-subtasks` - Creates standard subtasks for a parent issue
+- `redmine-list-templates` - Lists available issue templates
+- `redmine-list-issue-templates` - Lists all available issue templates from the Templates project
 
-### Utility
+> **Note**: The template system now accepts any placeholder variables dynamically through kwargs.
+
+### Administrative Tools (3 tools)
+- `redmine-current-user` - Gets current authenticated user information
 - `redmine-health-check` - Checks Redmine API health
 - `redmine-version-info` - Gets version and environment information 
 
@@ -195,10 +193,11 @@ python -m src.server
 ## Features
 
 - Modular architecture with clear separation of concerns
-- 17+ MCP tools for Redmine interaction
+- **29 MCP tools** covering all aspects of Redmine interaction
 - Compatible with any MCP client framework
 - Comprehensive test suite and CI pipeline
 - Follows "Keep It Simple" design principles
+- Full support for issues, projects, versions, wikis, and templates
 
 ## Documentation
 
