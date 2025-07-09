@@ -161,16 +161,48 @@ class WikiClient(RedmineBaseClient):
             
         if comments:
             page_data['wiki_page']['comments'] = comments
-            
-        # Changed endpoint to match update_wiki_page pattern which is known to work
-        endpoint = f"/projects/{project_id}/wiki/{title}.json"
+        
+        # Use standard creation endpoint with POST method first
+        standard_endpoint = f"/projects/{project_id}/wiki.json"
         
         try:
-            # Using PUT method instead of POST since this is the method used by update_wiki_page
-            response = self.make_request('PUT', endpoint, data=page_data)
+            # Try standard POST method first (proper way to create new resources)
+            self.logger.debug(f"Attempting to create wiki page using POST method")
+            response = self.make_request('POST', standard_endpoint, data=page_data)
             
             if 'error' in response:
-                error_msg = f"Failed to create wiki page: {response.get('error', 'Unknown error')}"
+                error_msg = f"Failed to create wiki page with POST method: {response.get('error', 'Unknown error')}"
+                self.logger.warning(error_msg)
+                # Don't return here - fall through to the PUT method as a backup
+            else:
+                # Successful creation with POST method
+                if not response or (isinstance(response, dict) and not response):
+                    self.logger.info(f"Successfully created wiki page {title} using POST method (empty response)")
+                    return {
+                        'success': True,
+                        'page': {'title': title}
+                    }
+                    
+                self.logger.info(f"Successfully created wiki page {title} using POST method")
+                return {
+                    'success': True,
+                    'page': response.get('wiki_page', {'title': title}),
+                    'method_used': 'POST'
+                }
+                
+        except Exception as e:
+            self.logger.warning(f"POST method failed, will try PUT method as fallback: {str(e)}")
+            # Fall through to PUT method
+        
+        # Fallback to PUT method (previously used workaround)
+        fallback_endpoint = f"/projects/{project_id}/wiki/{title}.json"
+        
+        try:
+            self.logger.debug(f"Attempting to create wiki page using PUT method (fallback)")
+            response = self.make_request('PUT', fallback_endpoint, data=page_data)
+            
+            if 'error' in response:
+                error_msg = f"Failed to create wiki page with PUT method: {response.get('error', 'Unknown error')}"
                 self.logger.error(error_msg)
                 return {
                     'success': False,
@@ -178,20 +210,23 @@ class WikiClient(RedmineBaseClient):
                 }
                 
             # Some Redmine versions return 201 with empty body on success
-            if not response:
+            if not response or (isinstance(response, dict) and not response):
+                self.logger.info(f"Successfully created wiki page {title} using PUT method (empty response)")
                 return {
                     'success': True,
-                    'message': 'Wiki page created successfully',
-                    'title': title
+                    'page': {'title': title},
+                    'method_used': 'PUT'
                 }
                 
+            self.logger.info(f"Successfully created wiki page {title} using PUT method")
             return {
                 'success': True,
-                'page': response.get('wiki_page', {'title': title})
+                'page': response.get('wiki_page', {'title': title}),
+                'method_used': 'PUT'
             }
             
         except Exception as e:
-            error_msg = f"Error creating wiki page: {str(e)}"
+            error_msg = f"Error creating wiki page (both methods failed): {str(e)}"
             self.logger.error(error_msg, exc_info=True)
             return self.error_handler.handle_unexpected_error(error_msg)
     
