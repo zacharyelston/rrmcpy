@@ -14,6 +14,9 @@ RUN pip install --no-cache-dir -r docker-requirements.txt
 # Create directory structure
 RUN mkdir -p /app/src /app/tests
 
+RUN mkdir -p /app/logs
+VOLUME ["/app/logs"]
+
 # Copy application code
 COPY src/ /app/src/
 
@@ -33,4 +36,4 @@ ENV REDMINE_URL="https://redstone.redminecloud.net" \
     PYTHONPATH="/app"
 
 # Run the modular MCP server directly
-CMD ["python", "src/server.py"]
+CMD ["sh", "-c", "python -m src.server 2>/app/logs/debug.log"]
