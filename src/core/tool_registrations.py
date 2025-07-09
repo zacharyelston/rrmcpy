@@ -54,9 +54,33 @@ class ToolRegistrations:
                                fixed_version_id: int = None):
             """Create a new issue in Redmine
             
-            NOTE: Consider using redmine-use-template for consistent formatting.
-            Available templates can be listed with redmine-list-issue-templates.
-            Common templates: 226 (Feature), 227 (Bug), 228 (Research)
+            ACCEPTED PARAMETERS:
+            • project_id (required): Project ID or identifier  
+            • subject (required): Issue subject/title
+            • description: Issue description/body text
+            • tracker_id: Type (1=Bug, 2=Feature, 3=Support)
+            • status_id: Status (1=New, 2=In Progress, 3=Resolved, 4=Feedback, 5=Closed)
+            • priority_id: Priority (1=Low, 2=Normal, 3=High, 4=Urgent, 5=Immediate)
+            • assigned_to_id: User ID to assign to
+            • parent_issue_id: Parent issue ID for subtasks
+            • done_ratio: Completion % (0-100)
+            • start_date: Start date (YYYY-MM-DD)
+            • due_date: Due date (YYYY-MM-DD)
+            • estimated_hours: Time estimate (decimal)
+            • category_id: Issue category ID
+            • fixed_version_id: Target version ID
+            
+            EXAMPLE USAGE:
+            redmine-create-issue(
+                project_id="rrmcpy",
+                subject="Fix parameter validation",
+                description="Details about the issue",
+                tracker_id=1,
+                priority_id=3,
+                parent_issue_id=649
+            )
+            
+            NOTE: For templates, use redmine-use-template (IDs: 226=Feature, 227=Bug, 228=Research)
             """
             try:
                 # Input validation
@@ -152,24 +176,33 @@ class ToolRegistrations:
                               done_ratio: int = None, start_date: str = None,
                               due_date: str = None, estimated_hours: float = None,
                               category_id: int = None, fixed_version_id: int = None):
-            """Update an existing issue
+            """Update an existing issue in Redmine
             
-            Args:
-                issue_id: The ID of the issue to update
-                subject: New subject for the issue
-                description: New description (replaces existing)
-                status_id: New status ID
-                priority_id: New priority ID
-                assigned_to_id: New assignee ID
-                tracker_id: New tracker ID
-                notes: Add a comment/note without modifying other fields
-                parent_issue_id: Parent issue ID for subtasks
-                done_ratio: Percentage complete (0-100)
-                start_date: Start date (YYYY-MM-DD)
-                due_date: Due date (YYYY-MM-DD)
-                estimated_hours: Estimated time in hours
-                category_id: Issue category ID
-                fixed_version_id: Target version ID
+            ACCEPTED PARAMETERS:
+            • issue_id (required): Issue ID to update
+            • subject: New subject/title
+            • description: New description (replaces existing)
+            • status_id: Status (1=New, 2=In Progress, 3=Resolved, 4=Feedback, 5=Closed)
+            • priority_id: Priority (1=Low, 2=Normal, 3=High, 4=Urgent, 5=Immediate)
+            • assigned_to_id: Assignee user ID
+            • tracker_id: Type (1=Bug, 2=Feature, 3=Support)
+            • notes: Add comment without changing fields
+            • parent_issue_id: Parent issue ID for subtasks
+            • done_ratio: Completion % (0-100)
+            • start_date: Start date (YYYY-MM-DD)
+            • due_date: Due date (YYYY-MM-DD)
+            • estimated_hours: Time estimate (decimal)
+            • category_id: Issue category ID
+            • fixed_version_id: Target version ID
+            
+            EXAMPLE USAGE:
+            redmine-update-issue(
+                issue_id=649,
+                done_ratio=75,
+                notes="Completed parameter validation fixes"
+            )
+            
+            NOTE: Use 'notes' to add comments without modifying issue fields
             """
             try:
                 if not issue_id:
