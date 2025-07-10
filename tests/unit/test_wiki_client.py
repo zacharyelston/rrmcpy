@@ -89,7 +89,7 @@ class TestWikiClient(unittest.TestCase):
         )
     
     def test_create_wiki_page_success(self):
-        """Test successful creation of a wiki page using POST method"""
+        """Test successful creation of a wiki page using PUT method"""
         # Mock response
         mock_response = {
             'wiki_page': {
@@ -111,25 +111,25 @@ class TestWikiClient(unittest.TestCase):
         # Assertions
         self.assertTrue(result['success'])
         self.assertEqual(result['page']['title'], 'NewPage')
-        self.assertEqual(result['method_used'], 'POST')
+        self.assertEqual(result['method_used'], 'PUT')
         self.client.make_request.assert_called_once()
         
         # Check the request parameters
         args, kwargs = self.client.make_request.call_args
-        self.assertEqual(args[0], 'POST')
-        self.assertEqual(args[1], f'/projects/{self.project_id}/wiki.json')
+        self.assertEqual(args[0], 'PUT')
+        self.assertEqual(args[1], f'/projects/{self.project_id}/wiki/NewPage.json')
         self.assertEqual(kwargs['data']['wiki_page']['title'], 'NewPage')
         self.assertEqual(kwargs['data']['wiki_page']['text'], 'Test content')
         self.assertEqual(kwargs['data']['wiki_page']['parent_title'], 'ParentPage')
         self.assertEqual(kwargs['data']['wiki_page']['comments'], 'Initial version')
     
-    def test_create_wiki_page_post_failure_put_fallback(self):
-        """Test fallback to PUT method when POST fails with an error response"""
-        # Configure the mock to return different responses for POST and PUT
-        # First POST fails with an error, then PUT succeeds
+    def test_create_wiki_page_put_failure_post_fallback(self):
+        """Test fallback to POST method when PUT fails with an error response"""
+        # Configure the mock to return different responses for PUT and POST
+        # First PUT fails with an error, then POST succeeds
         self.client.make_request.side_effect = [
-            {'error': 'Method not allowed'},  # POST response (error)
-            {                                 # PUT response (success)
+            {'error': 'Method not allowed'},  # PUT response (error)
+            {                                 # POST response (success)
                 'wiki_page': {
                     'title': 'NewPage',
                     'version': 1,
@@ -145,27 +145,27 @@ class TestWikiClient(unittest.TestCase):
         
         # Assertions
         self.assertTrue(result['success'])
-        self.assertEqual(result['method_used'], 'PUT')
+        self.assertEqual(result['method_used'], 'POST')
         self.assertEqual(result['page']['title'], 'NewPage')
         self.assertEqual(self.client.make_request.call_count, 2)
         
         # Check both API calls
-        post_call = self.client.make_request.call_args_list[0]
-        put_call = self.client.make_request.call_args_list[1]
-        
-        self.assertEqual(post_call[0][0], 'POST')
-        self.assertEqual(post_call[0][1], f'/projects/{self.project_id}/wiki.json')
+        put_call = self.client.make_request.call_args_list[0]
+        post_call = self.client.make_request.call_args_list[1]
         
         self.assertEqual(put_call[0][0], 'PUT')
         self.assertEqual(put_call[0][1], f'/projects/{self.project_id}/wiki/NewPage.json')
+        
+        self.assertEqual(post_call[0][0], 'POST')
+        self.assertEqual(post_call[0][1], f'/projects/{self.project_id}/wiki.json')
 
-    def test_create_wiki_page_post_exception_put_fallback(self):
-        """Test fallback to PUT method when POST raises an exception"""
-        # Configure the mock to raise an exception on first call (POST)
-        # and return success on second call (PUT)
+    def test_create_wiki_page_put_exception_post_fallback(self):
+        """Test fallback to POST method when PUT raises an exception"""
+        # Configure the mock to raise an exception on first call (PUT)
+        # and return success on second call (POST)
         def side_effect(*args, **kwargs):
-            if args[0] == 'POST':
-                raise ConnectionError("Connection error during POST")
+            if args[0] == 'PUT':
+                raise ConnectionError("Connection error during PUT")
             return {
                 'wiki_page': {
                     'title': 'NewPage',
@@ -182,7 +182,7 @@ class TestWikiClient(unittest.TestCase):
         
         # Assertions
         self.assertTrue(result['success'])
-        self.assertEqual(result['method_used'], 'PUT')
+        self.assertEqual(result['method_used'], 'POST')
         self.assertEqual(self.client.make_request.call_count, 2)
 
     def test_create_wiki_page_minimal_required(self):
@@ -220,7 +220,7 @@ class TestWikiClient(unittest.TestCase):
     
     def test_create_wiki_page_api_error(self):
         """Test API error handling in create_wiki_page"""
-        # Mock error response for both POST and PUT attempts
+        # Mock error response for both PUT and POST attempts
         error_msg = "Permission denied"
         self.client.make_request.return_value = {'error': error_msg}
         
@@ -233,18 +233,18 @@ class TestWikiClient(unittest.TestCase):
         self.assertFalse(result['success'])
         self.assertIn(error_msg, result['error'])
         
-        # Should make two calls - first POST, then PUT
+        # Should make two calls - first PUT, then POST
         self.assertEqual(self.client.make_request.call_count, 2)
         
         # Verify both calls
-        post_call = self.client.make_request.call_args_list[0]
-        put_call = self.client.make_request.call_args_list[1]
-        
-        self.assertEqual(post_call[0][0], 'POST')
-        self.assertEqual(post_call[0][1], f'/projects/{self.project_id}/wiki.json')
+        put_call = self.client.make_request.call_args_list[0]
+        post_call = self.client.make_request.call_args_list[1]
         
         self.assertEqual(put_call[0][0], 'PUT')
         self.assertEqual(put_call[0][1], f'/projects/{self.project_id}/wiki/NewPage.json')
+        
+        self.assertEqual(post_call[0][0], 'POST')
+        self.assertEqual(post_call[0][1], f'/projects/{self.project_id}/wiki.json')
     
     @patch('src.wiki.client.WikiClient.validate_input')
     def test_create_wiki_page_validation_failure(self, mock_validate):

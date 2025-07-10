@@ -162,68 +162,81 @@ class WikiClient(RedmineBaseClient):
         if comments:
             page_data['wiki_page']['comments'] = comments
         
-        # Use standard creation endpoint with POST method first
-        standard_endpoint = f"/projects/{project_id}/wiki.json"
+        # Try PUT method first (standard method according to Redmine API docs)
+        standard_endpoint = f"/projects/{project_id}/wiki/{title}.json"
+        result = {'method_used': 'PUT'}  # Default method
         
         try:
-            # Try standard POST method first (proper way to create new resources)
-            self.logger.debug(f"Attempting to create wiki page using POST method")
-            response = self.make_request('POST', standard_endpoint, data=page_data)
-            
-            if 'error' in response:
-                error_msg = f"Failed to create wiki page with POST method: {response.get('error', 'Unknown error')}"
-                self.logger.warning(error_msg)
-                # Don't return here - fall through to the PUT method as a backup
-            else:
-                # Successful creation with POST method
-                if not response or (isinstance(response, dict) and not response):
-                    self.logger.info(f"Successfully created wiki page {title} using POST method (empty response)")
-                    return {
-                        'success': True,
-                        'page': {'title': title}
-                    }
-                    
-                self.logger.info(f"Successfully created wiki page {title} using POST method")
-                return {
-                    'success': True,
-                    'page': response.get('wiki_page', {'title': title}),
-                    'method_used': 'POST'
-                }
-                
-        except Exception as e:
-            self.logger.warning(f"POST method failed, will try PUT method as fallback: {str(e)}")
-            # Fall through to PUT method
-        
-        # Fallback to PUT method (previously used workaround)
-        fallback_endpoint = f"/projects/{project_id}/wiki/{title}.json"
-        
-        try:
-            self.logger.debug(f"Attempting to create wiki page using PUT method (fallback)")
-            response = self.make_request('PUT', fallback_endpoint, data=page_data)
+            self.logger.debug(f"Attempting to create wiki page using PUT to {standard_endpoint}")
+            response = self.make_request('PUT', standard_endpoint, data=page_data)
             
             if 'error' in response:
                 error_msg = f"Failed to create wiki page with PUT method: {response.get('error', 'Unknown error')}"
-                self.logger.error(error_msg)
-                return {
-                    'success': False,
-                    'error': error_msg
-                }
-                
-            # Some Redmine versions return 201 with empty body on success
-            if not response or (isinstance(response, dict) and not response):
+                self.logger.warning(error_msg)
+                # Continue to fallback method
+            elif not response or (isinstance(response, dict) and not response):
+                # Some Redmine versions return empty body on success
                 self.logger.info(f"Successfully created wiki page {title} using PUT method (empty response)")
                 return {
                     'success': True,
                     'page': {'title': title},
                     'method_used': 'PUT'
                 }
+            elif response and response.get('wiki_page'):
+                # Successful creation with detailed response
+                self.logger.info(f"Wiki page '{title}' created successfully using PUT method")
+                return {
+                    'success': True,
+                    'page': response.get('wiki_page'),
+                    'method_used': 'PUT'
+                }
+            else:
+                self.logger.warning(f"PUT request succeeded but returned unexpected response: {response}")
+                # Continue to fallback method
                 
-            self.logger.info(f"Successfully created wiki page {title} using PUT method")
-            return {
-                'success': True,
-                'page': response.get('wiki_page', {'title': title}),
-                'method_used': 'PUT'
-            }
+        except Exception as e:
+            self.logger.warning(f"PUT method failed with error: {str(e)}. Trying POST method as fallback...")
+            # Continue to fallback method
+
+        # Fallback to POST method (might be supported in some custom Redmine implementations)
+        fallback_endpoint = f"/projects/{project_id}/wiki.json"
+        
+        try:
+            self.logger.debug(f"Attempting to create wiki page using POST to {fallback_endpoint}")
+            response = self.make_request('POST', fallback_endpoint, data=page_data)
+            
+            if 'error' in response:
+                error_msg = f"Both methods failed. PUT error already logged, POST error: {response.get('error', 'Unknown error')}"
+                self.logger.error(error_msg)
+                return {
+                    'success': False,
+                    'error': error_msg
+                }
+            elif not response or (isinstance(response, dict) and not response):
+                # Some Redmine versions return empty body on success
+                self.logger.info(f"Successfully created wiki page {title} using POST method (empty response)")
+                return {
+                    'success': True,
+                    'page': {'title': title},
+                    'method_used': 'POST'
+                }
+            elif response and response.get('wiki_page'):
+                # Successful creation with POST method
+                self.logger.info(f"Successfully created wiki page {title} using POST method")
+                return {
+                    'success': True,
+                    'page': response.get('wiki_page'),
+                    'method_used': 'POST'
+                }
+            else:
+                # Unexpected but not error response
+                self.logger.warning(f"Both methods completed but returned unexpected responses")
+                return {
+                    'success': True, 
+                    'page': {'title': title},
+                    'method_used': 'POST',
+                    'response': response
+                }
             
         except Exception as e:
             error_msg = f"Error creating wiki page (both methods failed): {str(e)}"
