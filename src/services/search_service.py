@@ -336,17 +336,22 @@ class SearchService(BaseService):
     - Error handling and validation
     """
     
-    def __init__(self, redmine_client):
+    def __init__(self, redmine_client, config=None, logger=None):
         """
         Initialize the search service
         
         Args:
             redmine_client: RedmineClient instance for API interactions
+            config: Configuration object (optional)
+            logger: Logger instance (optional)
         """
-        super().__init__(redmine_client)
+        # Initialize with required BaseService parameters
+        config = config or {}
+        logger = logger or logging.getLogger(__name__)
+        
+        super().__init__(config=config, client=redmine_client, logger=logger)
         self.result_processor = SearchResultProcessor()
         self.cache = SearchCache()
-        self.logger = logging.getLogger(__name__)
         
     def health_check(self):
         """
