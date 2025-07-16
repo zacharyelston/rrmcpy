@@ -348,6 +348,27 @@ class SearchService(BaseService):
         self.cache = SearchCache()
         self.logger = logging.getLogger(__name__)
         
+    def health_check(self):
+        """
+        Check if the search service is functioning properly
+        
+        Returns:
+            bool: True if service is healthy, False otherwise
+        """
+        try:
+            # Simple health check - verify client connection
+            if not self.client or not hasattr(self.client, 'url'):
+                self.logger.error("Search service health check failed: No valid client")
+                return False
+                
+            # Additional checks could include testing cache integrity
+            # or verifying search endpoints are responsive
+                
+            return True
+        except Exception as e:
+            self.logger.error(f"Search service health check failed: {e}")
+            return False
+        
     def search(self, query: str, content_types: Optional[List[str]] = None, **kwargs) -> Dict[str, Any]:
         """
         Main search method that orchestrates the search process
