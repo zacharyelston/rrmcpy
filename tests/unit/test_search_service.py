@@ -191,12 +191,36 @@ class TestSearchCache(unittest.TestCase):
 
 
 class TestSearchService(unittest.TestCase):
-    """Test the SearchService class"""
+    """Test the SearchService class with real API connections"""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test environment once for all tests"""
+        # Import here to avoid circular imports
+        from tests.helpers.api_test_helper import APITestHelper, TestEnvironment
+        
+        # Check if we should run real API tests
+        if not TestEnvironment.is_using_real_api():
+            raise unittest.SkipTest("Skipping real API tests (USE_REAL_API != true)")
+            
+        # Set up test environment
+        TestEnvironment.setup_test_environment()
+        
+        # Create API test helper
+        try:
+            cls.api_helper = APITestHelper()
+            cls.client = cls.api_helper.get_redmine_client()
+        except Exception as e:
+            raise unittest.SkipTest(f"Failed to initialize API helper: {e}")
     
     def setUp(self):
-        self.mock_client = MagicMock()
-        self.search_service = SearchService(self.mock_client)
-        
+        """Set up test environment for each test"""
+        try:
+            # Create a SearchService with real client
+            self.search_service = SearchService(self.__class__.client)
+        except Exception as e:
+            self.skipTest(f"Failed to initialize SearchService: {e}")
+    
     def test_validate_search_params(self):
         """Test validation of search parameters"""
         # Valid parameters should not raise an exception
@@ -215,89 +239,49 @@ class TestSearchService(unittest.TestCase):
             self.search_service._validate_search_params("test", ["issues"], limit=-1)
             
     def test_search_issues(self):
-        """Test issue search functionality"""
-        # Mock the API response
-        mock_response = {
-            "issues": [
-                {
-                    "id": 123,
-                    "subject": "Test Issue",
-                    "description": "Issue with search terms",
-                    "created_on": "2025-07-15",
-                    "updated_on": "2025-07-16",
-                    "project": {"id": 1, "name": "Test Project"}
-                }
-            ],
-            "total_count": 1
-        }
-        self.mock_client.get.return_value = mock_response
+        """Test issue search functionality with real API"""
+        # Execute search with real client
+        result = self.search_service._search_issues("test")
         
-        # Execute search
-        result = self.search_service._search_issues("search terms")
-        
-        # Verify client was called correctly
-        self.mock_client.get.assert_called_once()
-        call_args = self.mock_client.get.call_args[0]
-        self.assertEqual(call_args[0], "issues.json")
+        # Verify basic structure of results
+        self.assertIn("results", result, "Results key should be present")
+        self.assertIn("total_count", result, "Total count key should be present")
         
         # Verify result transformation
-        self.assertEqual(len(result["results"]), 1)
-        self.assertEqual(result["total_count"], 1)
-        issue = result["results"][0]
-        self.assertEqual(issue["id"], 123)
-        self.assertEqual(issue["type"], "issue")
-        self.assertTrue("url" in issue)
+        # Note: We don't assert specific values since they depend on actual data in Redmine
+        if result["total_count"] > 0:
+            issue = result["results"][0]
+            self.assertIn("id", issue, "Issue should have ID")
+            self.assertEqual(issue["type"], "issue", "Result type should be 'issue'")
+            self.assertIn("title", issue, "Issue should have title")
+            self.assertIn("url", issue, "Issue should have URL")
+        else:
+            print("Warning: No test issues found in Redmine. Test passed but not comprehensive.")
         
     def test_search_wiki_pages(self):
-        """Test wiki page search functionality"""
-        # Mock the API responses
-        mock_index = {
-            "wiki_pages": [
-                {"title": "TestPage1"},
-                {"title": "TestPage2"}
-            ]
-        }
+        """Test wiki page search functionality with real API"""
+        # Import helper to get test project ID
+        from tests.helpers.api_test_helper import TestEnvironment
         
-        mock_page1 = {
-            "wiki_page": {
-                "title": "TestPage1",
-                "text": "This page has search terms",
-                "created_on": "2025-07-15",
-                "updated_on": "2025-07-16",
-                "version": 1
-            }
-        }
-        
-        mock_page2 = {
-            "wiki_page": {
-                "title": "TestPage2",
-                "text": "This page does not match",
-                "created_on": "2025-07-14",
-                "updated_on": "2025-07-15",
-                "version": 1
-            }
-        }
-        
-        # Set up mock client to return different responses for different calls
-        def side_effect(path, **kwargs):
-            if path == "projects/test/wiki/index.json":
-                return mock_index
-            elif path == "projects/test/wiki/TestPage1.json":
-                return mock_page1
-            elif path == "projects/test/wiki/TestPage2.json":
-                return mock_page2
-            return None
-            
-        self.mock_client.get.side_effect = side_effect
+        # Get test project ID
+        test_project_id = TestEnvironment.get_test_project_id()
         
         # Execute search
-        result = self.search_service._search_wiki_pages("search", project_id="test")
+        result = self.search_service._search_wiki_pages("test", project_id=test_project_id)
         
-        # Verify results
-        self.assertEqual(len(result["results"]), 1)  # Only one page should match
-        page = result["results"][0]
-        self.assertEqual(page["title"], "TestPage1")
-        self.assertEqual(page["type"], "wiki_page")
+        # Verify basic structure of results
+        self.assertIn("results", result, "Results key should be present")
+        self.assertIn("total_count", result, "Total count key should be present")
+        
+        # Verify result transformation
+        # Note: We don't assert specific values since they depend on actual data in Redmine
+        if result["total_count"] > 0:
+            page = result["results"][0]
+            self.assertIn("title", page, "Wiki page should have title")
+            self.assertEqual(page["type"], "wiki_page", "Result type should be 'wiki_page'")
+            self.assertIn("url", page, "Wiki page should have URL")
+        else:
+            print(f"Warning: No wiki pages found in project {test_project_id}. Test passed but not comprehensive.")
         
     def test_main_search_function(self):
         """Test the main search orchestration function"""

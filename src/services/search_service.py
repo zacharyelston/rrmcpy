@@ -336,20 +336,18 @@ class SearchService(BaseService):
     - Error handling and validation
     """
     
-    def __init__(self, redmine_client, config=None, logger=None):
+    def __init__(self, client, logger=None):
         """
         Initialize the search service
         
         Args:
-            redmine_client: RedmineClient instance for API interactions
-            config: Configuration object (optional)
+            client: RedmineClient instance for API interactions
             logger: Logger instance (optional)
         """
         # Initialize with required BaseService parameters
-        config = config or {}
         logger = logger or logging.getLogger(__name__)
         
-        super().__init__(config=config, client=redmine_client, logger=logger)
+        super().__init__(client=client, logger=logger)
         self.result_processor = SearchResultProcessor()
         self.cache = SearchCache()
         
@@ -358,21 +356,28 @@ class SearchService(BaseService):
         Check if the search service is functioning properly
         
         Returns:
-            bool: True if service is healthy, False otherwise
+            dict: Status information including 'status' key with 'ok' or 'error'
         """
         try:
             # Simple health check - verify client connection
             if not self.client or not hasattr(self.client, 'url'):
                 self.logger.error("Search service health check failed: No valid client")
-                return False
+                return {"status": "error", "message": "No valid client"}
                 
-            # Additional checks could include testing cache integrity
-            # or verifying search endpoints are responsive
+            # Test connection to real Redmine API
+            try:
+                # Make a simple API call to verify connection
+                response = self.client.get("projects.json", params={"limit": 1})
+                if response and "projects" in response:
+                    return {"status": "ok", "message": "Connected to Redmine API"}
+                else:
+                    return {"status": "error", "message": "Unable to retrieve data from Redmine API"}
+            except Exception as e:
+                return {"status": "error", "message": f"API connection error: {str(e)}"}
                 
-            return True
         except Exception as e:
             self.logger.error(f"Search service health check failed: {e}")
-            return False
+            return {"status": "error", "message": f"Unexpected error: {str(e)}"}
         
     def search(self, query: str, content_types: Optional[List[str]] = None, **kwargs) -> Dict[str, Any]:
         """
