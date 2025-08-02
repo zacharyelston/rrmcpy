@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Enhanced search functionality with `redmine-search` tool supporting unified search across issues and wiki pages (#766)
+- SearchService implementation with result processing, formatting, and caching
+- Search result highlighting and excerpts for improved readability
+- Future specialized search tools tracked in issue #787
+
 ## [0.9.0] - 2025-06-04
 
 ### Added

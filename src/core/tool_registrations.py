@@ -8,6 +8,7 @@ from typing import Any, Dict, Optional
 from fastmcp import FastMCP
 from ..core import get_logger
 from ..core.errors import RedmineAPIError
+from ..services.search_service import SearchService, SearchExecutionError
 
 class ToolRegistrations:
     """Handles registration of FastMCP tools"""
@@ -25,6 +26,7 @@ class ToolRegistrations:
         self.client_manager = client_manager
         self.logger = logger or logging.getLogger("redmine_mcp_server.tool_registrations")
         self._registered_tools = []
+        self.search_service = None
         self.logger.debug("Tool registrations initialized")
     
     def register_all_tools(self):
@@ -35,6 +37,7 @@ class ToolRegistrations:
         self.register_project_tools()
         self.register_template_tools()
         self.register_wiki_tools()
+        self.register_search_tools()
         
         self.logger.info(f"Registered {len(self._registered_tools)} tools: {', '.join(self._registered_tools)}")
         return self._registered_tools
@@ -741,6 +744,67 @@ class ToolRegistrations:
                 
         self._registered_tools.append("redmine-list-issue-templates")
         
+    def register_search_tools(self):
+        """Register enhanced search tools with FastMCP"""
+        self.logger.debug("Registering search tools")
+        
+        # Initialize search service if not already done
+        if not self.search_service:
+            client = self.client_manager.get_client('issues')  # Use issue client as base
+            self.search_service = SearchService(client)
+        
+        @self.mcp.tool("redmine-search")
+        async def search(query: str, content_types: list = None, project_id: str = None,
+                         status_id: str = None, limit: int = 100, offset: int = 0,
+                         include_description: bool = True, include_comments: bool = True,
+                         sort_by: str = "relevance"):
+            """Comprehensive search across Redmine content types
+            
+            Args:
+                query: Search query string
+                content_types: List of content types to search ["issues", "wiki_pages", "documents", "projects"]
+                project_id: Filter by project ID or identifier
+                status_id: Filter by status ("open", "closed", "all")
+                limit: Maximum results to return
+                offset: Results offset for pagination
+                include_description: Include description in search
+                include_comments: Include comments in search
+                sort_by: Sort order ("relevance", "updated", "created")
+                
+            Returns:
+                Search results with metadata
+            """
+            self.logger.info(f"Executing search for query: {query}")
+            
+            try:
+                results = self.search_service.search(
+                    query=query,
+                    content_types=content_types,
+                    project_id=project_id,
+                    status_id=status_id,
+                    limit=limit,
+                    offset=offset,
+                    include_description=include_description,
+                    include_comments=include_comments,
+                    sort_by=sort_by
+                )
+                
+                self.logger.info(f"Search returned {len(results.get('results', []))} results")
+                self._registered_tools.append("redmine-search")
+                return results
+                
+            except ValueError as e:
+                self.logger.error(f"Invalid search parameters: {e}")
+                return {"error": f"Invalid search parameters: {str(e)}", "results": [], "metadata": {"total_count": 0}}
+                
+            except SearchExecutionError as e:
+                self.logger.error(f"Search execution error: {e}")
+                return {"error": f"Search execution failed: {str(e)}", "results": [], "metadata": {"total_count": 0}}
+                
+            except Exception as e:
+                self.logger.error(f"Unexpected error during search: {e}")
+                return {"error": f"Unexpected error during search: {str(e)}", "results": [], "metadata": {"total_count": 0}}
+    
     def register_wiki_tools(self):
         """Register wiki management tools with FastMCP"""
         from ..wiki.tools import WikiTools
