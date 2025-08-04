@@ -336,18 +336,19 @@ class SearchService(BaseService):
     - Error handling and validation
     """
     
-    def __init__(self, client, logger=None):
+    def __init__(self, client, config, logger=None):
         """
         Initialize the search service
         
         Args:
             client: RedmineClient instance for API interactions
+            config: Configuration dictionary
             logger: Logger instance (optional)
         """
         # Initialize with required BaseService parameters
         logger = logger or logging.getLogger(__name__)
         
-        super().__init__(client=client, logger=logger)
+        super().__init__(client=client, config=config, logger=logger)
         self.result_processor = SearchResultProcessor()
         self.cache = SearchCache()
         

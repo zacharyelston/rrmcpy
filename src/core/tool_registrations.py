@@ -3,9 +3,29 @@ Tool registration module for FastMCP tools
 """
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Callable, Union
 
-from fastmcp import FastMCP
+# Try to import FastMCP, provide a mock if not available
+try:
+    from fastmcp import FastMCP
+except ImportError:
+    # Mock implementation of FastMCP for local development
+    print("Warning: FastMCP not found, using mock implementation for local testing")
+    
+    class MockFastMCP:
+        """Mock implementation of FastMCP for local development"""
+        
+        def __init__(self):
+            self.tools = {}
+        
+        def tool(self, *args, **kwargs) -> Callable:
+            """Mock decorator for tool registration"""
+            def decorator(func):
+                return func
+            return decorator
+
+    FastMCP = MockFastMCP
+
 from ..core import get_logger
 from ..core.errors import RedmineAPIError
 from ..services.search_service import SearchService, SearchExecutionError
@@ -751,7 +771,9 @@ class ToolRegistrations:
         # Initialize search service if not already done
         if not self.search_service:
             client = self.client_manager.get_client('issues')  # Use issue client as base
-            self.search_service = SearchService(client)
+            # Get config from client_manager
+            config = self.client_manager.config
+            self.search_service = SearchService(client, config)
         
         @self.mcp.tool("redmine-search")
         async def search(query: str, content_types: list = None, project_id: str = None,
