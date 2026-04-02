@@ -7,7 +7,8 @@ import os
 import sys
 import unittest
 import json
-from unittest.mock import Mock, patch, MagicMock
+import logging
+from unittest.mock import Mock, patch, PropertyMock, MagicMock
 
 # Handle import paths for both local development and CI environment
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -28,8 +29,19 @@ class TestProjectWorkflow(unittest.TestCase):
     
     def setUp(self):
         """Set up test environment"""
-        # Create a client manager with mocked clients
-        self.client_manager = ClientManager()
+        # Create a mock config for ClientManager
+        self.config = {
+            "redmine": {
+                "url": "https://example.redmine.org",
+                "api_key": "dummy_api_key"
+            },
+            "server": {
+                "mode": "test",
+                "log_level": "INFO"
+            }
+        }
+        # Create a client manager with mocked clients and config
+        self.client_manager = ClientManager(config=self.config)
         
         # Mock the project client
         self.mock_project_client = Mock(spec=ProjectClient)
@@ -60,8 +72,8 @@ class TestProjectWorkflow(unittest.TestCase):
         self.mock_project_client.unarchive_project.return_value = {"success": True}
         self.mock_project_client.delete_project.return_value = {"success": True}
         
-        # Replace the real client with our mock
-        self.client_manager._clients["projects"] = self.mock_project_client
+        # Set up mock get_client to return our mock project client
+        self.client_manager.get_client = MagicMock(return_value=self.mock_project_client)
     
     def test_full_project_lifecycle(self):
         """Test complete project lifecycle with all operations"""

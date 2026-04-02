@@ -72,7 +72,14 @@ echo ""
 
 # Build Docker image
 echo -e "${YELLOW}Building Docker image...${NC}"
-docker build --no-cache -t "$IMAGE_NAME" . || {
+DOCKERFILE_PATH="$SCRIPT_DIR/Dockerfile"
+
+if [ ! -f "$DOCKERFILE_PATH" ]; then
+    echo -e "${RED}Error: Dockerfile not found at $DOCKERFILE_PATH${NC}"
+    exit 1
+fi
+
+docker build --no-cache -t "$IMAGE_NAME" -f "$DOCKERFILE_PATH" "$SCRIPT_DIR" || {
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 }
